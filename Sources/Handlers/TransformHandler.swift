@@ -52,52 +52,57 @@ public func handleTransform(inputFilePath: String,
     }
 }
 
-private func getPair(data: Data, finPorterID: String? = nil, outputSchema: AllocSchema? = nil) throws -> (finPorter: FINporter, schema: AllocSchema) {
-    let sourceFormats: [AllocFormat] = [.CSV]
-
+internal func getPair(data: Data, finPorterID: String? = nil, outputSchema: AllocSchema? = nil) throws -> (finPorter: FINporter, schema: AllocSchema) {
     let FINprospector = FINprospector()
-
-    if let finPorterID_ = finPorterID,
-       let finPorter = FINprospector.get(finPorterID_)
-    {
-        if let schema = outputSchema {
-            guard finPorter.outputSchemas.contains(schema)
-            else { throw FINporterError.targetSchemaNotSupported(finPorter.outputSchemas) }
-
-            return (finPorter, schema)
+    
+    var importer: FINporter!
+    var detectedSchemas = [AllocSchema]()
+    
+    // if user explicitly specified an importer
+    if let finPorterID_ = finPorterID {
+        
+        importer = FINprospector.get(finPorterID_)
+        
+        guard importer != nil else {
+            throw FINporterError.importerNotRecognized(finPorterID_)
         }
-
-        guard finPorter.outputSchemas.count == 1 else {
-            throw FINporterError.multipleSchemasMatch(finPorter.outputSchemas)
-        }
-
-        return (finPorter, finPorter.outputSchemas.first!)
+        
+        detectedSchemas = importer.outputSchemas
+        
     } else {
-        let detected: FINprospector.ProspectResult = try FINprospector.prospect(sourceFormats: sourceFormats, dataPrefix: data)
+        // attempt to find an importer than can handle the input
+        let detected: FINprospector.ProspectResult = try FINprospector.prospect(dataPrefix: data)
         let importers = detected.map(\.key)
-        guard importers.count > 0 else {
-            throw FINporterError.notImplementedError // TODO: FINporterError.sourceSchemaNotSupported(schema: inputSchema)
-        }
-        guard importers.count == 1 else {
+        
+        switch importers.count {
+        case 0:
+            throw FINporterError.sourceFormatNotRecognized
+        case 2...:
             throw FINporterError.multipleImportersMatch(importers)
+        default: break
         }
-        let importer = importers.first!
+        
+        importer = importers.first!
         let detectResult = detected[importer] ?? [:]
-
-        guard detectResult.count == 1, outputSchema == nil else {
-            throw FINporterError.multipleSchemasMatch(detectResult.map(\.key))
-        }
-
-        if let schema = outputSchema {
-            let detectedSchemas = detectResult.map(\.key)
-            guard detectedSchemas.contains(schema)
-            else { throw FINporterError.targetSchemaNotSupported(detectedSchemas) }
-
-            return (importer, schema)
-        }
-
-        return (importer, importer.outputSchemas.first!)
+        detectedSchemas = detectResult.map(\.key)
     }
+    
+    // if user explicitly specified an output schema, ensure it's supported by the remaining importer
+    if let schema = outputSchema {
+        guard detectedSchemas.contains(schema)
+        else { throw FINporterError.targetSchemaNotSupported(detectedSchemas) }
+        return (importer, schema)
+    }
+    
+    switch importer.outputSchemas.count {
+    case 0:
+        throw FINporterError.targetSchemaNotSupported([])
+    case 2...:
+        throw FINporterError.multipleOutputSchemasMatch(importer.outputSchemas)
+    default: break
+    }
+    
+    return (importer, importer.outputSchemas.first!)
 }
 
 internal func decodeAndExport<T: AllocBase>(_: T.Type,

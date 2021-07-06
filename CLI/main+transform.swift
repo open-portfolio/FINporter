@@ -35,10 +35,17 @@ extension Finporter {
         var inputFilePath: String
         @Option(help: "importer")
         var importer: String?
+        @Option(help: "output-schema")
+        var outputSchema: String?
         func run() {
             do {
+                let outputSchema_ = outputSchema != nil ? AllocSchema(rawValue: outputSchema!) : nil
+                
                 var rejectedRows: [AllocBase.Row] = []
-                let str = try handleTransform(inputFilePath: inputFilePath, rejectedRows: &rejectedRows, finPorterID: importer)
+                let str = try handleTransform(inputFilePath: inputFilePath,
+                                              rejectedRows: &rejectedRows,
+                                              finPorterID: importer,
+                                              outputSchema: outputSchema_)
                 print(str)
             } catch let CSVParseError.generic(message) {
                 fputs("CSV generic: \(message)", stderr)

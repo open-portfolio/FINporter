@@ -50,7 +50,7 @@ public struct FINprospector {
     }
 
     /// find candidate parsers
-    public func prospect(sourceFormats: [AllocFormat], dataPrefix: Data) throws -> ProspectResult {
+    public func prospect(sourceFormats: [AllocFormat] = AllocFormat.allCases, dataPrefix: Data) throws -> ProspectResult {
         let sourceImporters = Set(sourceFormats.compactMap { sourceMap[$0] }.flatMap { $0 })
 
         return try sourceImporters.reduce(into: [:]) { map, importer in

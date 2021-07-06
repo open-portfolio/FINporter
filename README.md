@@ -1,10 +1,10 @@
 # FINporter
 
-An open source data transformation tool for financial data.
+A utility for transforming financial data.
 
-Supports investing apps like [FlowAllocator](https://flowallocator.app), a rebalancing tool for macOS.
+Supports investing apps like [FlowAllocator](https://flowallocator.app), a new rebalancing tool for macOS.
 
-Available both as a command line executable and as a Swift library to be incorporated in other apps.
+Available both as a `finport` command line executable and as a Swift library to be incorporated in other apps.
 
 ## Disclaimer
 
@@ -16,17 +16,79 @@ Software will have defects. Input data can have errors or become outdated. Caref
 
 For additional disclaiming, read the LICENSE, which is Apache 2.0.
 
+## Supported Schema
+
+At present _FINporter_ supports the schema of the _OpenAlloc_ project, documented at [openalloc/AllocData](https://github.com/openalloc/AllocData/README.md). Applications which support those schemas can make use of _FINporter_'s importers to ingest the specialized formats it supports.
+
+## Supported Data
+
+NOTE: support of a data format for a service is not an endorsement or recommendation of that service.
+
+Applications which have integrated _FINporter_ will typically support imports through a menu item or drag-and-drop. The examples below show how the command-line tool, `finport`, may be used to transform input files to delimited files of standardized schema.
+
+As support for services expands, more examples will be listed below.
+
+### Tabular
+
+To detect a supported schema of a delimited file:
+
+```bash
+$ finport detect mystery.txt
+=> openalloc/account: text/csv
+```
+
+### Fido (Fidelity) Positions
+
+To transform the "Portfolio_Positions_Mmm-dd-yyyy.csv" export requires two commands, as there are two outputs, account holdings and securities:
+
+```bash
+$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/holding
+$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/security
+```
+
+Output schemas: openalloc/holding and openalloc/security
+
+### Fido (Fidelity) Purchases
+
+To transform the "Accounts_History.csv" export:
+
+```bash
+$ finport transform Accounts_History.csv
+```
+
+Output schema: openalloc/history
+
+### Fido (Fidelity) Sales
+
+To transform the "Realized_Gain_Loss_Account_00000000.csv" export, available in the 'Closed Positions' view of taxable accounts:
+
+```bash
+$ finport transform Realized_Gain_Loss_Account_00000000.csv
+```
+
+Output schema: openalloc/history
+
+### AllocSmart (Allocate Smartly) Export
+
+To transform an export from this service:
+
+```bash
+$ finport transform "Allocate Smartly Model Portfolio.csv"
+```
+
+Output schema: openalloc/allocation
+
 ## Command Line
 
-_FINporter_ includes a powerful command-line tool to detect and transform financial data, such as exports from your brokerage account.
+_FINporter_ features `finport`, a powerful command-line tool to detect and transform financial data, such as exports from your brokerage account.
 
 ```bash
 $ swift build
-$ .build/debug/finporter
+$ .build/debug/finport
 
 OVERVIEW: A utility for transforming financial data.
 
-USAGE: finporter <subcommand>
+USAGE: finport <subcommand>
 
 OPTIONS:
   --version               Show the version.
@@ -38,18 +100,10 @@ SUBCOMMANDS:
   detect                  Detect schema of file.
   transform               Transform data in file.
 
-  See 'finporter help <subcommand>' for detailed help.
+  See 'finport help <subcommand>' for detailed help.
 ```
 
-If your favorite product (e.g., _FlowAllocator_) hasn't yet incorporated the latest FINporter library supporting your brokerage or service, you can still convert files using the command line.
-
-```bash
-$ swift build
-$ .build/debug/finporter transform ~/Downloads/Accounts_History.csv
-
-... CSV conforming to the 'openalloc/history' schema here, which can be imported into app
-
-```
+If your favorite product (e.g., _FlowAllocator_) hasn't yet incorporated the latest FINporter library supporting your service, you can still transform exports using `finport`. See examples above.
 
 ## License
 

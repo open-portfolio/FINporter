@@ -21,7 +21,7 @@ let package = Package(
     name: "FINporter",
     products: [
         .library(name: "FINporter", targets: ["FINporter"]),
-        .executable(name: "finporter", targets: ["FINporterCLI"])
+        .executable(name: "finport", targets: ["FINporterCLI"])
     ],
     dependencies: [
         .package(name: "AllocData", url: "https://github.com/openalloc/AllocData.git", from: "1.0.0"),

@@ -25,7 +25,7 @@ import SwiftCSV
 
 struct Finporter: ParsableCommand {
     static var configuration = CommandConfiguration(
-        commandName: "finporter",
+        commandName: "finport",
         abstract: "A utility for transforming financial data.",
         version: "1.0.0",
         subcommands: [List.self, Schema.self, Detect.self, Transform.self]

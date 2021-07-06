@@ -27,7 +27,10 @@ public enum FINporterError: Error, Equatable, CustomStringConvertible {
     case needExplicitOutputSchema(_ supported: [AllocSchema])
     case targetSchemaNotSupported(_ supported: [AllocSchema])
     case multipleImportersMatch(_ importers: [FINporter])
-    case multipleSchemasMatch(_ schemas: [AllocSchema])
+    case multipleDetectedSchemasMatch(_ schemas: [AllocSchema])
+    case multipleOutputSchemasMatch(_ schemas: [AllocSchema])
+    case sourceFormatNotRecognized
+    case importerNotRecognized(_ msg: String)
 
     public var localizedDescription: String { description }
 
@@ -47,8 +50,14 @@ public enum FINporterError: Error, Equatable, CustomStringConvertible {
             return String("Supported target schema: '\(supported.map(\.rawValue))'.")
         case let .multipleImportersMatch(importers):
             return String("Multiple importers match. Need to disambiguate. Importers: [\(importers.map { $0.id }.joined(separator: ", "))]")
-        case let .multipleSchemasMatch(schemas):
-            return String("Multiple schemas match. Need to disambiguate. Importers: [\(schemas.map { $0.rawValue }.joined(separator: ", "))]")
+        case let .multipleDetectedSchemasMatch(schemas):
+            return String("Multiple detected schemas match. Need to disambiguate. Schemas: [\(schemas.map { $0.rawValue }.joined(separator: ", "))]")
+        case let .multipleOutputSchemasMatch(schemas):
+            return String("Multiple output schemas match. Need to disambiguate. Schemas: [\(schemas.map { $0.rawValue }.joined(separator: ", "))]")
+        case .sourceFormatNotRecognized:
+            return String("Source format not recognized.")
+        case let .importerNotRecognized(msg):
+            return String("Importer not recognized. \(msg)")
         }
     }
 }
