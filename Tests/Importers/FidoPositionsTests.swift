@@ -1,0 +1,121 @@
+//
+//  FidoPositionsTests.swift
+//
+// Copyright 2021 FlowAllocator LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+@testable import FINporter
+import XCTest
+
+import AllocData
+
+final class FidoPositionsTests: XCTestCase {
+    var imp: FidoPositions!
+
+    override func setUpWithError() throws {
+        imp = FidoPositions()
+    }
+
+    func testSourceFormats() {
+        let expected = Set([AllocFormat.CSV])
+        let actual = Set(imp.sourceFormats)
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testTargetSchema() {
+        let expected: [AllocSchema] = [.allocHolding, .allocSecurity]
+        let actual = imp.outputSchemas
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testDetectFailsDueToHeaderMismatch() throws {
+        let badHeader = """
+        AXXount Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+        """
+        let expected: FINporter.DetectResult = [:]
+        let actual = try imp.detect(dataPrefix: badHeader.data(using: .utf8)!)
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testDetectSucceeds() throws {
+        let header = """
+        Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+        """
+        let expected: FINporter.DetectResult = [.allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testDetectViaMain() throws {
+        let header = """
+        Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+        """
+        let expected: FINporter.DetectResult = [.allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let main = FINprospector()
+        let data = header.data(using: .utf8)!
+        let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
+        XCTAssertEqual(1, actual.count)
+        _ = actual.map { key, value in
+            XCTAssertNotNil(key as? FidoPositions)
+            XCTAssertEqual(expected, value)
+        }
+    }
+
+    func testParse() throws {
+        for str in [
+            "﻿Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today\'s Gain/Loss Dollar,Today\'s Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type\r\nZ00000000,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,\"$45,900.35\",+$150.25,+0.32%,\"+$11,945.20\",+31.10%,15.05%,\"$38,362.05\",$28.96,Cash,\r\nZ00000001,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,\"$45,900.35\",+$150.25,+0.32%,\"+$11,945.20\",+31.10%,15.05%,\"$38,362.05\",$18.96,Cash,\r\n\r\nXXX",
+
+            // testParseWithLFToFirstBlankLine
+            """
+            Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+            Z00000000,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$28.96,Cash,
+            Z00000001,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$18.96,Cash,
+
+            XXX
+            """,
+
+            // testParseWithLFToFirstBlankLine
+            """
+            Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+            Z00000000,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$28.96,Cash,
+            Z00000001,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$18.96,Cash,
+            """,
+        ] {
+            var rejectedRows = [MHolding.Row]()
+            let dataStr = str.data(using: .utf8)!
+            let actual: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocHolding)
+
+            let expected: [MHolding.Row] = [
+                ["holdingAccountID": "Z00000000", "holdingSecurityID": "VWO", "holdingLotID": "", "shareCount": 900.0, "shareBasis": 28.96],
+                ["holdingAccountID": "Z00000001", "holdingSecurityID": "VOO", "holdingLotID": "", "shareCount": 800.0, "shareBasis": 18.96],
+            ]
+
+            XCTAssertTrue(areEqual(expected, actual))
+            XCTAssertEqual(expected, actual)
+            XCTAssertEqual(0, rejectedRows.count)
+
+            let timestamp = Date()
+            let actual2: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocSecurity, timestamp: timestamp)
+
+            let expected2: [MHolding.Row] = [
+                ["securityID": "VWO", "sharePrice": 50.922, "updatedAt": timestamp],
+                ["securityID": "VOO", "sharePrice": 40.922, "updatedAt": timestamp],
+            ]
+
+            XCTAssertTrue(areEqual(expected2, actual2))
+            // XCTAssertEqual(expected2, actual2)
+            XCTAssertEqual(0, rejectedRows.count)
+        }
+    }
+}
