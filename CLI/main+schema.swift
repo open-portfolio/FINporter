@@ -26,7 +26,7 @@ import SwiftCSV
 extension Finporter {
     struct Schema: ParsableCommand {
         static var configuration = CommandConfiguration(
-            // Command names are automatically generated from the type name
+            // command names are automatically generated from the type name
             // by default; you can specify an override here.
             commandName: "schema",
             abstract: "Describe schema details.",
@@ -42,7 +42,7 @@ extension Finporter {
                 Tracker.self,
             ]
         )
-        // defaultSubcommand: Format.self)
+        // defaultsubcommand: format.self)
     }
 }
 

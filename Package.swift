@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.4
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 // Copyright 2021 FlowAllocator LLC
@@ -21,40 +21,33 @@ let package = Package(
     name: "FINporter",
     products: [
         .library(name: "FINporter", targets: ["FINporter"]),
-        .executable(name: "finporter", targets: ["FINporterCLI"]),
+        .executable(name: "finporter", targets: ["FINporterCLI"])
     ],
     dependencies: [
-        .package(url: "https://github.com/openalloc/AllocData.git", from: "1.0.0"),
-        .package(url: "https://github.com/reedes/SwiftCSV.git", .upToNextMajor(from: "0.6.1")),
-        .package(url: "https://github.com/apple/swift-argument-parser.git", .upToNextMajor(from: "0.4.3")),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(name: "AllocData", url: "https://github.com/openalloc/AllocData.git", from: "1.0.0"),
+        .package(name: "SwiftCSV", url: "https://github.com/reedes/SwiftCSV.git", .upToNextMajor(from: "0.6.1")),
+        .package(url: "https://github.com/apple/swift-argument-parser.git", .upToNextMajor(from: "0.4.3"))
     ],
     targets: [
         .target(
             name: "FINporter",
             dependencies: [
-                .product(name: "AllocData", package: "AllocData"),
-                .product(name: "SwiftCSV", package: "SwiftCSV"),
-                .product(name: "Logging", package: "swift-log")
+                "AllocData", "SwiftCSV"
             ],
             path: "Sources"
         ),
-        .target(
+        .executableTarget(
             name: "FINporterCLI",
-            dependencies: [
-                .product(name: "AllocData", package: "AllocData"),
+            dependencies: [ 
                 "FINporter",
-                .product(name: "SwiftCSV", package: "SwiftCSV"),
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
             ],
             path: "CLI"
         ),
         .testTarget(
             name: "FINporterTests",
             dependencies: [
-                .product(name: "AllocData", package: "AllocData"),
-                "FINporter",
-                .product(name: "SwiftCSV", package: "SwiftCSV"),
+                "FINporter"
             ],
             path: "Tests"
         ),

@@ -20,7 +20,7 @@ import Foundation
 import FINporter
 import AllocData
 
-extension AllocAttribute {
+public extension AllocAttribute {
     
     static func dumpTable(attributes: [AllocAttribute]) -> String {
     

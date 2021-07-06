@@ -25,6 +25,8 @@ import SwiftCSV
 
 extension Finporter {
     struct Transform: ParsableCommand {
+        init() {
+        }
         static var configuration = CommandConfiguration(
             commandName: "transform",
             abstract: "Transform data in file."
