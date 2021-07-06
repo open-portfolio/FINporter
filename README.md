@@ -18,7 +18,7 @@ For additional disclaiming, read the LICENSE, which is Apache 2.0.
 
 ## Supported Schema
 
-At present _FINporter_ supports the schema of the _OpenAlloc_ project, documented at [openalloc/AllocData](https://github.com/openalloc/AllocData/README.md). Applications which support those schemas can make use of _FINporter_'s importers to ingest the specialized formats it supports.
+At present _FINporter_ supports the schema of the _OpenAlloc_ project, documented at [openalloc/AllocData](https://github.com/openalloc/AllocData). Applications which support those schemas can make use of _FINporter_'s importers to ingest the specialized formats it supports.
 
 ## Supported Data
 
