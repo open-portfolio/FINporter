@@ -2,7 +2,7 @@
 
 An open source data transformation tool for financial data.
 
-Supports investing apps like FlowAllocator, a rebalancing tool for macOS.
+Supports investing apps like [FlowAllocator](https://flowallocator.app), a rebalancing tool for macOS.
 
 Available both as a command line executable and as a Swift library to be incorporated in other apps.
 
