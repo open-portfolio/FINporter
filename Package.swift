@@ -24,7 +24,7 @@ let package = Package(
         .executable(name: "finporter", targets: ["FINporterCLI"]),
     ],
     dependencies: [
-        .package(name: "AllocData", path: "../AllocData"),
+        .package(url: "https://github.com/openalloc/AllocData.git", from: "1.0.0"),
         .package(url: "https://github.com/reedes/SwiftCSV.git", .upToNextMajor(from: "0.6.1")),
         .package(url: "https://github.com/apple/swift-argument-parser.git", .upToNextMajor(from: "0.4.3")),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
@@ -33,7 +33,7 @@ let package = Package(
         .target(
             name: "FINporter",
             dependencies: [
-                "AllocData",
+                .product(name: "AllocData", package: "AllocData"),
                 .product(name: "SwiftCSV", package: "SwiftCSV"),
                 .product(name: "Logging", package: "swift-log")
             ],
@@ -42,7 +42,7 @@ let package = Package(
         .target(
             name: "FINporterCLI",
             dependencies: [
-                "AllocData",
+                .product(name: "AllocData", package: "AllocData"),
                 "FINporter",
                 .product(name: "SwiftCSV", package: "SwiftCSV"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
@@ -52,7 +52,7 @@ let package = Package(
         .testTarget(
             name: "FINporterTests",
             dependencies: [
-                "AllocData",
+                .product(name: "AllocData", package: "AllocData"),
                 "FINporter",
                 .product(name: "SwiftCSV", package: "SwiftCSV"),
             ],
