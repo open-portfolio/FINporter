@@ -18,9 +18,9 @@ For additional disclaiming, read the LICENSE, which is Apache 2.0.
 
 ## Supported Schema
 
-At present _FINporter_ supports the schema of the _OpenAlloc_ project, documented at [openalloc/AllocData](https://github.com/openalloc/AllocData). Applications which support those schemas can make use of _FINporter_'s importers to ingest the specialized formats it supports.
+At present _FINporter_ supports the schemas of the _OpenAlloc_ project, documented at [openalloc/AllocData](https://github.com/openalloc/AllocData). Applications which support those schemas can make use of _FINporter_'s importers to ingest the specialized formats it supports.
 
-## Supported Data
+## Supported Data Formats
 
 NOTE: support of a data format for a service is not an endorsement or recommendation of that service.
 
@@ -46,7 +46,9 @@ $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openallo
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/security
 ```
 
-Output schemas: openalloc/holding and openalloc/security
+Each command above will produce comma-separated value data in the following schemas, respectively.
+
+Output schemas: [openalloc/holding](https://github.com/openalloc/AllocData#mholding) and  [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
 
 ### Fido (Fidelity) Purchases
 
@@ -56,7 +58,9 @@ To transform the "Accounts_History.csv" export:
 $ finport transform Accounts_History.csv
 ```
 
-Output schema: openalloc/history
+The command above will produce comma-separated value data in the following schema.
+
+Output schema:  [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
 
 ### Fido (Fidelity) Sales
 
@@ -66,7 +70,9 @@ To transform the "Realized_Gain_Loss_Account_00000000.csv" export, available in 
 $ finport transform Realized_Gain_Loss_Account_00000000.csv
 ```
 
-Output schema: openalloc/history
+The command above will produce comma-separated value data in the following schema.
+
+Output schema: [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
 
 ### AllocSmart (Allocate Smartly) Export
 
@@ -76,7 +82,9 @@ To transform an export from this service:
 $ finport transform "Allocate Smartly Model Portfolio.csv"
 ```
 
-Output schema: openalloc/allocation
+The command above will produce comma-separated value data in the following schema.
+
+Output schema: [openalloc/allocation](https://github.com/openalloc/AllocData#mallocation)
 
 ## Command Line
 
