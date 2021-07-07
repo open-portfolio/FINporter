@@ -2,9 +2,9 @@
 
 A utility for transforming financial data.
 
-Supports investing apps like [FlowAllocator](https://flowallocator.app), a new rebalancing tool for macOS.
-
 Available both as a `finport` command line executable and as a Swift library to be incorporated in other apps.
+
+Used by investing apps like [FlowAllocator](https://flowallocator.app), a new rebalancing tool for macOS.
 
 ## Disclaimer
 
