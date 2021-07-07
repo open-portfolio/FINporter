@@ -25,7 +25,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "AllocData", url: "https://github.com/openalloc/AllocData.git", from: "1.0.0"),
-        .package(name: "SwiftCSV", url: "https://github.com/reedes/SwiftCSV.git", .upToNextMajor(from: "0.6.1")),
+        .package(name: "SwiftCSV", url: "https://github.com/openalloc/SwiftCSV.git", .upToNextMajor(from: "0.6.1")),
         .package(url: "https://github.com/apple/swift-argument-parser.git", .upToNextMajor(from: "0.4.3"))
     ],
     targets: [
