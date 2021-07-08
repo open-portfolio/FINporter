@@ -1,6 +1,6 @@
 //
 //  main+list.swift
-//  
+//
 // Copyright 2021 FlowAllocator LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,6 @@ import FINporter
 
 import AllocData
 import SwiftCSV
-
 
 extension Finporter {
     struct List: ParsableCommand {

@@ -21,8 +21,8 @@ import Foundation
 
 import Logging
 
-import SwiftCSV
 import AllocData
+import SwiftCSV
 
 public class Tabular: FINporter {
     override public var name: String { "Tabular" }
@@ -62,8 +62,7 @@ public class Tabular: FINporter {
                                             inputFormat: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
-                                            timestamp _: Date = Date()) throws -> [T.Row]
-    {
+                                            timestamp _: Date = Date()) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("Unable to parse data.")
         }

@@ -1,6 +1,6 @@
 //
 //  main+detect.swift
-//  
+//
 // Copyright 2021 FlowAllocator LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

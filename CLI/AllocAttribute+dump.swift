@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  AllocAttribute+dump.swift
+//
 // Copyright 2021 FlowAllocator LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,13 +17,11 @@
 
 import Foundation
 
-import FINporter
 import AllocData
+import FINporter
 
 public extension AllocAttribute {
-    
     static func dumpTable(attributes: [AllocAttribute]) -> String {
-    
         var header = [String]()
         header.append("Name")
         header.append("Type")
@@ -32,7 +30,7 @@ public extension AllocAttribute {
         header.append("Descript")
 
         var rows = [[String]]()
-        
+
         for attribute in attributes {
             var row = [String]()
             row.append(attribute.codingKey.stringValue)
@@ -42,24 +40,23 @@ public extension AllocAttribute {
             row.append(attribute.descript)
             rows.append(row)
         }
-        
+
         return toMarkdown(header: header, rows: rows)
     }
-    
+
     private static func toMarkdown(header: [String], rows: [[String]]) -> String {
-        
         var buffer = [String]()
-        
+
         buffer.append("| \(header.joined(separator: " | ")) |")
-        
-        let underHeader = header.map({ String(repeating: "-", count: $0.count) })
-        
+
+        let underHeader = header.map { String(repeating: "-", count: $0.count) }
+
         buffer.append("| \(underHeader.joined(separator: " | ")) |")
-        
+
         for row in rows {
             buffer.append("| \(row.joined(separator: " | ")) |")
         }
-        
+
         return buffer.joined(separator: "\n")
     }
 }

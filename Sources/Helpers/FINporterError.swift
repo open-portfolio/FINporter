@@ -49,11 +49,11 @@ public enum FINporterError: Error, Equatable, CustomStringConvertible {
         case let .targetSchemaNotSupported(supported):
             return String("Supported target schema: '\(supported.map(\.rawValue))'.")
         case let .multipleImportersMatch(importers):
-            return String("Multiple importers match. Need to disambiguate. Importers: [\(importers.map { $0.id }.joined(separator: ", "))]")
+            return String("Multiple importers match. Need to disambiguate. Importers: [\(importers.map(\.id).joined(separator: ", "))]")
         case let .multipleDetectedSchemasMatch(schemas):
-            return String("Multiple detected schemas match. Need to disambiguate. Schemas: [\(schemas.map { $0.rawValue }.joined(separator: ", "))]")
+            return String("Multiple detected schemas match. Need to disambiguate. Schemas: [\(schemas.map(\.rawValue).joined(separator: ", "))]")
         case let .multipleOutputSchemasMatch(schemas):
-            return String("Multiple output schemas match. Need to disambiguate. Schemas: [\(schemas.map { $0.rawValue }.joined(separator: ", "))]")
+            return String("Multiple output schemas match. Need to disambiguate. Schemas: [\(schemas.map(\.rawValue).joined(separator: ", "))]")
         case .sourceFormatNotRecognized:
             return String("Source format not recognized.")
         case let .importerNotRecognized(msg):

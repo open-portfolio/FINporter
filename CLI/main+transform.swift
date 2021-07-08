@@ -1,6 +1,6 @@
 //
 //  main+transform.swift
-//  
+//
 // Copyright 2021 FlowAllocator LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,8 +25,8 @@ import SwiftCSV
 
 extension Finporter {
     struct Transform: ParsableCommand {
-        init() {
-        }
+        init() {}
+
         static var configuration = CommandConfiguration(
             commandName: "transform",
             abstract: "Transform data in file."
@@ -40,7 +40,7 @@ extension Finporter {
         func run() {
             do {
                 let outputSchema_ = outputSchema != nil ? AllocSchema(rawValue: outputSchema!) : nil
-                
+
                 var rejectedRows: [AllocBase.Row] = []
                 let str = try handleTransform(inputFilePath: inputFilePath,
                                               rejectedRows: &rejectedRows,

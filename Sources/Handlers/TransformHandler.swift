@@ -23,10 +23,9 @@ import AllocData
 
 /// Used in CLI
 public func handleTransform(inputFilePath: String,
-                              rejectedRows: inout [AllocBase.Row],
-                              finPorterID: String? = nil,
-                              outputSchema: AllocSchema? = nil) throws -> String
-{
+                            rejectedRows: inout [AllocBase.Row],
+                            finPorterID: String? = nil,
+                            outputSchema: AllocSchema? = nil) throws -> String {
     let fileURL = URL(fileURLWithPath: inputFilePath)
     let data = try Data(contentsOf: fileURL)
 
@@ -52,28 +51,29 @@ public func handleTransform(inputFilePath: String,
     }
 }
 
-internal func getPair(data: Data, finPorterID: String? = nil, outputSchema: AllocSchema? = nil) throws -> (finPorter: FINporter, schema: AllocSchema) {
+internal func getPair(data: Data,
+                      finPorterID: String? = nil,
+                      outputSchema: AllocSchema? = nil) throws -> (finPorter: FINporter, schema: AllocSchema) {
     let FINprospector = FINprospector()
-    
+
     var importer: FINporter!
     var detectedSchemas = [AllocSchema]()
-    
+
     // if user explicitly specified an importer
-    if let finPorterID_ = finPorterID {
-        
-        importer = FINprospector.get(finPorterID_)
-        
+    if let fID = finPorterID {
+        importer = FINprospector.get(fID)
+
         guard importer != nil else {
-            throw FINporterError.importerNotRecognized(finPorterID_)
+            throw FINporterError.importerNotRecognized(fID)
         }
-        
+
         detectedSchemas = importer.outputSchemas
-        
+
     } else {
         // attempt to find an importer than can handle the input
         let detected: FINprospector.ProspectResult = try FINprospector.prospect(dataPrefix: data)
         let importers = detected.map(\.key)
-        
+
         switch importers.count {
         case 0:
             throw FINporterError.sourceFormatNotRecognized
@@ -81,19 +81,19 @@ internal func getPair(data: Data, finPorterID: String? = nil, outputSchema: Allo
             throw FINporterError.multipleImportersMatch(importers)
         default: break
         }
-        
+
         importer = importers.first!
         let detectResult = detected[importer] ?? [:]
         detectedSchemas = detectResult.map(\.key)
     }
-    
+
     // if user explicitly specified an output schema, ensure it's supported by the remaining importer
     if let schema = outputSchema {
         guard detectedSchemas.contains(schema)
         else { throw FINporterError.targetSchemaNotSupported(detectedSchemas) }
         return (importer, schema)
     }
-    
+
     switch importer.outputSchemas.count {
     case 0:
         throw FINporterError.targetSchemaNotSupported([])
@@ -101,7 +101,7 @@ internal func getPair(data: Data, finPorterID: String? = nil, outputSchema: Allo
         throw FINporterError.multipleOutputSchemasMatch(importer.outputSchemas)
     default: break
     }
-    
+
     return (importer, importer.outputSchemas.first!)
 }
 
@@ -110,9 +110,12 @@ internal func decodeAndExport<T: AllocBase>(_: T.Type,
                                             _ data: Data,
                                             _ rejectedRows: inout [T.Row],
                                             _ outputSchema: AllocSchema,
-                                            _ url: URL) throws -> String
-{
-    let finRows: [T.Row] = try finPorter.decode(T.self, data, rejectedRows: &rejectedRows, outputSchema: outputSchema, url: url)
+                                            _ url: URL) throws -> String {
+    let finRows: [T.Row] = try finPorter.decode(T.self,
+                                                data,
+                                                rejectedRows: &rejectedRows,
+                                                outputSchema: outputSchema,
+                                                url: url)
     let items: [T] = try finRows.map { try T(from: $0) }
     let data = try finPorter.export(elements: items, format: .CSV)
     return String(data: data, encoding: .utf8) ?? ""

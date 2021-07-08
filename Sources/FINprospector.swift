@@ -17,8 +17,8 @@
 
 import Foundation
 
-import SwiftCSV
 import AllocData
+import SwiftCSV
 
 public struct FINprospector {
     public typealias ProspectResult = [FINporter: FINporter.DetectResult]

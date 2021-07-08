@@ -1,6 +1,6 @@
 //
 //  main+schema.swift
-//  
+//
 // Copyright 2021 FlowAllocator LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,13 +39,12 @@ extension Finporter {
                 Holding.self,
                 Security.self,
                 Strategy.self,
-                Tracker.self,
+                Tracker.self
             ]
         )
         // defaultsubcommand: format.self)
     }
 }
-
 
 extension Finporter.Schema {
     struct Account: ParsableCommand {
@@ -135,7 +134,7 @@ extension Finporter.Schema {
             print(table)
         }
     }
-    
+
     struct Tracker: ParsableCommand {
         static var configuration = CommandConfiguration(
             commandName: "tracker",
@@ -146,7 +145,6 @@ extension Finporter.Schema {
             print(table)
         }
     }
-
 }
 
 extension Finporter.List {

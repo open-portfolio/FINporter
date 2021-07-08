@@ -58,7 +58,7 @@ class AllocSmart: FINporter {
         "Short-Term US Treasuries": "STGov",
         "TIPS": "TIPS",
         "Nasdaq 100": "Tech",
-        "US Total Market": "Total",
+        "US Total Market": "Total"
     ]
 
     override var name: String { "AssetValue Smart" }
@@ -93,8 +93,7 @@ class AllocSmart: FINporter {
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
-                                            timestamp _: Date = Date()) throws -> [T.Row]
-    {
+                                            timestamp _: Date = Date()) throws -> [T.Row] {
         guard var str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -142,7 +141,7 @@ class AllocSmart: FINporter {
                         MAllocation.CodingKeys.strategyID.rawValue: strategyID,
                         MAllocation.CodingKeys.assetID.rawValue: assetID,
                         MAllocation.CodingKeys.targetPct.rawValue: targetPct,
-                        MAllocation.CodingKeys.isLocked.rawValue: false,
+                        MAllocation.CodingKeys.isLocked.rawValue: false
                     ])
 
                     order += 1

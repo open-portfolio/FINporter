@@ -29,7 +29,9 @@ public func handleDetect(inputFilePath: String) throws -> [String] {
     let prospectResult = try prospector.prospect(sourceFormats: sourceFormats, dataPrefix: data)
     return prospectResult.reduce(into: []) { array, entry in
         let (_, detectResult) = entry
-        let detectedPairs: [(String, String)] = detectResult.map { ($0.key.rawValue, $0.value.map { $0.rawValue }.joined(separator: ",")) }
+        let detectedPairs: [(String, String)] = detectResult.map {
+            ($0.key.rawValue, $0.value.map(\.rawValue).joined(separator: ","))
+        }
         array.append(contentsOf: detectedPairs.map { "\($0.0): \($0.1)" })
     }
 }

@@ -28,7 +28,7 @@ func areEqual(_ left: Any, _ right: Any) -> Bool {
 }
 
 extension Array where Element: Any {
-    static func != (left: [Element], right: [Element]) -> Bool { return !(left == right) }
+    static func != (left: [Element], right: [Element]) -> Bool { !(left == right) }
     static func == (left: [Element], right: [Element]) -> Bool {
         if left.count != right.count { return false }
         var right = right
@@ -44,7 +44,7 @@ extension Array where Element: Any {
 }
 
 extension Dictionary where Value: Any {
-    static func != (left: [Key: Value], right: [Key: Value]) -> Bool { return !(left == right) }
+    static func != (left: [Key: Value], right: [Key: Value]) -> Bool { !(left == right) }
     static func == (left: [Key: Value], right: [Key: Value]) -> Bool {
         if left.count != right.count { return false }
         for element in left {

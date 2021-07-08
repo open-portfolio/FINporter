@@ -20,7 +20,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 import Foundation
 
 import SwiftCSV
@@ -55,8 +54,7 @@ class FidoSales: FINporter {
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
-                                            timestamp _: Date = Date()) throws -> [T.Row]
-    {
+                                            timestamp _: Date = Date()) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -65,8 +63,7 @@ class FidoSales: FINporter {
         let accountID: String? = {
             let csvRE = #"[A-Za-z0-9]+(?=\.)"#
             if let urlStr = url?.absoluteString,
-               let accountIDRange = urlStr.range(of: csvRE, options: .regularExpression)
-            {
+               let accountIDRange = urlStr.range(of: csvRE, options: .regularExpression) {
                 return String(urlStr[accountIDRange])
             }
             return nil
@@ -109,7 +106,7 @@ class FidoSales: FINporter {
                 MHistory.CodingKeys.sharePrice.rawValue: sharePrice,
                 MHistory.CodingKeys.realizedGainShort.rawValue: realizedShort,
                 MHistory.CodingKeys.realizedGainLong.rawValue: realizedLong,
-                MHistory.CodingKeys.transactedAt.rawValue: transactedAt,
+                MHistory.CodingKeys.transactedAt.rawValue: transactedAt
             ])
         }
 

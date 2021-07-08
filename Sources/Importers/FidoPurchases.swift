@@ -55,8 +55,7 @@ class FidoPurchases: FINporter {
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
-                                            timestamp _: Date = Date()) throws -> [T.Row]
-    {
+                                            timestamp _: Date = Date()) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -103,7 +102,7 @@ class FidoPurchases: FINporter {
                     MHistory.CodingKeys.sharePrice.rawValue: sharePrice,
                     MHistory.CodingKeys.realizedGainShort.rawValue: nil,
                     MHistory.CodingKeys.realizedGainLong.rawValue: nil,
-                    MHistory.CodingKeys.transactedAt.rawValue: transactedAt,
+                    MHistory.CodingKeys.transactedAt.rawValue: transactedAt
                 ])
 
                 transactionNo += 1

@@ -20,7 +20,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 import Foundation
 
 import SwiftCSV
@@ -59,8 +58,7 @@ class FidoPositions: FINporter {
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema: AllocSchema? = nil,
                                             url _: URL? = nil,
-                                            timestamp: Date = Date()) throws -> [T.Row]
-    {
+                                            timestamp: Date = Date()) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -122,7 +120,7 @@ class FidoPositions: FINporter {
             MHolding.CodingKeys.securityID.rawValue: securityID,
             MHolding.CodingKeys.lotID.rawValue: lotID,
             MHolding.CodingKeys.shareCount.rawValue: shareCount,
-            MHolding.CodingKeys.shareBasis.rawValue: shareBasis,
+            MHolding.CodingKeys.shareBasis.rawValue: shareBasis
         ]
     }
 
@@ -139,7 +137,7 @@ class FidoPositions: FINporter {
         return [
             MSecurity.CodingKeys.securityID.rawValue: securityID,
             MSecurity.CodingKeys.sharePrice.rawValue: sharePrice,
-            MSecurity.CodingKeys.updatedAt.rawValue: timestamp,
+            MSecurity.CodingKeys.updatedAt.rawValue: timestamp
         ]
     }
 }
