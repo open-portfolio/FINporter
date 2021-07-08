@@ -25,40 +25,40 @@ class AllocSmart: FINporter {
     // extract up to three different strategies from data
 
     // map to allocat names
-    private static let assetClassMap = [
-        "US Aggregate Bonds": "Bond",
-        "Cash": "Cash",
-        "Commodities": "Cmdty",
-        "US Corporate Bonds": "CorpBond",
-        "Emerging Market Equities": "EM",
-        "Emerging Market Bonds": "EMBond",
-        "Europe Equities": "Europe",
-        "Global Real Estate": "GlobRE",
-        "Gold": "Gold",
-        "High Yield Bonds": "HYBond",
-        "Int-Term US Treasuries": "ITGov",
-        "International Equities": "Intl",
-        "Intl Aggregate Bonds": "IntlBond",
-        "International Treasuries": "IntlGov",
-        "International Real Estate": "IntlRE",
-        "Intl Small Cap Equities": "IntlSC",
-        "International Value": "IntlVal",
-        "Japan Equities": "Japan",
-        "S&P 500": "LC",
-        "US Large Cap Growth": "LCGrow",
-        "US Large Cap Value": "LCVal",
-        "Long-Term US Treasuries": "LTGov",
-        "US Momentum": "Momentum",
-        "Pacific Equities": "Pacific",
-        "US Real Estate": "RE",
-        "US Mortgage REITs": "REMort",
-        "US Small Cap Equities": "SC",
-        "US Small Cap Growth": "SCGrow",
-        "US Small Cap Value": "SCVal",
-        "Short-Term US Treasuries": "STGov",
-        "TIPS": "TIPS",
-        "Nasdaq 100": "Tech",
-        "US Total Market": "Total"
+    private static let assetClassMap: [String: MAsset.StandardID] = [
+        "US Aggregate Bonds": .bond,
+        "Cash": .cash,
+        "Commodities": .cmdty,
+        "US Corporate Bonds": .corpbond,
+        "Emerging Market Equities": .em,
+        "Emerging Market Bonds": .embond,
+        "Europe Equities": .europe,
+        "Global Real Estate": .globre,
+        "Gold": .gold,
+        "High Yield Bonds": .hybond,
+        "Int-Term US Treasuries": .itgov,
+        "International Equities": .intl,
+        "Intl Aggregate Bonds": .intlbond,
+        "International Treasuries": .intlgov,
+        "International Real Estate": .intlre,
+        "Intl Small Cap Equities": .intlsc,
+        "International Value": .intlval,
+        "Japan Equities": .japan,
+        "S&P 500": .lc,
+        "US Large Cap Growth": .lcgrow,
+        "US Large Cap Value": .lcval,
+        "Long-Term US Treasuries": .ltgov,
+        "US Momentum": .momentum,
+        "Pacific Equities": .pacific,
+        "US Real Estate": .re,
+        "US Mortgage REITs": .remort,
+        "US Small Cap Equities": .sc,
+        "US Small Cap Growth": .scgrow,
+        "US Small Cap Value": .scval,
+        "Short-Term US Treasuries": .stgov,
+        "TIPS": .tips,
+        "Nasdaq 100": .tech,
+        "US Total Market": .total,
     ]
 
     override var name: String { "AssetValue Smart" }
@@ -121,13 +121,11 @@ class AllocSmart: FINporter {
                 let csvStr = block[csvRange]
                 let csv = try CSV(string: String(csvStr))
 
-                var order = 0
-
                 for row in csv.namedRows {
                     // required values
                     guard let rawDescript = T.parseString(row["Description"]),
                           rawDescript.count > 0,
-                          let assetID = AllocSmart.assetClassMap[rawDescript],
+                          let assetID = AllocSmart.assetClassMap[rawDescript]?.rawValue,
                           let targetPct = T.parsePercent(row["Optimal Allocation"]),
                           targetPct >= 0
                     else {
@@ -143,8 +141,6 @@ class AllocSmart: FINporter {
                         MAllocation.CodingKeys.targetPct.rawValue: targetPct,
                         MAllocation.CodingKeys.isLocked.rawValue: false
                     ])
-
-                    order += 1
                 }
             }
 
