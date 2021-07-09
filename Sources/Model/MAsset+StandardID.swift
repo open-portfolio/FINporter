@@ -20,7 +20,7 @@ import Foundation
 import AllocData
 
 public extension MAsset {
-    enum StandardID: String, CaseIterable, CustomStringConvertible {
+    enum StandardID: String, CaseIterable {
         case bond = "Bond"
         case cash = "Cash"
         case cmdty = "Cmdty"
@@ -43,6 +43,9 @@ public extension MAsset {
         case lcgrow = "LCGrow"
         case lcval = "LCVal"
         case ltgov = "LTGov"
+        case mc = "MC"
+        case mcgrow = "MCGrow"
+        case mcval = "MCVal"
         case momentum = "Momentum"
         case pacific = "Pacific"
         case re = "RE"
