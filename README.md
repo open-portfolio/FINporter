@@ -1,6 +1,6 @@
 # FINporter
 
-<img align="right" src="https://github.com/openalloc/FINporter/Images/logo.png" width="100" height="100"/>A utility for transforming financial data.
+<img align="right" src="https://github.com/openalloc/FINporter/blob/main/Images/logo.png" width="100" height="100"/>A utility for transforming financial data.
 
 Available both as a `finport` command line executable and as a Swift library to be incorporated in other apps.
 
