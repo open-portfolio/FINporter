@@ -29,7 +29,17 @@ public class Tabular: FINporter {
     override public var id: String { "tabular" }
     override public var description: String { "Detect and decode schema-supported tabular documents." }
     override public var sourceFormats: [AllocFormat] { [.CSV, .TSV] }
-    override public var outputSchemas: [AllocSchema] { AllocSchema.allCases }
+    override public var outputSchemas: [AllocSchema] {[
+        .allocAccount,
+        .allocAllocation,
+        .allocAsset,
+        .allocCap,
+        .allocHistory,
+        .allocHolding,
+        .allocSecurity,
+        .allocStrategy,
+        .allocTracker,
+    ]}
 
     override public func detect(dataPrefix: Data) throws -> DetectResult {
         guard let dataStr = String(data: dataPrefix, encoding: .utf8) else {
