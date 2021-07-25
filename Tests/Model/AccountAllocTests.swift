@@ -145,7 +145,8 @@ final class AccountAllocTests: XCTestCase {
                                       "title": "X",
                                       "isActive": true,
                                       "isTaxable": true,
-                                      "canTrade": true]
+                                      "canTrade": true,
+                                      "accountStrategyID": nil]
         XCTAssertEqual([expected], actual)
     }
 }
