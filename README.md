@@ -39,16 +39,20 @@ $ finport detect mystery.txt
 
 ### Fido (Fidelity) Positions
 
-To transform the "Portfolio_Positions_Mmm-dd-yyyy.csv" export requires two commands, as there are two outputs, account holdings and securities:
+To transform the "Portfolio_Positions_Mmm-dd-yyyy.csv" export requires three(3) commands, as there are three outputs: accounts, account holdings, and securities:
 
 ```bash
+$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/account
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/holding
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/security
 ```
 
 Each command above will produce comma-separated value data in the following schemas, respectively.
 
-Output schemas: [openalloc/holding](https://github.com/openalloc/AllocData#mholding) and  [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
+Output schemas: 
+* [openalloc/account](https://github.com/openalloc/AllocData#maccount)
+* [openalloc/holding](https://github.com/openalloc/AllocData#mholding)
+* [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
 
 ### Fido (Fidelity) Purchases
 
@@ -72,7 +76,8 @@ $ finport transform Realized_Gain_Loss_Account_00000000.csv
 
 The command above will produce comma-separated value data in the following schema.
 
-Output schema: [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
+Output schema: 
+* [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
 
 ### AllocSmart (Allocate Smartly) Export
 
@@ -84,7 +89,8 @@ $ finport transform "Allocate Smartly Model Portfolio.csv"
 
 The command above will produce comma-separated value data in the following schema.
 
-Output schema: [openalloc/allocation](https://github.com/openalloc/AllocData#mallocation)
+Output schema: 
+* [openalloc/allocation](https://github.com/openalloc/AllocData#mallocation)
 
 ## Command Line
 

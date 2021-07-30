@@ -61,7 +61,7 @@ class AllocSmart: FINporter {
         "US Total Market": .total,
     ]
 
-    override var name: String { "AssetValue Smart" }
+    override var name: String { "Alloc Smart" }
     override var id: String { "alloc_smart" }
     override var description: String { "Detect and decode export files from Allocate Smartly." }
     override var sourceFormats: [AllocFormat] { [.CSV] }

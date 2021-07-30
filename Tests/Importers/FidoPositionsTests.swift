@@ -34,14 +34,14 @@ final class FidoPositionsTests: XCTestCase {
     }
 
     func testTargetSchema() {
-        let expected: [AllocSchema] = [.allocHolding, .allocSecurity]
+        let expected: [AllocSchema] = [.allocAccount, .allocHolding, .allocSecurity]
         let actual = imp.outputSchemas
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectFailsDueToHeaderMismatch() throws {
         let badHeader = """
-        AXXount Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+        AXXount Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
         """
         let expected: FINporter.DetectResult = [:]
         let actual = try imp.detect(dataPrefix: badHeader.data(using: .utf8)!)
@@ -50,18 +50,18 @@ final class FidoPositionsTests: XCTestCase {
 
     func testDetectSucceeds() throws {
         let header = """
-        Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
         """
-        let expected: FINporter.DetectResult = [.allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
         let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectViaMain() throws {
         let header = """
-        Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
         """
-        let expected: FINporter.DetectResult = [.allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
         let main = FINprospector()
         let data = header.data(using: .utf8)!
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
@@ -74,22 +74,22 @@ final class FidoPositionsTests: XCTestCase {
 
     func testParse() throws {
         for str in [
-            "﻿Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today\'s Gain/Loss Dollar,Today\'s Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type\r\nZ00000000,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,\"$45,900.35\",+$150.25,+0.32%,\"+$11,945.20\",+31.10%,15.05%,\"$38,362.05\",$28.96,Cash,\r\nZ00000001,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,\"$45,900.35\",+$150.25,+0.32%,\"+$11,945.20\",+31.10%,15.05%,\"$38,362.05\",$18.96,Cash,\r\n\r\nXXX",
+            "﻿Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today\'s Gain/Loss Dollar,Today\'s Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type\r\nZ00000000,AAAA,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,\"$45,900.35\",+$150.25,+0.32%,\"+$11,945.20\",+31.10%,15.05%,\"$38,362.05\",$28.96,Cash,\r\nZ00000001,BBBB,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,\"$45,900.35\",+$150.25,+0.32%,\"+$11,945.20\",+31.10%,15.05%,\"$38,362.05\",$18.96,Cash,\r\n\r\nXXX",
 
             // testParseWithLFToFirstBlankLine
             """
-            Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-            Z00000000,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$28.96,Cash,
-            Z00000001,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$18.96,Cash,
+            Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+            Z00000000,AAAA,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$28.96,Cash,
+            Z00000001,BBBB,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$18.96,Cash,
 
             XXX
             """,
 
             // testParseWithLFToFirstBlankLine
             """
-            Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-            Z00000000,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$28.96,Cash,
-            Z00000001,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$18.96,Cash,
+            Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+            Z00000000,AAAA,VWO,VANGUARD INTL EQUITY INDEX FDS FTSE EMR MKT ETF,900,$50.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$28.96,Cash,
+            Z00000001,BBBB,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$18.96,Cash,
             """,
         ] {
             var rejectedRows = [MHolding.Row]()
@@ -114,8 +114,18 @@ final class FidoPositionsTests: XCTestCase {
             ]
 
             XCTAssertTrue(areEqual(expected2, actual2))
-            // XCTAssertEqual(expected2, actual2)
             XCTAssertEqual(0, rejectedRows.count)
+            
+            let actual3: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocAccount)
+
+            let expected3: [MHolding.Row] = [
+                ["accountID": "Z00000000", "title": "AAAA"],
+                ["accountID": "Z00000001", "title": "BBBB"],
+            ]
+
+            XCTAssertTrue(areEqual(expected3, actual3))
+            XCTAssertEqual(0, rejectedRows.count)
+
         }
     }
 }

@@ -31,13 +31,13 @@ class FidoPositions: FINporter {
     override var id: String { "fido_positions" }
     override var description: String { "Detect and decode position export files from Fidelity." }
     override var sourceFormats: [AllocFormat] { [.CSV] }
-    override var outputSchemas: [AllocSchema] { [.allocHolding, .allocSecurity] }
+    override var outputSchemas: [AllocSchema] { [.allocAccount, .allocHolding, .allocSecurity] }
 
     private let trimFromTicker = CharacterSet(charactersIn: "*")
 
     override func detect(dataPrefix: Data) throws -> DetectResult {
         let headerRE = #"""
-        Account Name/Number,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
         """#
 
         guard let str = String(data: dataPrefix, encoding: .utf8),
@@ -70,7 +70,7 @@ class FidoPositions: FINporter {
         var items = [T.Row]()
 
         // should match all lines, until a blank line or end of block/file
-        let csvRE = #"Account Name/Number,Symbol,Description,Quantity,(?:.+(\r?\n|\Z))+"#
+        let csvRE = #"Account Number,Account Name,Symbol,Description,Quantity,(?:.+(\r?\n|\Z))+"#
 
         if let csvRange = str.range(of: csvRE, options: .regularExpression) {
             let csvStr = str[csvRange]
@@ -79,6 +79,8 @@ class FidoPositions: FINporter {
                 var item: T.Row?
 
                 switch outputSchema_ {
+                case .allocAccount:
+                    item = account(row, rejectedRows: &rejectedRows)
                 case .allocHolding:
                     item = holding(row, rejectedRows: &rejectedRows)
                 case .allocSecurity:
@@ -98,7 +100,7 @@ class FidoPositions: FINporter {
 
     private func holding(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
         // required values
-        guard let accountID = MHolding.parseString(row["Account Name/Number"]),
+        guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
               let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
@@ -138,6 +140,21 @@ class FidoPositions: FINporter {
             MSecurity.CodingKeys.securityID.rawValue: securityID,
             MSecurity.CodingKeys.sharePrice.rawValue: sharePrice,
             MSecurity.CodingKeys.updatedAt.rawValue: timestamp
+        ]
+    }
+    
+    private func account(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
+        guard let accountID = MHolding.parseString(row["Account Number"]),
+              accountID.count > 0,
+              let title = MHolding.parseString(row["Account Name"])
+        else {
+            rejectedRows.append(row)
+            return nil
+        }
+
+        return [
+            MAccount.CodingKeys.accountID.rawValue: accountID,
+            MAccount.CodingKeys.title.rawValue: title
         ]
     }
 }
