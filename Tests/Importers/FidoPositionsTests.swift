@@ -128,4 +128,29 @@ final class FidoPositionsTests: XCTestCase {
 
         }
     }
+    
+    func testParseSourceMeta() throws {
+        
+        let str = """
+        Account Number,Account Name,...
+        XYZ,ABC,...
+        
+        "Date downloaded 07/30/2021 2:26 PM ET"
+            
+        "legalese down here"
+        """
+        
+        let timestamp = Date()
+        var rejectedRows = [MHolding.Row]()
+        let dataStr = str.data(using: .utf8)!
+        
+        let actual: [MSourceMeta.Row] = try imp.decode(MSourceMeta.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocMetaSource, url: URL(string: "http://blah.com"), timestamp: timestamp)
+        
+        XCTAssertEqual(1, actual.count)
+        XCTAssertNotNil(actual[0]["sourceMetaID"]!)
+        XCTAssertEqual(URL(string: "http://blah.com"), actual[0]["url"]!)
+        XCTAssertEqual("fido_positions", actual[0]["importerID"])
+        let exportedAt: Date? = actual[0]["exportedAt"] as? Date
+        XCTAssertEqual(Date(), exportedAt)
+    }
 }

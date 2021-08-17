@@ -31,7 +31,7 @@ class FidoPositions: FINporter {
     override var id: String { "fido_positions" }
     override var description: String { "Detect and decode position export files from Fidelity." }
     override var sourceFormats: [AllocFormat] { [.CSV] }
-    override var outputSchemas: [AllocSchema] { [.allocAccount, .allocHolding, .allocSecurity] }
+    override var outputSchemas: [AllocSchema] { [.allocMetaSource, .allocAccount, .allocHolding, .allocSecurity] }
 
     private let trimFromTicker = CharacterSet(charactersIn: "*")
 
@@ -57,7 +57,7 @@ class FidoPositions: FINporter {
                                             rejectedRows: inout [T.Row],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema: AllocSchema? = nil,
-                                            url _: URL? = nil,
+                                            url: URL? = nil,
                                             timestamp: Date = Date()) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")
@@ -68,29 +68,59 @@ class FidoPositions: FINporter {
         }
 
         var items = [T.Row]()
+        
+        if outputSchema_ == .allocMetaSource {
 
-        // should match all lines, until a blank line or end of block/file
-        let csvRE = #"Account Number,Account Name,Symbol,Description,Quantity,(?:.+(\r?\n|\Z))+"#
-
-        if let csvRange = str.range(of: csvRE, options: .regularExpression) {
-            let csvStr = str[csvRange]
-            let csv = try CSV(string: String(csvStr))
-            for row in csv.namedRows {
-                var item: T.Row?
-
-                switch outputSchema_ {
-                case .allocAccount:
-                    item = account(row, rejectedRows: &rejectedRows)
-                case .allocHolding:
-                    item = holding(row, rejectedRows: &rejectedRows)
-                case .allocSecurity:
-                    item = security(row, rejectedRows: &rejectedRows, timestamp: timestamp)
-                default:
-                    throw FINporterError.targetSchemaNotSupported(outputSchemas)
-                }
-
-                if let item_ = item {
-                    items.append(item_)
+            //TODO make this static?
+            let df = DateFormatter()
+            df.locale = Locale(identifier: "en_US")
+            // h: Hour [1-12]
+            // mm: minute (2 for zero padding)
+            // a: AM or PM
+            // v: Use one letter for short wall (generic) time (e.g., PT)
+            df.setLocalizedDateFormatFromTemplate("MM/dd/yyyy h:mm a v")
+            // add OTHER localized templates here (if needed)
+            
+            // look for "Date downloaded 07/30/2021 2:26 PM ET" (with quotes)
+            let dateDownloadedRE = #"\"Date downloaded (.+)\""#
+            var exportedAt: Date? = nil
+            if let dd = str.range(of: dateDownloadedRE, options: .regularExpression) {
+                exportedAt = df.date(from: String(str[dd]))
+            }
+            
+            let sourceMetaID = UUID().uuidString
+            
+            items.append([
+                MSourceMeta.CodingKeys.sourceMetaID.rawValue: sourceMetaID,
+                MSourceMeta.CodingKeys.url.rawValue: url,
+                MSourceMeta.CodingKeys.importerID.rawValue: self.id,
+                MSourceMeta.CodingKeys.exportedAt.rawValue: exportedAt,
+            ])
+            
+        } else {
+            // should match all lines, until a blank line or end of block/file
+            let csvRE = #"Account Number,Account Name,Symbol,Description,Quantity,(?:.+(\r?\n|\Z))+"#
+            
+            if let csvRange = str.range(of: csvRE, options: .regularExpression) {
+                let csvStr = str[csvRange]
+                let csv = try CSV(string: String(csvStr))
+                for row in csv.namedRows {
+                    var item: T.Row?
+                    
+                    switch outputSchema_ {
+                    case .allocAccount:
+                        item = account(row, rejectedRows: &rejectedRows)
+                    case .allocHolding:
+                        item = holding(row, rejectedRows: &rejectedRows)
+                    case .allocSecurity:
+                        item = security(row, rejectedRows: &rejectedRows, timestamp: timestamp)
+                    default:
+                        throw FINporterError.targetSchemaNotSupported(outputSchemas)
+                    }
+                    
+                    if let item_ = item {
+                        items.append(item_)
+                    }
                 }
             }
         }
