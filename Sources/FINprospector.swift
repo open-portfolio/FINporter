@@ -29,7 +29,7 @@ public struct FINprospector {
     public init() {
         // specialized
         importers.append(AllocSmart())
-        importers.append(FidoPurchases())
+        importers.append(FidoHistory())
         importers.append(FidoPositions())
         importers.append(FidoSales())
 

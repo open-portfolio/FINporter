@@ -54,9 +54,9 @@ Output schemas:
 * [openalloc/holding](https://github.com/openalloc/AllocData#mholding)
 * [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
 
-### Fido (Fidelity) Purchases
+### Fido (Fidelity) History
 
-To transform the "Accounts_History.csv" export:
+To transform the "Accounts_History.csv" export, which contains a record of recent sales, purchases, and other transactions:
 
 ```bash
 $ finport transform Accounts_History.csv

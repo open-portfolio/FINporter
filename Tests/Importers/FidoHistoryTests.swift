@@ -21,10 +21,10 @@ import XCTest
 import AllocData
 
 final class FidoHistoryTests: XCTestCase {
-    var imp: FidoPurchases!
+    var imp: FidoHistory!
 
     override func setUpWithError() throws {
-        imp = FidoPurchases()
+        imp = FidoHistory()
     }
 
     func testSourceFormats() {
@@ -82,7 +82,7 @@ final class FidoHistoryTests: XCTestCase {
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
         XCTAssertEqual(1, actual.count)
         _ = actual.map { key, value in
-            XCTAssertNotNil(key as? FidoPurchases)
+            XCTAssertNotNil(key as? FidoHistory)
             XCTAssertEqual(expected, value)
         }
     }

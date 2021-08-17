@@ -23,10 +23,10 @@ import SwiftCSV
 
 import AllocData
 
-class FidoPurchases: FINporter {
-    override var name: String { "Fido Purchases" }
-    override var id: String { "fido_purchases" }
-    override var description: String { "Detect and decode accounts history export files from Fidelity, for purchase info." }
+class FidoHistory: FINporter {
+    override var name: String { "Fido History" }
+    override var id: String { "fido_history" }
+    override var description: String { "Detect and decode accounts history export files from Fidelity, for sale and purchase info." }
     override var sourceFormats: [AllocFormat] { [.CSV] }
     override var outputSchemas: [AllocSchema] { [.allocHistory] }
 
@@ -81,7 +81,6 @@ class FidoPurchases: FINporter {
                       let securityID = T.parseString(row["Symbol"], trimCharacters: trimFromTicker),
                       securityID.count > 0,
                       let shareCount = T.parseDouble(row["Quantity"]),
-                      shareCount > 0, // only include purchases
                       let sharePrice = T.parseDouble(row["Price ($)"]),
                       let transactedAt = T.parseMMDDYYYY(row["Run Date"], separator: "/")
                 else {
