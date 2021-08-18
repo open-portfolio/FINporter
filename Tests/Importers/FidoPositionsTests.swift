@@ -22,6 +22,7 @@ import AllocData
 
 final class FidoPositionsTests: XCTestCase {
     var imp: FidoPositions!
+    let df = ISO8601DateFormatter()
 
     override func setUpWithError() throws {
         imp = FidoPositions()
@@ -133,7 +134,7 @@ final class FidoPositionsTests: XCTestCase {
         
         let str = """
         Account Number,Account Name,...
-        XYZ,ABC,...
+        "XYZ","ABC",...
         
         "Date downloaded 07/30/2021 2:26 PM ET"
             
@@ -144,13 +145,19 @@ final class FidoPositionsTests: XCTestCase {
         var rejectedRows = [MHolding.Row]()
         let dataStr = str.data(using: .utf8)!
         
-        let actual: [MSourceMeta.Row] = try imp.decode(MSourceMeta.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocMetaSource, url: URL(string: "http://blah.com"), timestamp: timestamp)
+        let actual: [MSourceMeta.Row] = try imp.decode(MSourceMeta.self,
+                                                       dataStr,
+                                                       rejectedRows: &rejectedRows,
+                                                       outputSchema: .allocMetaSource,
+                                                       url: URL(string: "http://blah.com"),
+                                                       timestamp: timestamp)
         
         XCTAssertEqual(1, actual.count)
         XCTAssertNotNil(actual[0]["sourceMetaID"]!)
         XCTAssertEqual(URL(string: "http://blah.com"), actual[0]["url"]!)
         XCTAssertEqual("fido_positions", actual[0]["importerID"])
         let exportedAt: Date? = actual[0]["exportedAt"] as? Date
-        XCTAssertEqual(Date(), exportedAt)
+        let expectedExportedAt = df.date(from: "2021-07-30T18:26:00+0000")!
+        XCTAssertEqual(expectedExportedAt, exportedAt)
     }
 }
