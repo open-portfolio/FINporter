@@ -145,8 +145,8 @@ final class HistoryAllocTests: XCTestCase {
 
     func testParseAccepted() throws {
         let csv = """
-        historyAccountID,historySecurityID,shareCount,sharePrice,transactedAt,willBeIgnored
-        1,X,1,1,2020-12-31,xxx
+        historyAccountID,historySecurityID,historyLotID,shareCount,sharePrice,transactedAt,willBeIgnored
+        1,X,,1,1,2020-12-31,xxx
         """
         let dataStr = csv.data(using: .utf8)!
         let actual: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
@@ -159,6 +159,7 @@ final class HistoryAllocTests: XCTestCase {
                                       "realizedGainLong": nil,
                                       "historyAccountID": "1",
                                       "historySecurityID": "X",
+                                      "historyLotID": nil,
                                       "shareCount": 1.0,
                                       "sharePrice": 1.0,
                                       "transactedAt": timestamp]

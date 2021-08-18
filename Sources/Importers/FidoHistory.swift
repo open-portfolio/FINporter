@@ -55,7 +55,7 @@ class FidoHistory: FINporter {
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
-                                            timestamp _: Date = Date()) throws -> [T.Row] {
+                                            timestamp _: Date? = nil) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")
         }

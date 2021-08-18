@@ -69,7 +69,7 @@ class FidoPositions: FINporter {
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
-                                            timestamp: Date = Date()) throws -> [T.Row] {
+                                            timestamp: Date? = nil) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -158,7 +158,7 @@ class FidoPositions: FINporter {
         ]
     }
 
-    private func security(_ row: [String: String], rejectedRows: inout [AllocBase.Row], timestamp: Date = Date()) -> AllocBase.Row? {
+    private func security(_ row: [String: String], rejectedRows: inout [AllocBase.Row], timestamp: Date?) -> AllocBase.Row? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               securityID != "Pending Activity",

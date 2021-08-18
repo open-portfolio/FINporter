@@ -35,7 +35,7 @@ final class FidoPositionsTests: XCTestCase {
     }
 
     func testTargetSchema() {
-        let expected: [AllocSchema] = [.allocAccount, .allocHolding, .allocSecurity]
+        let expected: [AllocSchema] = [.allocMetaSource, .allocAccount, .allocHolding, .allocSecurity]
         let actual = imp.outputSchemas
         XCTAssertEqual(expected, actual)
     }
@@ -53,7 +53,7 @@ final class FidoPositionsTests: XCTestCase {
         let header = """
         Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
         """
-        let expected: FINporter.DetectResult = [.allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
         let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
@@ -62,7 +62,7 @@ final class FidoPositionsTests: XCTestCase {
         let header = """
         Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
         """
-        let expected: FINporter.DetectResult = [.allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
         let main = FINprospector()
         let data = header.data(using: .utf8)!
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)

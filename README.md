@@ -39,13 +39,16 @@ $ finport detect mystery.txt
 
 ### Fido (Fidelity) Positions
 
-To transform the "Portfolio_Positions_Mmm-dd-yyyy.csv" export requires three(3) commands, as there are three outputs: accounts, account holdings, and securities:
+To transform the "Portfolio_Positions_Mmm-dd-yyyy.csv" export requires four separate commands, as there are four outputs: accounts, account holdings, securities, and 'source meta':
 
 ```bash
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/account
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/holding
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/security
+$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/meta/source
 ```
+
+The 'source meta' can extract the export date from the content, if present, as well as other details.
 
 Each command above will produce comma-separated value data in the following schemas, respectively.
 
@@ -53,6 +56,7 @@ Output schemas:
 * [openalloc/account](https://github.com/openalloc/AllocData#maccount)
 * [openalloc/holding](https://github.com/openalloc/AllocData#mholding)
 * [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
+* [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
 
 ### Fido (Fidelity) History
 
