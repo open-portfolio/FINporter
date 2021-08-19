@@ -130,6 +130,22 @@ final class FidoPositionsTests: XCTestCase {
         }
     }
     
+    /// cash holding may have "n/a" for share basis
+    func testHoldingCashShareBasisSetToLastPrice() throws {
+        var rejectedRows = [MHolding.Row]()
+        let rawRow: [String: String] = [
+            "Account Number": "1",
+            "Symbol": "SPAXX",
+            "Last Price": "1.00",
+            "Quantity": "1",
+            "Cost Basis Per Share": "n/a",
+        ]
+        
+        let actual = imp.holding(rawRow, rejectedRows: &rejectedRows)
+        XCTAssertNotNil(actual)
+        XCTAssertEqual(actual!["shareBasis"]!, 1.00)
+    }
+    
     func testParseSourceMeta() throws {
         
         let str = """

@@ -130,7 +130,7 @@ class FidoPositions: FINporter {
         return items
     }
 
-    private func holding(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
+    internal func holding(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
         // required values
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
@@ -144,7 +144,19 @@ class FidoPositions: FINporter {
         }
 
         // optional values
-        let shareBasis = MHolding.parseDouble(row["Cost Basis Per Share"])
+        
+        // cash holding may have "n/a" for share basis
+        var shareBasis: Double? = nil
+        shareBasis = MHolding.parseDouble(row["Cost Basis Per Share"])
+        if (shareBasis == nil || shareBasis == 0),
+            row["Cost Basis Per Share"] == "n/a" {
+            if let sharePrice = MHolding.parseDouble(row["Last Price"]),
+               sharePrice == 1.0 {
+                
+                // assume it's cash, where the share basis is the same as last price
+                shareBasis = 1.0
+            }
+        }
 
         // because it appears that lots are averaged, assume only one per securityID
         let lotID = AllocNilKey
@@ -158,7 +170,7 @@ class FidoPositions: FINporter {
         ]
     }
 
-    private func security(_ row: [String: String], rejectedRows: inout [AllocBase.Row], timestamp: Date?) -> AllocBase.Row? {
+    internal func security(_ row: [String: String], rejectedRows: inout [AllocBase.Row], timestamp: Date?) -> AllocBase.Row? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               securityID != "Pending Activity",
@@ -175,7 +187,7 @@ class FidoPositions: FINporter {
         ]
     }
     
-    private func account(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
+    internal func account(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
               let title = MHolding.parseString(row["Account Name"])
