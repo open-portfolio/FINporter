@@ -145,16 +145,22 @@ class FidoPositions: FINporter {
 
         // optional values
         
-        // cash holding may have "n/a" for share basis
+        // holding may have "n/a" for share basis
         var shareBasis: Double? = nil
         shareBasis = MHolding.parseDouble(row["Cost Basis Per Share"])
         if (shareBasis == nil || shareBasis == 0),
             row["Cost Basis Per Share"] == "n/a" {
+            
             if let sharePrice = MHolding.parseDouble(row["Last Price"]),
                sharePrice == 1.0 {
                 
-                // assume it's cash, where the share basis is the same as last price
+                // assume it's cash, where the share basis is 1.00
                 shareBasis = 1.0
+            } else if let costBasis = MHolding.parseDouble(row["Cost Basis"]),
+                      costBasis > 0 {
+                
+                // reconstruct the shareBasis
+                shareBasis = costBasis / shareCount
             }
         }
 

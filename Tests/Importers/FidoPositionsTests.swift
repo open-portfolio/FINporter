@@ -146,6 +146,22 @@ final class FidoPositionsTests: XCTestCase {
         XCTAssertEqual(actual!["shareBasis"]!, 1.00)
     }
     
+    func testHoldingShareBasisMissing() throws {
+        var rejectedRows = [MHolding.Row]()
+        let rawRow: [String: String] = [
+            "Account Number": "1",
+            "Symbol": "ABCXY",
+            "Last Price": "$16.5587",
+            "Quantity": "3333.821",
+            "Cost Basis Per Share": "n/a",
+            "Cost Basis": "$48323.69",
+        ]
+        
+        let actual = imp.holding(rawRow, rejectedRows: &rejectedRows)
+        XCTAssertNotNil(actual)
+        XCTAssertEqual(actual?["shareBasis"] as! Double, 14.49, accuracy: 0.01)
+    }
+    
     func testParseSourceMeta() throws {
         
         let str = """
