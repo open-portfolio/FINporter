@@ -152,7 +152,7 @@ final class HistoryAllocTests: XCTestCase {
         let actual: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
 
-        let timestamp = MHistory.parseYYYYMMDD("2020-12-31")!
+        let timestamp = MHistory.parseDate("2020-12-31T00:00:00Z")!
 
         let expected: MHistory.Row = ["transactionID": nil,
                                       "realizedGainShort": nil,
