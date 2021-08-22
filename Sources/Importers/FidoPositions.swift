@@ -35,17 +35,6 @@ class FidoPositions: FINporter {
 
     private let trimFromTicker = CharacterSet(charactersIn: "*")
 
-    // for parsing dates in format: "07/30/2021 2:26 PM ET"
-    static let exportDateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        // h: Hour [1-12]
-        // mm: minute (2 for zero padding)
-        // a: AM or PM
-        // v: Use one letter for short wall (generic) time (e.g., PT)
-        df.dateFormat = "MM/dd/yyyy h:mm a v"
-        return df
-    }()
-    
     override func detect(dataPrefix: Data) throws -> DetectResult {
         let headerRE = #"""
         Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
@@ -87,7 +76,7 @@ class FidoPositions: FINporter {
             // extract exportedAt from "Date downloaded 07/30/2021 2:26 PM ET" (with quotes)
             let ddRE = #"(?<=\"Date downloaded ).+(?=\")"#
             if let dd = str.range(of: ddRE, options: .regularExpression) {
-                exportedAt = FidoPositions.exportDateFormatter.date(from: String(str[dd]))
+                exportedAt = fidoDateFormatter.date(from: String(str[dd]))
             }
             
             let sourceMetaID = UUID().uuidString

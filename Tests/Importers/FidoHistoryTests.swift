@@ -104,7 +104,7 @@ final class FidoHistoryTests: XCTestCase {
         let dataStr = str.data(using: .utf8)!
         let actual: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows)
 
-        let YYYYMMDDts = MHistory.parseYYYYMMDD("2021-03-01")
+        let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021")
         let expected: MHistory.Row = [
             "transactionID": "1",
             "historyAccountID": "X00000000",

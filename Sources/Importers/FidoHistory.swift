@@ -82,7 +82,8 @@ class FidoHistory: FINporter {
                       securityID.count > 0,
                       let shareCount = T.parseDouble(row["Quantity"]),
                       let sharePrice = T.parseDouble(row["Price ($)"]),
-                      let transactedAt = T.parseMMDDYYYY(row["Run Date"], separator: "/")
+                      let runDate = row["Run Date"],
+                      let transactedAt = parseFidoMMDDYYYY(runDate)
                 else {
                     rejectedRows.append(row)
                     continue

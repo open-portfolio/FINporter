@@ -80,8 +80,8 @@ class FidoSales: FINporter {
                   symbol.count > 0,
                   let shareCount = T.parseDouble(row["Quantity"]),
                   let proceeds = T.parseDouble(row["Proceeds"]),
-                  // let costBasis = parseDouble(row["Cost Basis"]),
-                  let transactedAt = T.parseMMDDYYYY(row["Date Sold"], separator: "/")
+                  let dateSold = row["Date Sold"],
+                  let transactedAt = parseFidoMMDDYYYY(dateSold)
             else {
                 rejectedRows.append(row)
                 continue
