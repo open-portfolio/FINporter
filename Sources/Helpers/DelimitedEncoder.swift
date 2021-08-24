@@ -27,6 +27,8 @@ public class DelimitedEncoder: Encoder {
 
     private var data = Data()
 
+    private static let isoDateFormatter = ISO8601DateFormatter()
+    
     public init(delimiter: String = ",",
                 lineSeparator: String = "\n")
     {
@@ -124,13 +126,9 @@ public class DelimitedEncoder: Encoder {
                 encoder.write(encoder.delimiter)
             }
 
-            // NOTE: primitive formatter used because WASM builds don't support DateFormatter yet
-
             let value_: String = {
-                if let date = value as? Date,
-                   let dateStr = Date.formatYYYYMMDD(date) // not supporting times (yet)
-                {
-                    return dateStr
+                if let date = value as? Date {
+                    return DelimitedEncoder.isoDateFormatter.string(from: date)
                 } else if let value_ = value as? CustomStringConvertible {
                     let rawValue = value_.description
                     let hasDelim = rawValue.contains(encoder.delimiter)
