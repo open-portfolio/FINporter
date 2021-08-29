@@ -106,7 +106,7 @@ final class FidoHistoryTests: XCTestCase {
 
         let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021")
         let expected: MHistory.Row = [
-            "transactionID": "1",
+            "transactionID": "H2021030100001",
             "historyAccountID": "X00000000",
             "historySecurityID": "VV",
             "shareCount": 0.999,

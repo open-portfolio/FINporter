@@ -75,6 +75,8 @@ class FidoSales: FINporter {
 
         let csv = try CSV(string: str)
 
+        var transactionNo = 1
+        
         for row in csv.namedRows {
             // required values
             guard let symbolCusip = T.parseString(row["Symbol(CUSIP)"]),
@@ -93,15 +95,16 @@ class FidoSales: FINporter {
             let sharePrice = (shareCount != 0) ? (proceeds / shareCount) : nil
 
             // optional values
-            let transactionID = String(abs(row.hashValue % 100_000_000))
             let realizedShort = T.parseDouble(row["Short Term Gain/Loss"])
             let realizedLong = T.parseDouble(row["Long Term Gain/Loss"])
 
             let securityID = String(symbol)
             let shareCount_ = -1 * shareCount // negative because it's a sale (reduction in shares)
 
+            let formattedTxnID = generateTransactionID(prefix: "S", transactionDate: transactedAt, transactionNo: transactionNo)
+            
             items.append([
-                MHistory.CodingKeys.transactionID.rawValue: transactionID,
+                MHistory.CodingKeys.transactionID.rawValue: formattedTxnID,
                 MHistory.CodingKeys.accountID.rawValue: accountID,
                 MHistory.CodingKeys.securityID.rawValue: securityID,
                 MHistory.CodingKeys.shareCount.rawValue: shareCount_,
@@ -110,6 +113,8 @@ class FidoSales: FINporter {
                 MHistory.CodingKeys.realizedGainLong.rawValue: realizedLong,
                 MHistory.CodingKeys.transactedAt.rawValue: transactedAt
             ])
+            
+            transactionNo += 1
         }
 
         return items

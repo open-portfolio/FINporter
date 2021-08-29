@@ -96,8 +96,10 @@ class FidoHistory: FINporter {
                 // unfortunately, no realized gain/loss info available in this export
                 // see the fido_sales report for that
 
+                let formattedTxnID = generateTransactionID(prefix: "H", transactionDate: transactedAt, transactionNo: transactionNo)
+                
                 items.append([
-                    MHistory.CodingKeys.transactionID.rawValue: String(transactionNo),
+                    MHistory.CodingKeys.transactionID.rawValue: formattedTxnID,
                     MHistory.CodingKeys.accountID.rawValue: accountID,
                     MHistory.CodingKeys.securityID.rawValue: securityID,
                     MHistory.CodingKeys.shareCount.rawValue: shareCount,
