@@ -55,6 +55,8 @@ class FidoHistory: FINporter {
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
+                                            defTimeOfDay: String? = nil,
+                                            defTimeZone: String? = nil,
                                             timestamp _: Date? = nil) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")
@@ -83,7 +85,7 @@ class FidoHistory: FINporter {
                       let shareCount = T.parseDouble(row["Quantity"]),
                       let sharePrice = T.parseDouble(row["Price ($)"]),
                       let runDate = row["Run Date"],
-                      let transactedAt = parseFidoMMDDYYYY(runDate)
+                      let transactedAt = parseFidoMMDDYYYY(runDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
                 else {
                     rejectedRows.append(row)
                     continue

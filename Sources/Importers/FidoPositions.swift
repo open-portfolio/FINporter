@@ -58,6 +58,8 @@ class FidoPositions: FINporter {
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
+                                            defTimeOfDay _: String? = nil,
+                                            defTimeZone _: String? = nil,
                                             timestamp: Date? = nil) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("unable to parse data")

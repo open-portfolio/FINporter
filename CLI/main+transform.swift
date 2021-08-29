@@ -33,10 +33,14 @@ extension Finporter {
         )
         @Argument(help: "input file")
         var inputFilePath: String
-        @Option(help: "importer")
+        @Option(help: "importer (e.g. \"fido_history\")")
         var importer: String?
-        @Option(help: "output-schema")
+        @Option(help: "the target schema (e.g. \"openalloc/history\")")
         var outputSchema: String?
+        @Option(help: "default time of day, in 24 hour format, for naked dates (e.g. \"13:00\")")
+        var defTimeOfDay: String?
+        @Option(help: "default time zone, for naked dates (e.g. \"EST\" or \"-05:00\")")
+        var defTimeZone: String?
         func run() {
             do {
                 let outputSchema_ = outputSchema != nil ? AllocSchema(rawValue: outputSchema!) : nil
@@ -45,7 +49,9 @@ extension Finporter {
                 let str = try handleTransform(inputFilePath: inputFilePath,
                                               rejectedRows: &rejectedRows,
                                               finPorterID: importer,
-                                              outputSchema: outputSchema_)
+                                              outputSchema: outputSchema_,
+                                              defTimeOfDay: defTimeOfDay,
+                                              defTimeZone: defTimeZone)
                 print(str)
             } catch let CSVParseError.generic(message) {
                 fputs("CSV generic: \(message)", stderr)

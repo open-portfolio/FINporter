@@ -25,7 +25,9 @@ import AllocData
 public func handleTransform(inputFilePath: String,
                             rejectedRows: inout [AllocBase.Row],
                             finPorterID: String? = nil,
-                            outputSchema: AllocSchema? = nil) throws -> String {
+                            outputSchema: AllocSchema? = nil,
+                            defTimeOfDay: String? = nil,
+                            defTimeZone: String? = nil) throws -> String {
     let fileURL = URL(fileURLWithPath: inputFilePath)
     let data = try Data(contentsOf: fileURL)
 
@@ -33,19 +35,19 @@ public func handleTransform(inputFilePath: String,
 
     switch pair.schema {
     case .allocAccount:
-        return try decodeAndExport(MAccount.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MAccount.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocAllocation:
-        return try decodeAndExport(MAllocation.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MAllocation.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocAsset:
-        return try decodeAndExport(MAsset.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MAsset.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocHolding:
-        return try decodeAndExport(MHolding.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MHolding.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocSecurity:
-        return try decodeAndExport(MSecurity.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MSecurity.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocStrategy:
-        return try decodeAndExport(MStrategy.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MStrategy.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocHistory:
-        return try decodeAndExport(MHistory.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MHistory.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     default:
         throw FINporterError.notImplementedError
     }
@@ -110,12 +112,16 @@ internal func decodeAndExport<T: AllocBase>(_: T.Type,
                                             _ data: Data,
                                             _ rejectedRows: inout [T.Row],
                                             _ outputSchema: AllocSchema,
-                                            _ url: URL) throws -> String {
+                                            _ url: URL,
+                                            _ defTimeOfDay: String?,
+                                            _ defTimeZone: String?) throws -> String {
     let finRows: [T.Row] = try finPorter.decode(T.self,
                                                 data,
                                                 rejectedRows: &rejectedRows,
                                                 outputSchema: outputSchema,
-                                                url: url)
+                                                url: url,
+                                                defTimeOfDay: defTimeOfDay,
+                                                defTimeZone: defTimeZone)
     let items: [T] = try finRows.map { try T(from: $0) }
     let data = try finPorter.export(elements: items, format: .CSV)
     return String(data: data, encoding: .utf8) ?? ""

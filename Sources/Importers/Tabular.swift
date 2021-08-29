@@ -70,6 +70,8 @@ public class Tabular: FINporter {
                                             inputFormat: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
+                                            defTimeOfDay _: String? = nil,
+                                            defTimeZone _: String? = nil,
                                             timestamp _: Date? = nil) throws -> [T.Row] {
         guard let str = String(data: data, encoding: .utf8) else {
             throw FINporterError.decodingError("Unable to parse data.")
