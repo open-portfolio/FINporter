@@ -24,6 +24,10 @@ final class FidoPositionsTests: XCTestCase {
     var imp: FidoPositions!
     let df = ISO8601DateFormatter()
 
+    let goodHeader = """
+    Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+    """
+
     override func setUpWithError() throws {
         imp = FidoPositions()
     }
@@ -41,30 +45,22 @@ final class FidoPositionsTests: XCTestCase {
     }
 
     func testDetectFailsDueToHeaderMismatch() throws {
-        let badHeader = """
-        AXXount Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-        """
+        let badHeader = goodHeader.replacingOccurrences(of: "Symbol", with: "Symbal")
         let expected: FINporter.DetectResult = [:]
         let actual = try imp.detect(dataPrefix: badHeader.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectSucceeds() throws {
-        let header = """
-        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-        """
         let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
-        let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
+        let actual = try imp.detect(dataPrefix: goodHeader.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectViaMain() throws {
-        let header = """
-        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-        """
         let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
         let main = FINprospector()
-        let data = header.data(using: .utf8)!
+        let data = goodHeader.data(using: .utf8)!
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
         XCTAssertEqual(1, actual.count)
         _ = actual.map { key, value in

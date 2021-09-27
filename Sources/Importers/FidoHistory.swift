@@ -3,6 +3,8 @@
 //
 //  Input: for use with Accounts_History.csv from Fidelity Brokerage Services
 //
+//  Output: supports openalloc/history schema
+//
 // Copyright 2021 FlowAllocator LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,19 +28,22 @@ import AllocData
 class FidoHistory: FINporter {
     override var name: String { "Fido History" }
     override var id: String { "fido_history" }
-    override var description: String { "Detect and decode accounts history export files from Fidelity, for sale and purchase info." }
+    override var description: String { "Detect and decode account history export files from Fidelity, for sale and purchase info." }
     override var sourceFormats: [AllocFormat] { [.CSV] }
     override var outputSchemas: [AllocSchema] { [.allocHistory] }
 
+    internal static let headerRE = #"""
+    Brokerage
+
+    Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price \(\$\),Commission \(\$\),Fees \(\$\),Accrued Interest \(\$\),Amount \(\$\),Settlement Date
+    """#
+    
+    // should match all lines, until a blank line or end of block/file
+    internal static let csvRE = #"Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,(?:.+(\r?\n|\Z))+"#
+
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        let headerRE = #"""
-        Brokerage
-
-        Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price \(\$\),Commission \(\$\),Fees \(\$\),Accrued Interest \(\$\),Amount \(\$\),Settlement Date
-        """#
-
         guard let str = String(data: dataPrefix, encoding: .utf8),
-              str.range(of: headerRE,
+              str.range(of: FidoHistory.headerRE,
                         options: .regularExpression) != nil
         else {
             return [:]
@@ -64,10 +69,7 @@ class FidoHistory: FINporter {
 
         var items = [T.Row]()
 
-        // should match all lines, until a blank line or end of block/file
-        let csvRE = #"Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,(?:.+(\r?\n|\Z))+"#
-
-        if let csvRange = str.range(of: csvRE, options: .regularExpression) {
+        if let csvRange = str.range(of: FidoHistory.csvRE, options: .regularExpression) {
             let csvStr = String(str[csvRange])
             let csv = try CSV(string: csvStr)
 

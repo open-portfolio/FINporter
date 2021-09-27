@@ -33,11 +33,14 @@ class FidoSales: FINporter {
     override var sourceFormats: [AllocFormat] { [.CSV] }
     override var outputSchemas: [AllocSchema] { [.allocHistory] }
 
+    internal static let headerRE = #"Symbol\(CUSIP\),Security Description,Quantity,Date Acquired,Date Sold,Proceeds,Cost Basis,Short Term Gain/Loss,Long Term Gain/Loss"#
+
+    internal static let csvRE = #"[A-Za-z0-9]+(?=\.)"#
+
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        let headerRE = #"Symbol\(CUSIP\),Security Description,Quantity,Date Acquired,Date Sold,Proceeds,Cost Basis,Short Term Gain/Loss,Long Term Gain/Loss"#
 
         guard let str = String(data: dataPrefix, encoding: .utf8),
-              str.range(of: headerRE,
+              str.range(of: FidoSales.headerRE,
                         options: .regularExpression) != nil
         else {
             return [:]
@@ -63,9 +66,8 @@ class FidoSales: FINporter {
 
         // Extract X12345678 from "...Realized_Gain_Loss_Account_X12345678.csv"
         let accountID: String? = {
-            let csvRE = #"[A-Za-z0-9]+(?=\.)"#
             if let urlStr = url?.absoluteString,
-               let accountIDRange = urlStr.range(of: csvRE, options: .regularExpression) {
+               let accountIDRange = urlStr.range(of: FidoSales.csvRE, options: .regularExpression) {
                 return String(urlStr[accountIDRange])
             }
             return nil

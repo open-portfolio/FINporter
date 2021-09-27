@@ -4,7 +4,7 @@
 //
 //  Input: for use with Portfolio_Positions_Mmm-DD-YYYY.csv from Fidelity Brokerage Services
 //
-//  Output: supports openalloc/holding and openalloc/security schemas
+//  Output: supports openalloc/holding, /security, /account, and /meta schemas
 //
 // Copyright 2021 FlowAllocator LLC
 //
@@ -35,13 +35,16 @@ class FidoPositions: FINporter {
 
     private let trimFromTicker = CharacterSet(charactersIn: "*")
 
-    override func detect(dataPrefix: Data) throws -> DetectResult {
-        let headerRE = #"""
-        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-        """#
+    internal static let headerRE = #"""
+    Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+    """#
 
+    // should match all lines, until a blank line or end of block/file
+    internal static let csvRE = #"Account Number,Account Name,Symbol,Description,Quantity,(?:.+(\r?\n|\Z))+"#
+    
+    override func detect(dataPrefix: Data) throws -> DetectResult {
         guard let str = String(data: dataPrefix, encoding: .utf8),
-              str.range(of: headerRE,
+              str.range(of: FidoPositions.headerRE,
                         options: .regularExpression) != nil
         else {
             return [:]
@@ -91,10 +94,7 @@ class FidoPositions: FINporter {
             ])
             
         } else {
-            // should match all lines, until a blank line or end of block/file
-            let csvRE = #"Account Number,Account Name,Symbol,Description,Quantity,(?:.+(\r?\n|\Z))+"#
-            
-            if let csvRange = str.range(of: csvRE, options: .regularExpression) {
+            if let csvRange = str.range(of: FidoPositions.csvRE, options: .regularExpression) {
                 let csvStr = str[csvRange]
                 let csv = try CSV(string: String(csvStr))
                 for row in csv.namedRows {
@@ -128,7 +128,8 @@ class FidoPositions: FINporter {
               let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               securityID != "Pending Activity",
-              let shareCount = MHolding.parseDouble(row["Quantity"])
+              let shareCount = MHolding.parseDouble(row["Quantity"]),
+              shareCount != 0
         else {
             rejectedRows.append(row)
             return nil

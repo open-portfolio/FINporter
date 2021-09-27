@@ -67,16 +67,25 @@ class AllocSmart: FINporter {
     override var sourceFormats: [AllocFormat] { [.CSV] }
     override var outputSchemas: [AllocSchema] { [.allocAllocation] }
 
+    internal static let headerRE = #"""
+    AllocateSmart.*
+    Model Portfolio.*
+    Export time:.*
+
+    """#
+
+    internal static let blockRE = #"""
+    .+
+    Account Size, \d+.*
+    Asset,Description,.+
+    (?:.+[\n\r])+
+    """#
+    
+    internal static let csvRE = #"Asset,Description,(?:.+(\r?\n|\Z))+"#
+
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        let headerRE = #"""
-        AllocateSmart.*
-        Model Portfolio.*
-        Export time:.*
-
-        """#
-
         guard let str = String(data: dataPrefix, encoding: .utf8),
-              str.range(of: headerRE,
+              str.range(of: AllocSmart.headerRE,
                         options: .regularExpression) != nil
         else {
             return [:]
@@ -102,24 +111,15 @@ class AllocSmart: FINporter {
 
         var items = [T.Row]()
 
-        let blockRE = #"""
-        .+
-        Account Size, \d+.*
-        Asset,Description,.+
-        (?:.+[\n\r])+
-        """#
-
         // returns first match to RE as Range<String.Index (nil if none)
-        while let range = str.range(of: blockRE, options: .regularExpression) {
+        while let range = str.range(of: AllocSmart.blockRE, options: .regularExpression) {
             let block = str[range]
 
             // first line is the title
             let titleRange = block.lineRange(for: ..<block.startIndex)
             let strategyID = block[titleRange].trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let csvRE = #"Asset,Description,(?:.+(\r?\n|\Z))+"#
-
-            if let csvRange = block.range(of: csvRE, options: .regularExpression) {
+            if let csvRange = block.range(of: AllocSmart.csvRE, options: .regularExpression) {
                 let csvStr = block[csvRange]
                 let csv = try CSV(string: String(csvStr))
 

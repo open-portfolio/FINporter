@@ -83,6 +83,47 @@ The command above will produce comma-separated value data in the following schem
 Output schema: 
 * [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
 
+### Chuck (Schwab) Positions **BETA**
+
+_This is an early release, and probably has bugs._
+
+To transform the "All-Accounts-Positions-YYYY-MM-DD-000000.CSV" export requires four separate commands, as there are four outputs: accounts, account holdings, securities, and 'source meta':
+
+```bash
+$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/account
+$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/holding
+$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/security
+$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/meta/source
+```
+
+Each command above will produce comma-separated value data in the following schemas, respectively.
+
+NOTE: "Cash & Cash Investments" holdings will be assigned a SecurityID of "CASH".
+
+The 'source meta' can extract the export date from the content, if present, as well as other details.
+
+Output schemas: 
+* [openalloc/account](https://github.com/openalloc/AllocData#maccount)
+* [openalloc/holding](https://github.com/openalloc/AllocData#mholding)
+* [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
+* [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
+
+### Chuck (Schwab) History **BETA**
+
+_This is an early release, and probably has bugs._
+
+To transform the "XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV" export, which contains a record of recent sales, purchases, and other transactions:
+
+```bash
+$ finport transform XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV
+```
+
+The command above will produce comma-separated value data in the following schema.
+
+NOTE: Schwab's history export does not contain realized gains and losses of sales, and so they are not in the imported transaction history.
+
+Output schema:  [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
+
 ### AllocSmart (Allocate Smartly) Export
 
 To transform an export from this service:
