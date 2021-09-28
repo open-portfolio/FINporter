@@ -110,8 +110,9 @@ final class FidoHistoryTests: XCTestCase {
             "txnAccountID": "X00000000",
             "txnSecurityID": "VV",
             "txnLotID": "",
-            "shareCount": 0.999,
-            "sharePrice": 180.95,
+            "txnShareCount": 0.999,
+            "txnSharePrice": 180.95,
+            "txnID": "",
         ]
 
         XCTAssertTrue(areEqual(expected, actual.first!))

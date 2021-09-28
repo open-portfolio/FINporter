@@ -62,7 +62,7 @@ final class TxnAllocTests: XCTestCase {
     
     func testDetectSucceeds() throws {
         let header = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID
         """
         let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
@@ -71,7 +71,7 @@ final class TxnAllocTests: XCTestCase {
     
     func testDetectSucceedsWithoutOptionals() throws {
         let header = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID
         """
         let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
@@ -80,7 +80,7 @@ final class TxnAllocTests: XCTestCase {
     
     func testDetectViaMain() throws {
         let header = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount,transactedAt
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID
         """
         let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let main = FINprospector()
@@ -95,8 +95,8 @@ final class TxnAllocTests: XCTestCase {
     
     func testParseNoRejectBadAccountNumber() throws {
         let csv = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
-        2020-12-31,   ,SPY,,1,1
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID
+        2020-12-31,   ,SPY,,1,1,
         """
         let dataStr = csv.data(using: .utf8)!
         let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
@@ -105,8 +105,8 @@ final class TxnAllocTests: XCTestCase {
     
     func testParseNoRejectedBadSecurityID() throws {
         let csv = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
-        2020-12-31,1,  ,,1,1
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID
+        2020-12-31,1,  ,,1,1,
         """
         let dataStr = csv.data(using: .utf8)!
         let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
@@ -115,8 +115,8 @@ final class TxnAllocTests: XCTestCase {
     
     func testParseAcceptedDespiteBadSharePrice() throws {
         let csv = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
-        2020-12-31,1,SPY,,xxx,1
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID
+        2020-12-31,1,SPY,,xxx,1,
         """
         let dataStr = csv.data(using: .utf8)!
         let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
@@ -125,8 +125,8 @@ final class TxnAllocTests: XCTestCase {
     
     func testParseAcceptedDespiteBadShareCount() throws {
         let csv = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
-        2020-12-31,1,SPY,,1,xxx
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID
+        2020-12-31,1,SPY,,1,xxx,
         """
         let dataStr = csv.data(using: .utf8)!
         let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
@@ -135,8 +135,8 @@ final class TxnAllocTests: XCTestCase {
     
     func testParseRejectedWithBadTransactedAt() throws {
         let csv = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
-        ,1,SPY,,1,1
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID
+        ,1,SPY,,1,1,
         """
         let dataStr = csv.data(using: .utf8)!
         let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
@@ -145,7 +145,7 @@ final class TxnAllocTests: XCTestCase {
     
     func testParseAccepted() throws {
         let csv = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount,transactionID,realizedGainLong,realizedGainShort
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,txnID,realizedGainLong,realizedGainShort
         2020-12-31,1,SPY,X,1,3,B,5,7
         """
         let dataStr = csv.data(using: .utf8)!
@@ -154,14 +154,14 @@ final class TxnAllocTests: XCTestCase {
         
         let timestamp = MTransaction.parseDate("2020-12-31T00:00:00Z")!
         
-        let expected: MTransaction.Row = ["transactionID": "B",
+        let expected: MTransaction.Row = ["txnID": "B",
                                           "realizedGainShort": 7.0,
                                           "realizedGainLong": 5.0,
                                           "txnAccountID": "1",
                                           "txnSecurityID": "SPY",
                                           "txnLotID": "X",
-                                          "shareCount": 3.0,
-                                          "sharePrice": 1.0,
+                                          "txnShareCount": 3.0,
+                                          "txnSharePrice": 1.0,
                                           "txnTransactedAt": timestamp]
         XCTAssertEqual([expected], actual)
     }
