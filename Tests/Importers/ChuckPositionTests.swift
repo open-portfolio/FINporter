@@ -24,12 +24,14 @@ final class ChuckPositionsTests: XCTestCase {
     var imp: ChuckPositions!
     let df = ISO8601DateFormatter()
 
-    let goodHeader = """
+    let goodHeader1 = """
     "Positions for All-Accounts as of 09:59 PM ET, 09/26/2021"
 
     "Individual                        XXXX-1234"
     "Symbol","Description","Quantity","Price","Price Change $","Price Change %","Market Value","Day Change $","Day Change %","Cost Basis","Gain/Loss $",...
     """
+    
+    let goodHeader2 = "\"Positions for All-Accounts as of 09:59 PM ET, 09/26/2021\"\r\n\r\n\"Individual                        XXXX-1234\"\r\n\"Symbol\",\"Description\",\"Quantity\",\"Price\",\"Price Change $\",\"Price Change %\",\"Market Value\",\"Day Change $\",\"Day Change %\",\"Cost Basis\",\"Gain/Loss $\",\"Gain/Loss %\",\"Reinvest Dividends?\",\"Capital Gains?\",\"% Of Account\",\"Dividend Yield\",\"Last Dividend\",\"Ex-Dividend Date\",\"P/E Ratio\",\"52 Week Low\",\"52 Week High\",\"Volume\",\"Intrinsic Value\",\"In The Money\",\"Security Type\",\r\n"
     
     let goodBody = """
     "Positions for All-Accounts as of 09:59 PM ET, 09/26/2021"
@@ -50,7 +52,6 @@ final class ChuckPositionsTests: XCTestCase {
     
     """
 
-
     override func setUpWithError() throws {
         imp = ChuckPositions()
     }
@@ -68,22 +69,28 @@ final class ChuckPositionsTests: XCTestCase {
     }
 
     func testDetectFailsDueToHeaderMismatch() throws {
-        let badHeader = goodHeader.replacingOccurrences(of: "Symbol", with: "Symbal")
+        let badHeader = goodHeader1.replacingOccurrences(of: "Symbol", with: "Symbal")
         let expected: FINporter.DetectResult = [:]
         let actual = try imp.detect(dataPrefix: badHeader.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 
-    func testDetectSucceeds() throws {
+    func testDetectSucceeds1() throws {
         let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
-        let actual = try imp.detect(dataPrefix: goodHeader.data(using: .utf8)!)
+        let actual = try imp.detect(dataPrefix: goodHeader1.data(using: .utf8)!)
+        XCTAssertEqual(expected, actual)
+    }
+    
+    func testDetectSucceeds2() throws {
+        let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let actual = try imp.detect(dataPrefix: goodHeader2.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectViaMain() throws {
         let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
         let main = FINprospector()
-        let data = goodHeader.data(using: .utf8)!
+        let data = goodHeader1.data(using: .utf8)!
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
         XCTAssertEqual(1, actual.count)
         _ = actual.map { key, value in

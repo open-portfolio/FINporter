@@ -105,7 +105,7 @@ class AllocSmart: FINporter {
                                             defTimeOfDay _: String? = nil,
                                             defTimeZone _: String? = nil,
                                             timestamp _: Date? = nil) throws -> [T.Row] {
-        guard var str = String(data: data, encoding: .utf8) else {
+        guard var str = FINporter.decode(data: data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 

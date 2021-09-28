@@ -63,7 +63,7 @@ class FidoHistory: FINporter {
                                             defTimeOfDay: String? = nil,
                                             defTimeZone: String? = nil,
                                             timestamp _: Date? = nil) throws -> [T.Row] {
-        guard let str = String(data: data, encoding: .utf8) else {
+        guard let str = FINporter.decode(data: data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 

@@ -55,7 +55,7 @@ class ChuckPositions: FINporter {
     """#
     
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        guard let str = String(data: dataPrefix, encoding: .utf8),
+        guard let str = FINporter.decode(data: dataPrefix),
               str.range(of: ChuckPositions.headerRE,
                         options: .regularExpression) != nil
         else {
@@ -76,7 +76,7 @@ class ChuckPositions: FINporter {
                                             defTimeOfDay _: String? = nil,
                                             defTimeZone _: String? = nil,
                                             timestamp: Date? = nil) throws -> [T.Row] {
-        guard var str = String(data: data, encoding: .utf8) else {
+        guard var str = FINporter.decode(data: data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
         

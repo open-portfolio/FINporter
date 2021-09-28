@@ -71,7 +71,7 @@ class ChuckHistory: FINporter {
                                             defTimeOfDay: String? = nil,
                                             defTimeZone: String? = nil,
                                             timestamp: Date? = nil) throws -> [T.Row] {
-        guard var str = String(data: data, encoding: .utf8) else {
+        guard var str = FINporter.decode(data: data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
         
