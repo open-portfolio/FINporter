@@ -78,10 +78,10 @@ class AllocSmart: FINporter {
     .+
     Account Size, \d+.*
     Asset,Description,.+
-    (?:.+[\n\r])+
+    (?:.+[\n])+
     """#
     
-    internal static let csvRE = #"Asset,Description,(?:.+(\r?\n|\Z))+"#
+    internal static let csvRE = #"Asset,Description,(?:.+(\n|\Z))+"#
 
     override func detect(dataPrefix: Data) throws -> DetectResult {
         guard let str = String(data: dataPrefix, encoding: .utf8),
@@ -105,7 +105,7 @@ class AllocSmart: FINporter {
                                             defTimeOfDay _: String? = nil,
                                             defTimeZone _: String? = nil,
                                             timestamp _: Date? = nil) throws -> [T.Row] {
-        guard var str = FINporter.decode(data: data) else {
+        guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 

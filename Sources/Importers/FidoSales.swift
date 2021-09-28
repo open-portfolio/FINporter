@@ -60,7 +60,7 @@ class FidoSales: FINporter {
                                             defTimeOfDay: String? = nil,
                                             defTimeZone: String? = nil,
                                             timestamp _: Date? = nil) throws -> [T.Row] {
-        guard let str = FINporter.decode(data: data) else {
+        guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 

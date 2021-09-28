@@ -45,17 +45,17 @@ class ChuckPositions: FINporter {
     internal static let accountBlockRE = #"""
     (?:".+")
     "Symbol","Description","Quantity","Price","Price Change \$","Price Change %","Market Value","Day Change \$","Day Change %","Cost Basis",.+
-    (?:.+(\r?\n|\Z))+
+    (?:.+(\n|\Z))+
     """#
     //    "Account Total",.+
     
     internal static let csvRE = #"""
     "Symbol","Description",.+
-    (?:.+(\r?\n|\Z))+
+    (?:.+(\n|\Z))+
     """#
     
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        guard let str = FINporter.decode(data: dataPrefix),
+        guard let str = FINporter.normalizeDecode(dataPrefix),
               str.range(of: ChuckPositions.headerRE,
                         options: .regularExpression) != nil
         else {
@@ -76,7 +76,7 @@ class ChuckPositions: FINporter {
                                             defTimeOfDay _: String? = nil,
                                             defTimeZone _: String? = nil,
                                             timestamp: Date? = nil) throws -> [T.Row] {
-        guard var str = FINporter.decode(data: data) else {
+        guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
         

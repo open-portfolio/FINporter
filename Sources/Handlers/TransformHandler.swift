@@ -124,5 +124,5 @@ internal func decodeAndExport<T: AllocBase>(_: T.Type,
                                                 defTimeZone: defTimeZone)
     let items: [T] = try finRows.map { try T(from: $0) }
     let data = try finPorter.export(elements: items, format: .CSV)
-    return FINporter.decode(data: data) ?? ""
+    return FINporter.normalizeDecode(data) ?? ""
 }

@@ -41,12 +41,12 @@ class ChuckHistory: FINporter {
     internal static let accountBlockRE = #"""
     (?:"Transactions\s+for .+? as of .+")
     "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
-    (?:.+(\r?\n|\Z))+
+    (?:.+(\n|\Z))+
     """#
     
     internal static let csvRE = #"""
     "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
-    (?:.+(\r?\n|\Z))+
+    (?:.+(\n|\Z))+
     """#
     
     override func detect(dataPrefix: Data) throws -> DetectResult {
@@ -71,7 +71,7 @@ class ChuckHistory: FINporter {
                                             defTimeOfDay: String? = nil,
                                             defTimeZone: String? = nil,
                                             timestamp: Date? = nil) throws -> [T.Row] {
-        guard var str = FINporter.decode(data: data) else {
+        guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
         

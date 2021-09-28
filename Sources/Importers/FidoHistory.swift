@@ -39,7 +39,7 @@ class FidoHistory: FINporter {
     """#
     
     // should match all lines, until a blank line or end of block/file
-    internal static let csvRE = #"Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,(?:.+(\r?\n|\Z))+"#
+    internal static let csvRE = #"Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,(?:.+(\n|\Z))+"#
 
     override func detect(dataPrefix: Data) throws -> DetectResult {
         guard let str = String(data: dataPrefix, encoding: .utf8),
@@ -63,7 +63,7 @@ class FidoHistory: FINporter {
                                             defTimeOfDay: String? = nil,
                                             defTimeZone: String? = nil,
                                             timestamp _: Date? = nil) throws -> [T.Row] {
-        guard let str = FINporter.decode(data: data) else {
+        guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 

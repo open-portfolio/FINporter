@@ -23,7 +23,7 @@ final class FINporterUtilsTests: XCTestCase {
     func testDecodeWithNormalization() {
         let rawText = "\"Positions\"\r\n\r\n\"Individual                        XXXX-1234\"\r\n"
         let expected = "\"Positions\"\n\n\"Individual                        XXXX-1234\"\n"
-        let actual = FINporter.decode(data: rawText.data(using: .utf8)!)
+        let actual = FINporter.normalizeDecode(rawText.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 }

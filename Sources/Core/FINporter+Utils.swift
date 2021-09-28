@@ -20,13 +20,15 @@ import Foundation
 extension FINporter {
     
     /// Data decoder with line separator normalization.
-    ///
-    /// Normalizing line separators in input text can simplify the regular expression patterns needed to match.
-    public static func decode(data: Data,
-                              encoding: String.Encoding = .utf8,
-                              fromLineSeparator: String = "\r\n",
-                              toLineSeparator: String = "\n") -> String? {
+    public static func normalizeDecode(_ data: Data,
+                                       encoding: String.Encoding = .utf8) -> String? {
         guard let str = String(data: data, encoding: encoding) else { return nil }
-        return str.replacingOccurrences(of: fromLineSeparator, with: toLineSeparator)
+        return normalizeLines(str)
+    }
+    
+    /// Normalizing line separators in input text can simplify the regular expression patterns needed to match and parse data.
+    public static func normalizeLines(_ str: String) -> String {
+        str.replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
     }
 }
