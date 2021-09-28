@@ -42,7 +42,7 @@ class FidoHistory: FINporter {
     internal static let csvRE = #"Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,(?:.+(\n|\Z))+"#
 
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        guard let str = String(data: dataPrefix, encoding: .utf8),
+        guard let str = FINporter.normalizeDecode(dataPrefix),
               str.range(of: FidoHistory.headerRE,
                         options: .regularExpression) != nil
         else {

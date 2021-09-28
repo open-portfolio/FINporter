@@ -40,14 +40,14 @@ public class Tabular: FINporter {
     ]}
 
     override public func detect(dataPrefix: Data) throws -> DetectResult {
-        guard let dataStr = String(data: dataPrefix, encoding: .utf8) else {
+        guard let str = FINporter.normalizeDecode(dataPrefix) else {
             return [:]
         }
 
         return sourceFormats.reduce(into: [:]) { map, sourceFormat in
             guard let delimiter = sourceFormat.delimiter else { return }
             do {
-                let table = try CSV(string: dataStr, delimiter: delimiter)
+                let table = try CSV(string: str, delimiter: delimiter)
 
                 let documentSignature = AllocSchema.generateSignature(table.header)
 

@@ -50,7 +50,7 @@ class ChuckHistory: FINporter {
     """#
     
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        guard let str = String(data: dataPrefix, encoding: .utf8),
+        guard let str = FINporter.normalizeDecode(dataPrefix),
               str.range(of: ChuckHistory.headerRE,
                         options: .regularExpression) != nil
         else {

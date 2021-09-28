@@ -84,7 +84,7 @@ class AllocSmart: FINporter {
     internal static let csvRE = #"Asset,Description,(?:.+(\n|\Z))+"#
 
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        guard let str = String(data: dataPrefix, encoding: .utf8),
+        guard let str = FINporter.normalizeDecode(dataPrefix),
               str.range(of: AllocSmart.headerRE,
                         options: .regularExpression) != nil
         else {

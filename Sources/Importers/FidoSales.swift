@@ -38,8 +38,7 @@ class FidoSales: FINporter {
     internal static let csvRE = #"[A-Za-z0-9]+(?=\.)"#
 
     override func detect(dataPrefix: Data) throws -> DetectResult {
-
-        guard let str = String(data: dataPrefix, encoding: .utf8),
+        guard let str = FINporter.normalizeDecode(dataPrefix),
               str.range(of: FidoSales.headerRE,
                         options: .regularExpression) != nil
         else {
