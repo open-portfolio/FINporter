@@ -1,5 +1,5 @@
 //
-//  HistoryAllocTests.swift
+//  TransactionAllocTests.swift
 //
 // Copyright 2021 FlowAllocator LLC
 //
@@ -20,28 +20,28 @@ import XCTest
 
 import AllocData
 
-final class HistoryAllocTests: XCTestCase {
+final class TxnAllocTests: XCTestCase {
     var imp: Tabular!
-    var rejectedRows: [MHistory.Row]!
-
+    var rejectedRows: [MTransaction.Row]!
+    
     override func setUpWithError() throws {
         imp = Tabular()
-        rejectedRows = [MHistory.Row]()
+        rejectedRows = [MTransaction.Row]()
     }
-
+    
     func testSourceFormats() {
         let expected = Set([AllocFormat.CSV, AllocFormat.TSV])
         let actual = Set(imp.sourceFormats)
         XCTAssertEqual(expected, actual)
     }
-
+    
     func testTargetSchema() {
         let expected: [AllocSchema] = [
             .allocAccount,
             .allocAllocation,
             .allocAsset,
             .allocCap,
-            .allocHistory,
+            .allocTransaction,
             .allocHolding,
             .allocSecurity,
             .allocStrategy,
@@ -50,39 +50,39 @@ final class HistoryAllocTests: XCTestCase {
         let actual = imp.outputSchemas
         XCTAssertEqual(Set(expected), Set(actual))
     }
-
+    
     func testDetectFailsDueToHeaderMismatch() throws {
         let badHeader = """
-        lesterstoryAccountID,historySecurityID
+        lesterstoryAccountID,txnSecurityID
         """
         let expected: FINporter.DetectResult = [:]
         let actual = try imp.detect(dataPrefix: badHeader.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
-
+    
     func testDetectSucceeds() throws {
         let header = """
-        historyAccountID,historySecurityID,sharePrice,shareCount,transactedAt
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
         """
-        let expected: FINporter.DetectResult = [.allocHistory: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
-
+    
     func testDetectSucceedsWithoutOptionals() throws {
         let header = """
-        historyAccountID,historySecurityID
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID
         """
-        let expected: FINporter.DetectResult = [.allocHistory: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
-
+    
     func testDetectViaMain() throws {
         let header = """
-        historyAccountID,historySecurityID,sharePrice,shareCount,transactedAt
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount,transactedAt
         """
-        let expected: FINporter.DetectResult = [.allocHistory: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let main = FINprospector()
         let data = header.data(using: .utf8)!
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
@@ -92,77 +92,77 @@ final class HistoryAllocTests: XCTestCase {
             XCTAssertEqual(expected, value)
         }
     }
-
+    
     func testParseNoRejectBadAccountNumber() throws {
         let csv = """
-        securityID,accountID,sharePrice,shareCount,transactedAt
-        theTitle,   ,1,1,2020-12-31
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
+        2020-12-31,   ,SPY,,1,1
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
-        XCTAssertEqual(0, rejectedRows.count)
+        let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        XCTAssertEqual(1, rejectedRows.count)
     }
-
+    
     func testParseNoRejectedBadSecurityID() throws {
         let csv = """
-        historyAccountID,historySecurityID,sharePrice,shareCount,transactedAt
-        1,   ,1,1,2020-12-31
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
+        2020-12-31,1,  ,,1,1
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
-        XCTAssertEqual(0, rejectedRows.count)
+        let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        XCTAssertEqual(1, rejectedRows.count)
     }
-
+    
     func testParseAcceptedDespiteBadSharePrice() throws {
         let csv = """
-        historyAccountID,historySecurityID,sharePrice,shareCount,transactedAt
-        1,X,xxx,1,2020-12-31
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
+        2020-12-31,1,SPY,,xxx,1
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
     }
-
+    
     func testParseAcceptedDespiteBadShareCount() throws {
         let csv = """
-        historyAccountID,historySecurityID,shareCount,sharePrice,transactedAt
-        1,X,  ,1,2020-12-31
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
+        2020-12-31,1,SPY,,1,xxx
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
     }
-
-    func testParseAcceptedDespiteBadTransactedAt() throws {
+    
+    func testParseRejectedWithBadTransactedAt() throws {
         let csv = """
-        historyAccountID,historySecurityID,shareCount,transactedAt,sharePrice
-        1,X,1,,1
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount
+        ,1,SPY,,1,1
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
-        XCTAssertEqual(0, rejectedRows.count)
+        let _: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        XCTAssertEqual(1, rejectedRows.count)
     }
-
+    
     func testParseAccepted() throws {
         let csv = """
-        historyAccountID,historySecurityID,historyLotID,shareCount,sharePrice,transactedAt,willBeIgnored
-        1,X,,1,1,2020-12-31,xxx
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,sharePrice,shareCount,transactionID,realizedGainLong,realizedGainShort
+        2020-12-31,1,SPY,X,1,3,B,5,7
         """
         let dataStr = csv.data(using: .utf8)!
-        let actual: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let actual: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
-
-        let timestamp = MHistory.parseDate("2020-12-31T00:00:00Z")!
-
-        let expected: MHistory.Row = ["transactionID": nil,
-                                      "realizedGainShort": nil,
-                                      "realizedGainLong": nil,
-                                      "historyAccountID": "1",
-                                      "historySecurityID": "X",
-                                      "historyLotID": nil,
-                                      "shareCount": 1.0,
-                                      "sharePrice": 1.0,
-                                      "transactedAt": timestamp]
+        
+        let timestamp = MTransaction.parseDate("2020-12-31T00:00:00Z")!
+        
+        let expected: MTransaction.Row = ["transactionID": "B",
+                                          "realizedGainShort": 7.0,
+                                          "realizedGainLong": 5.0,
+                                          "txnAccountID": "1",
+                                          "txnSecurityID": "SPY",
+                                          "txnLotID": "X",
+                                          "shareCount": 3.0,
+                                          "sharePrice": 1.0,
+                                          "txnTransactedAt": timestamp]
         XCTAssertEqual([expected], actual)
     }
 }

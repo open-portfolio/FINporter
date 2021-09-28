@@ -1,7 +1,7 @@
 //
 //  Tabular.swift
 //
-//  Importer supporting detection and decoding of schema-supported tabular documents (e.g., history.csv to [MHistory])
+//  Importer supporting detection and decoding of schema-supported tabular documents (e.g., history.csv to [MTransaction])
 //
 // Copyright 2021 FlowAllocator LLC
 //
@@ -32,7 +32,7 @@ public class Tabular: FINporter {
         .allocAllocation,
         .allocAsset,
         .allocCap,
-        .allocHistory,
+        .allocTransaction,
         .allocHolding,
         .allocSecurity,
         .allocStrategy,

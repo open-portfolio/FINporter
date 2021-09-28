@@ -41,7 +41,7 @@ final class AccountAllocTests: XCTestCase {
             .allocAllocation,
             .allocAsset,
             .allocCap,
-            .allocHistory,
+            .allocTransaction,
             .allocHolding,
             .allocSecurity,
             .allocStrategy,

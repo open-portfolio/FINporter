@@ -35,7 +35,7 @@ extension Finporter {
                 Allocation.self,
                 Asset.self,
                 Cap.self,
-                History.self,
+                Transaction.self,
                 Holding.self,
                 Security.self,
                 Strategy.self,
@@ -91,13 +91,13 @@ extension Finporter.Schema {
         }
     }
 
-    struct History: ParsableCommand {
+    struct Transaction: ParsableCommand {
         static var configuration = CommandConfiguration(
-            commandName: "history",
-            abstract: "Detail history schema."
+            commandName: "transaction",
+            abstract: "Detail transaction schema."
         )
         func run() {
-            let table = AllocAttribute.dumpTable(attributes: MHistory.attributes)
+            let table = AllocAttribute.dumpTable(attributes: MTransaction.attributes)
             print(table)
         }
     }

@@ -55,7 +55,7 @@ final class ChuckHistoryTests: XCTestCase {
     }
 
     func testTargetSchema() {
-        let expected: [AllocSchema] = [.allocHistory]
+        let expected: [AllocSchema] = [.allocTransaction]
         let actual = imp.outputSchemas
         XCTAssertEqual(expected, actual)
     }
@@ -68,13 +68,13 @@ final class ChuckHistoryTests: XCTestCase {
     }
 
     func testDetectSucceeds() throws {
-        let expected: FINporter.DetectResult = [.allocHistory: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let actual = try imp.detect(dataPrefix: goodHeader.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectViaMain() throws {
-        let expected: FINporter.DetectResult = [.allocHistory: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let main = FINprospector()
         let data = goodHeader.data(using: .utf8)!
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
@@ -97,15 +97,15 @@ final class ChuckHistoryTests: XCTestCase {
 
     func testRows() throws {
         let dataStr = goodBody.data(using: .utf8)!
-        var rr = [MHistory.Row]()
+        var rr = [MTransaction.Row]()
         
         let timestamp1 = df.date(from: "2021-07-02T17:00:00Z")
         let timestamp2 = df.date(from: "2021-09-27T17:00:00Z")
 
-        let actual: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rr, outputSchema: .allocHistory)
-        let expected: [MHistory.Row] = [
-            ["historyAccountID": "XXXX-1234", "historySecurityID": "SCHB", "sharePrice": 105.0736, "shareCount": 961.0, "transactedAt": timestamp1, "transactionID": "H2021070200001"],
-            ["historyAccountID": "XXXX-5678", "historySecurityID": "VOO", "sharePrice": 137.1222, "shareCount": -10.0, "transactedAt": timestamp2, "transactionID": "H2021092700001"],
+        let actual: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
+        let expected: [MTransaction.Row] = [
+            ["txnTransactedAt": timestamp1, "txnAccountID": "XXXX-1234", "txnSecurityID": "SCHB", "txnLotID": "", "sharePrice": 105.0736, "shareCount": 961.0],
+            ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO" , "txnLotID": "", "sharePrice": 137.1222, "shareCount": -10.0  ],
         ]
         XCTAssertEqual(expected, actual)
     }

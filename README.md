@@ -68,7 +68,9 @@ $ finport transform Accounts_History.csv
 
 The command above will produce comma-separated value data in the following schema.
 
-Output schema:  [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
+NOTE: output changed to the new MTransaction from the deprecated MHistory.
+
+Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
 
 ### Fido (Fidelity) Sales
 
@@ -80,8 +82,10 @@ $ finport transform Realized_Gain_Loss_Account_00000000.csv
 
 The command above will produce comma-separated value data in the following schema.
 
+NOTE: output changed to the new MTransaction from the deprecated MHistory.
+
 Output schema: 
-* [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
+* [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
 
 ### Chuck (Schwab) Positions **BETA**
 
@@ -120,9 +124,9 @@ $ finport transform XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV
 
 The command above will produce comma-separated value data in the following schema.
 
-NOTE: Schwab's history export does not contain realized gains and losses of sales, and so they are not in the imported transaction history.
+NOTE: Schwab's transaction export does not contain realized gains and losses of sales, and so they are not in the imported transaction.
 
-Output schema:  [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
+Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
 
 ### AllocSmart (Allocate Smartly) Export
 

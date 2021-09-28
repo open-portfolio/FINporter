@@ -28,10 +28,10 @@ import AllocData
 
 class ChuckHistory: FINporter {
     override var name: String { "Chuck History" }
-    override var id: String { "chuck_positions" }
+    override var id: String { "chuck_history" }
     override var description: String { "Detect and decode account history export files from Schwab, for sale and purchase info." }
     override var sourceFormats: [AllocFormat] { [.CSV] }
-    override var outputSchemas: [AllocSchema] { [.allocHistory] }
+    override var outputSchemas: [AllocSchema] { [.allocTransaction] }
     
     internal static let headerRE = #"""
     "Transactions\s+for .+? as of .+"
@@ -89,8 +89,6 @@ class ChuckHistory: FINporter {
                 return ChuckHistory.parseAccountID(rawStr)
             }()
             
-            var transactionNo = 1
-            
             if let _accountID = accountID,
                let csvRange = block.range(of: ChuckHistory.csvRE,
                                           options: .regularExpression) {
@@ -113,8 +111,6 @@ class ChuckHistory: FINporter {
                     
                     // optional values
                     
-                    let formattedTxnID = generateTransactionID(prefix: "H", transactionDate: transactedAt, transactionNo: transactionNo)
-                    
                     let shareCount: Double = {
                         switch action {
                         case "Buy":
@@ -126,18 +122,19 @@ class ChuckHistory: FINporter {
                         }
                     }()
                     
-                    items.append([
-                        MHistory.CodingKeys.transactionID.rawValue: formattedTxnID,
-                        MHistory.CodingKeys.accountID.rawValue: _accountID,
-                        MHistory.CodingKeys.securityID.rawValue: securityID,
-                        MHistory.CodingKeys.shareCount.rawValue: shareCount,
-                        MHistory.CodingKeys.sharePrice.rawValue: sharePrice,
-                        //MHistory.CodingKeys.realizedGainShort.rawValue: nil,
-                        //MHistory.CodingKeys.realizedGainLong.rawValue: nil,
-                        MHistory.CodingKeys.transactedAt.rawValue: transactedAt
-                    ])
+                    let lotID = ""
                     
-                    transactionNo += 1
+                    items.append([
+                        MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
+                        MTransaction.CodingKeys.accountID.rawValue: _accountID,
+                        MTransaction.CodingKeys.securityID.rawValue: securityID,
+                        MTransaction.CodingKeys.lotID.rawValue: lotID,
+                        MTransaction.CodingKeys.shareCount.rawValue: shareCount,
+                        MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
+                        //MTransaction.CodingKeys.realizedGainShort.rawValue: nil,
+                        //MTransaction.CodingKeys.realizedGainLong.rawValue: nil,
+                        //MTransaction.CodingKeys.transactionID.rawValue: nil,
+                    ])
                 }
             }
             

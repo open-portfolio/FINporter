@@ -46,8 +46,8 @@ public func handleTransform(inputFilePath: String,
         return try decodeAndExport(MSecurity.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocStrategy:
         return try decodeAndExport(MStrategy.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
-    case .allocHistory:
-        return try decodeAndExport(MHistory.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
+    case .allocTransaction:
+        return try decodeAndExport(MTransaction.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     default:
         throw FINporterError.notImplementedError
     }

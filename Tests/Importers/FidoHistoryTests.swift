@@ -34,7 +34,7 @@ final class FidoHistoryTests: XCTestCase {
     }
 
     func testTargetSchema() {
-        let expected: [AllocSchema] = [.allocHistory]
+        let expected: [AllocSchema] = [.allocTransaction]
         let actual = imp.outputSchemas
         XCTAssertEqual(expected, actual)
     }
@@ -62,7 +62,7 @@ final class FidoHistoryTests: XCTestCase {
 
         Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
         """
-        let expected: FINporter.DetectResult = [.allocHistory: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
@@ -76,7 +76,7 @@ final class FidoHistoryTests: XCTestCase {
 
         Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
         """
-        let expected: FINporter.DetectResult = [.allocHistory: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let main = FINprospector()
         let data = header.data(using: .utf8)!
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
@@ -100,20 +100,18 @@ final class FidoHistoryTests: XCTestCase {
         XXX
         """
 
-        var rejectedRows = [MHistory.Row]()
+        var rejectedRows = [MTransaction.Row]()
         let dataStr = str.data(using: .utf8)!
-        let actual: [MHistory.Row] = try imp.decode(MHistory.self, dataStr, rejectedRows: &rejectedRows)
+        let actual: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows)
 
         let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021")
-        let expected: MHistory.Row = [
-            "transactionID": "H2021030100001",
-            "historyAccountID": "X00000000",
-            "historySecurityID": "VV",
+        let expected: MTransaction.Row = [
+            "txnTransactedAt": YYYYMMDDts,
+            "txnAccountID": "X00000000",
+            "txnSecurityID": "VV",
+            "txnLotID": "",
             "shareCount": 0.999,
             "sharePrice": 180.95,
-            "realizedGainLong": nil,
-            "realizedGainShort": nil,
-            "transactedAt": YYYYMMDDts,
         ]
 
         XCTAssertTrue(areEqual(expected, actual.first!))

@@ -30,7 +30,7 @@ class FidoHistory: FINporter {
     override var id: String { "fido_history" }
     override var description: String { "Detect and decode account history export files from Fidelity, for sale and purchase info." }
     override var sourceFormats: [AllocFormat] { [.CSV] }
-    override var outputSchemas: [AllocSchema] { [.allocHistory] }
+    override var outputSchemas: [AllocSchema] { [.allocTransaction] }
 
     internal static let headerRE = #"""
     Brokerage
@@ -75,8 +75,6 @@ class FidoHistory: FINporter {
 
             let trimFromTicker = CharacterSet(charactersIn: "*")
 
-            var transactionNo = 1
-
             for row in csv.namedRows {
                 // required values
                 guard let accountNameNumber = T.parseString(row["Account"]),
@@ -98,20 +96,18 @@ class FidoHistory: FINporter {
                 // unfortunately, no realized gain/loss info available in this export
                 // see the fido_sales report for that
 
-                let formattedTxnID = generateTransactionID(prefix: "H", transactionDate: transactedAt, transactionNo: transactionNo)
+                let lotID = ""
                 
                 items.append([
-                    MHistory.CodingKeys.transactionID.rawValue: formattedTxnID,
-                    MHistory.CodingKeys.accountID.rawValue: accountID,
-                    MHistory.CodingKeys.securityID.rawValue: securityID,
-                    MHistory.CodingKeys.shareCount.rawValue: shareCount,
-                    MHistory.CodingKeys.sharePrice.rawValue: sharePrice,
-                    MHistory.CodingKeys.realizedGainShort.rawValue: nil,
-                    MHistory.CodingKeys.realizedGainLong.rawValue: nil,
-                    MHistory.CodingKeys.transactedAt.rawValue: transactedAt
+                    MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
+                    MTransaction.CodingKeys.accountID.rawValue: accountID,
+                    MTransaction.CodingKeys.securityID.rawValue: securityID,
+                    MTransaction.CodingKeys.lotID.rawValue: lotID,
+                    MTransaction.CodingKeys.shareCount.rawValue: shareCount,
+                    MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
+                    //MTransaction.CodingKeys.realizedGainShort.rawValue: nil,
+                    //MTransaction.CodingKeys.realizedGainLong.rawValue: nil,
                 ])
-
-                transactionNo += 1
             }
         }
 
