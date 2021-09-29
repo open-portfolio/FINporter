@@ -145,8 +145,8 @@ final class TxnAllocTests: XCTestCase {
     
     func testParseAccepted() throws {
         let csv = """
-        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,realizedGainLong,realizedGainShort
-        2020-12-31,1,SPY,X,1,3,5,7
+        txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnSharePrice,txnShareCount,realizedGainLong,realizedGainShort,isTransfer
+        2020-12-31,1,SPY,X,1,3,5,7,TRUE
         """
         let dataStr = csv.data(using: .utf8)!
         let actual: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
@@ -161,7 +161,8 @@ final class TxnAllocTests: XCTestCase {
                                           "txnLotID": "X",
                                           "txnShareCount": 3.0,
                                           "txnSharePrice": 1.0,
-                                          "txnTransactedAt": timestamp]
+                                          "txnTransactedAt": timestamp,
+                                          "isTransfer": true]
         XCTAssertEqual([expected], actual)
     }
 }
