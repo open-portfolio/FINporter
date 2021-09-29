@@ -104,8 +104,8 @@ final class ChuckHistoryTests: XCTestCase {
 
         let actual: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
         let expected: [MTransaction.Row] = [
-            ["txnTransactedAt": timestamp1, "txnAccountID": "XXXX-1234", "txnSecurityID": "SCHB", "txnLotID": "", "txnSharePrice": 105.0736, "txnShareCount": 961.0, "txnID": ""],
-            ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO" , "txnLotID": "", "txnSharePrice": 137.1222, "txnShareCount": -10.0, "txnID": ""],
+            ["txnTransactedAt": timestamp1, "txnAccountID": "XXXX-1234", "txnSecurityID": "SCHB", "txnLotID": "", "txnSharePrice": 105.0736, "txnShareCount": 961.0],
+            ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO" , "txnLotID": "", "txnSharePrice": 137.1222, "txnShareCount": -10.0],
         ]
         XCTAssertEqual(expected, actual)
     }

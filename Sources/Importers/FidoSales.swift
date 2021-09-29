@@ -101,7 +101,6 @@ class FidoSales: FINporter {
             let shareCount_ = -1 * shareCount // negative because it's a sale (reduction in shares)
 
             let lotID = ""
-            let transactionID = ""
 
             items.append([
                 MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
@@ -110,7 +109,6 @@ class FidoSales: FINporter {
                 MTransaction.CodingKeys.lotID.rawValue: lotID,
                 MTransaction.CodingKeys.shareCount.rawValue: shareCount_,
                 MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
-                MTransaction.CodingKeys.transactionID.rawValue: transactionID,
                 MTransaction.CodingKeys.realizedGainShort.rawValue: realizedShort,
                 MTransaction.CodingKeys.realizedGainLong.rawValue: realizedLong,
             ])

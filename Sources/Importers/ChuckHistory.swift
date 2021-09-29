@@ -123,7 +123,6 @@ class ChuckHistory: FINporter {
                     }()
                     
                     let lotID = ""
-                    let transactionID = ""
                     
                     items.append([
                         MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
@@ -132,7 +131,6 @@ class ChuckHistory: FINporter {
                         MTransaction.CodingKeys.lotID.rawValue: lotID,
                         MTransaction.CodingKeys.shareCount.rawValue: shareCount,
                         MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
-                        MTransaction.CodingKeys.transactionID.rawValue: transactionID,
                         //MTransaction.CodingKeys.realizedGainShort.rawValue: nil,
                         //MTransaction.CodingKeys.realizedGainLong.rawValue: nil,
                     ])
