@@ -117,7 +117,7 @@ class ChuckHistory: FINporter {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             
             guard let rawAction = MTransaction.parseString(delimitedRow["Action"]),
-                  case let action = MTransaction.Action.getDecoded(rawAction: rawAction),
+                  case let action = ChuckHistory.decodeAction(rawAction: rawAction),
                   let rawDate = delimitedRow["Date"],
                   let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone),
                   let amount = MTransaction.parseDouble(delimitedRow["Amount"])
@@ -203,17 +203,17 @@ class ChuckHistory: FINporter {
             }
             
         case .dividendIncome:
-            guard let rawSymbol = MTransaction.parseString(delimitedRow["Symbol"]),
-                  rawSymbol.count > 0
+            guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
+                  symbol.count > 0
             else {
                 return nil
             }
             
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
-            decodedRow[MTransaction.CodingKeys.securityID.rawValue] = rawSymbol
+            decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
 
-        case .interestIncome, .miscIncome:
+        case .interestIncome, .miscellaneous:
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
         }
@@ -229,10 +229,8 @@ class ChuckHistory: FINporter {
         else { return nil }
         return captured[0]
     }
-}
-
-extension MTransaction.Action {
-    static func getDecoded(rawAction: String) -> MTransaction.Action {
+    
+    static func decodeAction(rawAction: String) -> MTransaction.Action {
         switch rawAction {
         case "Buy":
             return .buy
@@ -245,7 +243,7 @@ extension MTransaction.Action {
         case "Bank Interest":
             return .interestIncome
         default:
-            return .miscIncome
+            return .miscellaneous
         }
     }
 }

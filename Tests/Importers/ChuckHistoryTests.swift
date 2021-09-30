@@ -42,7 +42,7 @@ final class ChuckHistoryTests: XCTestCase {
     "Transactions  for account XXXX-5678 as of 09/27/2021 22:00:26 ET"
     "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
     "09/27/2021","Sell","VOO","VANGUARD S&P 500","10","$137.1222","","$1370.12",
-    "07/16/2021 as of 07/15/2021","Bank Interest","","BANK INT 061621-071521 SCHWAB BANK","","","","$0.55",
+    "06/16/2021 as of 07/15/2021","Bank Interest","","BANK INT 061621-071521 SCHWAB BANK","","","","$0.55",
     Transactions Total,"","","","","","",$524.82
     """
 
@@ -103,11 +103,17 @@ final class ChuckHistoryTests: XCTestCase {
         
         let timestamp1 = df.date(from: "2021-07-02T17:00:00Z")
         let timestamp2 = df.date(from: "2021-09-27T17:00:00Z")
+        let timestamp3 = df.date(from: "2021-08-03T17:00:00Z")
+        let timestamp4 = df.date(from: "2021-06-16T17:00:00Z")
 
         let actual: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
         let expected: [AllocBase.DecodedRow] = [
-            ["txnTransactedAt": timestamp1, "txnAccountID": "XXXX-1234", "txnSecurityID": "SCHB", "txnLotID": "", "txnSharePrice": 105.0736, "txnShareCount": 961.0],
-            ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO" , "txnLotID": "", "txnSharePrice": 137.1222, "txnShareCount": -10.0],
+            ["txnAccountID": "XXXX-1234", "txnShareCount": 100.0, "txnSharePrice": 1.0, "txnTransactedAt": timestamp3, "txnAction": MTransaction.Action.miscellaneous],
+            ["txnAction": MTransaction.Action.buy, "txnShareCount": 961.0, "txnSharePrice": 105.0736, "txnAccountID": "XXXX-1234", "txnTransactedAt": timestamp1, "txnSecurityID": "SCHB"],
+            ["txnTransactedAt": timestamp4, "txnSharePrice": 1.0, "txnSecurityID": "", "txnAccountID": "XXXX-1234", "txnAction": MTransaction.Action.transfer, "txnShareCount": 101000.0],
+            ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO", "txnAction": MTransaction.Action.sell, "txnShareCount": -10.0, "txnSharePrice": 137.1222],
+            ["txnAccountID": "XXXX-5678", "txnShareCount": 0.55, "txnSharePrice": 1.0, "txnAction": MTransaction.Action.interestIncome, "txnTransactedAt": timestamp4]
+
         ]
         XCTAssertEqual(expected, actual)
     }

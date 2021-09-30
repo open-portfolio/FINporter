@@ -113,6 +113,7 @@ class FidoSales: FINporter {
             let lotID = ""
             
             decodedRows.append([
+                MTransaction.CodingKeys.action.rawValue: MTransaction.Action.sell,
                 MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
                 MTransaction.CodingKeys.accountID.rawValue: accountID,
                 MTransaction.CodingKeys.securityID.rawValue: securityID,

@@ -36,7 +36,7 @@ open class FINporter: Identifiable, Hashable {
         throw FINporterError.notImplementedError
     }
 
-    open func decode<T: AllocBase>(_: T.Type,
+    open func decode<T: AllocBase>(_ type: T.Type,
                                    _: Data,
                                    rejectedRows _: inout [T.RawRow],
                                    inputFormat _: AllocFormat? = nil,
