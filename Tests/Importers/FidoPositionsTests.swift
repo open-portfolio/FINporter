@@ -129,7 +129,7 @@ final class FidoPositionsTests: XCTestCase {
     /// cash holding may have "n/a" for share basis
     func testHoldingCashShareBasisSetToLastPrice() throws {
         var rejectedRows = [AllocBase.RawRow]()
-        let rawRow: [String: String] = [
+        let rawRow: AllocBase.RawRow = [
             "Account Number": "1",
             "Symbol": "SPAXX",
             "Last Price": "1.00",
@@ -144,7 +144,7 @@ final class FidoPositionsTests: XCTestCase {
     
     func testHoldingShareBasisMissing() throws {
         var rejectedRows = [AllocBase.RawRow]()
-        let rawRow: [String: String] = [
+        let rawRow: AllocBase.RawRow = [
             "Account Number": "1",
             "Symbol": "ABCXY",
             "Last Price": "$16.5587",

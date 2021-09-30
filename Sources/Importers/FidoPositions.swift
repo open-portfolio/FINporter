@@ -130,7 +130,7 @@ class FidoPositions: FINporter {
         }
     }
     
-    internal func holding(_ row: [String: String], rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
+    internal func holding(_ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
         // required values
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
@@ -177,7 +177,7 @@ class FidoPositions: FINporter {
         ]
     }
 
-    internal func security(_ row: [String: String], rejectedRows: inout [AllocBase.RawRow], timestamp: Date?) -> AllocBase.DecodedRow? {
+    internal func security(_ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow], timestamp: Date?) -> AllocBase.DecodedRow? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               securityID != "Pending Activity",
@@ -194,7 +194,7 @@ class FidoPositions: FINporter {
         ]
     }
     
-    internal func account(_ row: [String: String], rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
+    internal func account(_ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
               let title = MHolding.parseString(row["Account Name"])

@@ -171,7 +171,7 @@ class ChuckPositions: FINporter {
         ]
     }
     
-    internal func holding(_ accountID: String, _ row: [String: String], rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
+    internal func holding(_ accountID: String, _ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
         // required values
         
         // NOTE: 'Symbol' may be "Cash & Cash Investments" or "Account Total"
@@ -213,7 +213,7 @@ class ChuckPositions: FINporter {
         ]
     }
     
-    internal func security(_ row: [String: String], rejectedRows: inout [AllocBase.RawRow], timestamp: Date?) -> AllocBase.DecodedRow? {
+    internal func security(_ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow], timestamp: Date?) -> AllocBase.DecodedRow? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               //securityID != "Pending Activity",
