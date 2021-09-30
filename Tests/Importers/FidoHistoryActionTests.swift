@@ -28,23 +28,23 @@ final class FidoHistoryActionTests: XCTestCase {
 
     override func setUpWithError() throws {
         imp = FidoHistory()
-        rr = [AllocBase.RawRow]()
+        rr = []
     }
 
-    func testBuy() throws {
-        let csvStr = """
-        "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
-        "07/02/2021","Buy","SCHB","SCHWAB US BROAD MARKET ETF","961","$105.0736","","-$100975.73",
-        """
-        
-        let timestamp1 = df.date(from: "2021-07-02T17:00:00Z")!
-        let delimitedRows = try CSV(string: String(csvStr)).namedRows
-        let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
-                                                  accountID: "1",
-                                                  rejectedRows: &rr)
-        let expected: [AllocBase.DecodedRow] = [["txnSecurityID": "SCHB", "txnShareCount": 961.0, "txnAccountID": "1", "txnAction": AllocData.MTransaction.Action.buy, "txnTransactedAt": timestamp1, "txnLotID": "", "txnSharePrice": 105.0736]]
-        XCTAssertEqual(expected, actual)
-    }
+//    func testBuy() throws {
+//        let csvStr = """
+//        "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
+//        "07/02/2021","Buy","SCHB","SCHWAB US BROAD MARKET ETF","961","$105.0736","","-$100975.73",
+//        """
+//        
+//        let timestamp1 = df.date(from: "2021-07-02T17:00:00Z")!
+//        let delimitedRows = try CSV(string: String(csvStr)).namedRows
+//        let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
+//                                                  accountID: "1",
+//                                                  rejectedRows: &rr)
+//        let expected: [AllocBase.DecodedRow] = [["txnSecurityID": "SCHB", "txnShareCount": 961.0, "txnAccountID": "1", "txnAction": AllocData.MTransaction.Action.buy, "txnTransactedAt": timestamp1, "txnLotID": "", "txnSharePrice": 105.0736]]
+//        XCTAssertEqual(expected, actual)
+//    }
     
 //    func testSell() throws {
 //        let csvStr = """

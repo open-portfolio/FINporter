@@ -48,7 +48,7 @@ final class ChuckHistoryTests: XCTestCase {
 
     override func setUpWithError() throws {
         imp = ChuckHistory()
-        rr = [AllocBase.RawRow]()
+        rr = []
     }
 
     func testSourceFormats() {

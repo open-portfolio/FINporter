@@ -117,7 +117,7 @@ class ChuckHistory: FINporter {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRows in
             
             guard let rawAction = MTransaction.parseString(delimitedRows["Action"]),
-                  let action = MTransaction.Action.getDecoded(rawAction: rawAction),
+                  case let action = MTransaction.Action.getDecoded(rawAction: rawAction),
                   let rawDate = delimitedRows["Date"],
                   let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone),
                   let amount = MTransaction.parseDouble(delimitedRows["Amount"])
@@ -130,7 +130,7 @@ class ChuckHistory: FINporter {
                 MTransaction.CodingKeys.action.rawValue: action,
                 MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
                 MTransaction.CodingKeys.accountID.rawValue: accountID,
-                MTransaction.CodingKeys.lotID.rawValue: "",
+                //MTransaction.CodingKeys.lotID.rawValue: "",
             ]
             
             switch action {
@@ -251,7 +251,7 @@ class ChuckHistory: FINporter {
 }
 
 extension MTransaction.Action {
-    static func getDecoded(rawAction: String) -> MTransaction.Action? {
+    static func getDecoded(rawAction: String) -> MTransaction.Action {
         switch rawAction {
         case "Buy":
             return .buy
@@ -263,10 +263,8 @@ extension MTransaction.Action {
             return .dividendIncome
         case "Bank Interest":
             return .interestIncome
-        case "Promotional Award":
-            return .miscIncome
         default:
-            return nil
+            return .miscIncome
         }
     }
 }
