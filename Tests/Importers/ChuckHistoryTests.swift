@@ -36,7 +36,7 @@ final class ChuckHistoryTests: XCTestCase {
     "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
     "08/03/2021","Promotional Award","","PROMOTIONAL AWARD","","","","$100.00",
     "07/02/2021","Buy","SCHB","SCHWAB US BROAD MARKET ETF","961","$105.0736","","-$100975.73",
-    "06/16/2021","Security Transfer","NO NUMBER","TOA ACAT 0226","","","","$101000.00",
+    "06/16/2021","Security Transfer","NO NUMBER","TOA ACAT 0001","","","","$101000.00",
     Transactions Total,"","","","","","",$524.82
 
     "Transactions  for account XXXX-5678 as of 09/27/2021 22:00:26 ET"
@@ -117,33 +117,4 @@ final class ChuckHistoryTests: XCTestCase {
         let actual = ChuckHistory.parseAccountID(str)
         XCTAssertEqual("Xxxx-1234", actual)
     }
-    
-    func testCashflow() throws {
-        let csvStr = """
-        "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
-        "08/01/2021","Promotional Award","","PROMOTIONAL AWARD","","","","$100.00",
-        "08/01/2021","Cash Dividend","SCHB","SCHWAB US BROAD MARKET ETF","","","","$32.13",
-        "08/01/2021","Security Transfer","NO NUMBER","TOA ACAT 0226","","","","$1010.00",
-        "08/16/2021 as of 08/15/2021","Bank Interest","","BANK INT 071621-081521 SCHWAB BANK","","","","$0.55",
-        """
-        
-        let delimitedRows = try CSV(string: String(csvStr)).namedRows
-        let nuItems = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
-                                                  accountID: "1",
-                                                  rejectedRows: &rr)
-        print(nuItems)
-//
-//        let dataStr = csvStr.data(using: .utf8)!
-//
-//        let timestamp1 = df.date(from: "2021-08-01T17:00:00Z")
-//        let timestamp2 = df.date(from: "2021-08-16T17:00:00Z")
-//
-//        let actual: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
-//        let expected: [AllocBase.DecodedRow] = [
-////            ["txnTransactedAt": timestamp1, "txnAccountID": "XXXX-1234", "txnSecurityID": "SCHB", "txnLotID": "", "txnSharePrice": 105.0736, "txnShareCount": 961.0],
-////            ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO" , "txnLotID": "", "txnSharePrice": 137.1222, "txnShareCount": -10.0],
-//        ]
-//        XCTAssertEqual(expected, actual)
-    }
-
 }

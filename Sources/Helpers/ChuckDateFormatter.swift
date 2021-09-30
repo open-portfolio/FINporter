@@ -36,18 +36,23 @@ private let chuckDateFormatterGeneric: DateFormatter = {
     return df
 }()
 
-/// parse a 'naked' MM/dd/yyyy date into a fully resolved date
-/// assume noon ET for any Chuck date
-func parseChuckMMDDYYYY(_ mmddyyyy: String?,
+/// Parse a 'naked' MM/dd/yyyy date into a fully resolved date.
+/// Assume noon ET for any Chuck date.
+/// If "08/16/2021 as of 08/15/2021" just parse the first date and ignore the second.
+func parseChuckMMDDYYYY(_ rawDateStr: String?,
                        defTimeOfDay: String? = nil,
                        defTimeZone: String? = nil) -> Date? {
+    let pattern = #"^(\d\d/\d\d/\d\d\d\d)( as of.+)?"#
+    
     let timeOfDay: String = defTimeOfDay ?? "12:00"
     let timeZone: String = defTimeZone ?? "EST" // "-05:00"
-    guard let _mmddyyyy = mmddyyyy,
+    guard let _rawDateStr = rawDateStr,
+          let captureGroups = _rawDateStr.captureGroups(for: pattern),
+          let foundDateStr = captureGroups.first,
           timeOfDay.count == 5,
           timeZone.count > 0
     else { return nil }
-    let dateStr = "\(_mmddyyyy) \(timeOfDay) \(timeZone)"
+    let dateStr = "\(foundDateStr) \(timeOfDay) \(timeZone)"
     let result = chuckDateFormatterGeneric.date(from: dateStr)
     return result
 }

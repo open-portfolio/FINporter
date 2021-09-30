@@ -116,44 +116,125 @@ class ChuckHistory: FINporter {
         
         delimitedRows.reduce(into: []) { decodedRows, delimitedRows in
             
-            guard let action = MTransaction.parseString(delimitedRows["Action"]),
-                  ["Buy", "Sell"].contains(action),
-                  let securityID = MTransaction.parseString(delimitedRows["Symbol"]),
-                  securityID.count > 0,
-                  let rawQuantity = MTransaction.parseDouble(delimitedRows["Quantity"]),
-                  let sharePrice = MTransaction.parseDouble(delimitedRows["Price"]),
+            guard let rawAction = MTransaction.parseString(delimitedRows["Action"]),
+                  let action = MTransaction.Action.getDecoded(rawAction: rawAction),
                   let rawDate = delimitedRows["Date"],
-                  let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
+                  let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone),
+                  let amount = MTransaction.parseDouble(delimitedRows["Amount"])
             else {
                 rejectedRows.append(delimitedRows)
                 return
             }
             
-            // optional values
-            
-            let shareCount: Double = {
-                switch action {
-                case "Buy":
-                    return rawQuantity
-                case "Sell":
-                    return -1 * rawQuantity
-                default:
-                    return 0
-                }
-            }()
-            
-            let lotID = ""
-            
-            decodedRows.append([
+            var decodedRow: AllocBase.DecodedRow = [
+                MTransaction.CodingKeys.action.rawValue: action,
                 MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
                 MTransaction.CodingKeys.accountID.rawValue: accountID,
-                MTransaction.CodingKeys.securityID.rawValue: securityID,
-                MTransaction.CodingKeys.lotID.rawValue: lotID,
-                MTransaction.CodingKeys.shareCount.rawValue: shareCount,
-                MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
-                //MTransaction.CodingKeys.realizedGainShort.rawValue: nil,
-                //MTransaction.CodingKeys.realizedGainLong.rawValue: nil,
-            ])
+                MTransaction.CodingKeys.lotID.rawValue: "",
+            ]
+            
+            switch action {
+            case .buy, .sell:
+                guard let symbol = MTransaction.parseString(delimitedRows["Symbol"]),
+                      let rawQuantity = MTransaction.parseDouble(delimitedRows["Quantity"]),
+                      let sharePrice = MTransaction.parseDouble(delimitedRows["Price"])
+                else {
+                    rejectedRows.append(delimitedRows)
+                    return
+                }
+                
+                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
+                decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
+                
+                /// AllocData uses sign on shareCount to determine whether sale or purchase
+                let shareCount: Double = {
+                    switch action {
+                    case .buy:
+                        return rawQuantity
+                    case .sell:
+                        return -1 * rawQuantity
+                    default:
+                        return 0
+                    }
+                }()
+
+                decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = shareCount
+                
+            case .transfer:
+                guard let rawSymbol = MTransaction.parseString(delimitedRows["Symbol"]),
+                      rawSymbol.count > 0
+                else {
+                    rejectedRows.append(delimitedRows)
+                    return
+                }
+                
+                if rawSymbol == "NO NUMBER" {
+                    // it's probably cash
+                    decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
+                    decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
+                    decodedRow[MTransaction.CodingKeys.securityID.rawValue] = ""
+                } else {
+                    guard let quantity = MTransaction.parseDouble(delimitedRows["Quantity"]),
+                          quantity > 0
+                    else {
+                        rejectedRows.append(delimitedRows)
+                        return
+                    }
+                    let sharePrice = amount / quantity
+                    decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = quantity
+                    decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
+                    decodedRow[MTransaction.CodingKeys.securityID.rawValue] = rawSymbol
+                }
+                
+            case .dividendIncome:
+                guard let rawSymbol = MTransaction.parseString(delimitedRows["Symbol"]),
+                      rawSymbol.count > 0
+                else {
+                    rejectedRows.append(delimitedRows)
+                    return
+                }
+                
+                decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
+                decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
+                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = rawSymbol
+
+            case .interestIncome, .miscIncome:
+                decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
+                decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
+            }
+            
+//            let rawSymbol = MTransaction.parseString(delimitedRows["Symbol"]),
+//            let rawQuantity = MTransaction.parseDouble(delimitedRows["Quantity"]),
+//            let sharePrice = MTransaction.parseDouble(delimitedRows["Price"]),
+//            let rawDate = delimitedRows["Date"],
+//            let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
+            
+            // optional values
+            
+//            let shareCount: Double = {
+//                switch rawAction {
+//                case "Buy":
+//                    return rawQuantity
+//                case "Sell":
+//                    return -1 * rawQuantity
+//                default:
+//                    return 0
+//                }
+//            }()
+//            decodedRows.append([
+//                MTransaction.CodingKeys.action.rawValue: action,
+////                MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
+////                MTransaction.CodingKeys.accountID.rawValue: accountID,
+////                MTransaction.CodingKeys.securityID.rawValue: rawSymbol,
+//                MTransaction.CodingKeys.lotID.rawValue: lotID,
+////                MTransaction.CodingKeys.shareCount.rawValue: shareCount,
+////                MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
+//                //MTransaction.CodingKeys.realizedGainShort.rawValue: nil,
+//                //MTransaction.CodingKeys.realizedGainLong.rawValue: nil,
+//            ])
+
+            
+            decodedRows.append(decodedRow)
         }
     }
     
@@ -166,5 +247,26 @@ class ChuckHistory: FINporter {
               captured.count == 1
         else { return nil }
         return captured[0]
+    }
+}
+
+extension MTransaction.Action {
+    static func getDecoded(rawAction: String) -> MTransaction.Action? {
+        switch rawAction {
+        case "Buy":
+            return .buy
+        case "Sell":
+            return .sell
+        case "Security Transfer":
+            return .transfer
+        case "Cash Dividend":
+            return .dividendIncome
+        case "Bank Interest":
+            return .interestIncome
+        case "Promotional Award":
+            return .miscIncome
+        default:
+            return nil
+        }
     }
 }
