@@ -83,8 +83,8 @@ class FidoHistory: FINporter {
     }
     
     internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
-                                         defTimeOfDay: String?,
-                                         defTimeZone: String?,
+                                         defTimeOfDay: String? = nil,
+                                         defTimeZone: String? = nil,
                                          rejectedRows: inout [AllocBase.RawRow]) -> [AllocBase.DecodedRow] {
         
         let trimFromTicker = CharacterSet(charactersIn: "*")

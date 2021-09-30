@@ -82,8 +82,8 @@ class FidoSales: FINporter {
     }
     
     internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
-                                         defTimeOfDay: String?,
-                                         defTimeZone: String?,
+                                         defTimeOfDay: String? = nil,
+                                         defTimeZone: String? = nil,
                                          rejectedRows: inout [AllocBase.RawRow],
                                          accountID: String?) -> [AllocBase.DecodedRow] {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in

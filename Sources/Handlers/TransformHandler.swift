@@ -113,7 +113,7 @@ internal func decodeAndExport<T: AllocBase>(_: T.Type,
                                             _ rejectedRows: inout [T.RawRow],
                                             _ outputSchema: AllocSchema,
                                             _ url: URL,
-                                            _ defTimeOfDay: String?,
+                                            _ defTimeOfDay: String? = nil,
                                             _ defTimeZone: String?) throws -> String {
     let finRows: [T.DecodedRow] = try finPorter.decode(T.self,
                                                 data,

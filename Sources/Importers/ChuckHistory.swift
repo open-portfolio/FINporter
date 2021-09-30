@@ -110,8 +110,8 @@ class ChuckHistory: FINporter {
     
     internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
                                       accountID: String,
-                                      defTimeOfDay: String?,
-                                      defTimeZone: String?,
+                                      defTimeOfDay: String? = nil,
+                                      defTimeZone: String? = nil,
                                       rejectedRows: inout [AllocBase.RawRow]) throws -> [AllocBase.DecodedRow] {
         
         delimitedRows.reduce(into: []) { decodedRows, delimitedRows in
