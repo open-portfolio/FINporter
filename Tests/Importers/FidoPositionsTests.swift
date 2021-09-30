@@ -89,11 +89,11 @@ final class FidoPositionsTests: XCTestCase {
             Z00000001,BBBB,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$18.96,Cash,
             """,
         ] {
-            var rejectedRows = [MHolding.Row]()
+            var rejectedRows = [AllocBase.RawRow]()
             let dataStr = str.data(using: .utf8)!
-            let actual: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocHolding)
+            let actual: [AllocBase.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocHolding)
 
-            let expected: [MHolding.Row] = [
+            let expected: [AllocBase.DecodedRow] = [
                 ["holdingAccountID": "Z00000000", "holdingSecurityID": "VWO", "holdingLotID": "", "shareCount": 900.0, "shareBasis": 28.96],
                 ["holdingAccountID": "Z00000001", "holdingSecurityID": "VOO", "holdingLotID": "", "shareCount": 800.0, "shareBasis": 18.96],
             ]
@@ -103,9 +103,9 @@ final class FidoPositionsTests: XCTestCase {
             XCTAssertEqual(0, rejectedRows.count)
 
             let timestamp = Date()
-            let actual2: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocSecurity, timestamp: timestamp)
+            let actual2: [AllocBase.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocSecurity, timestamp: timestamp)
 
-            let expected2: [MHolding.Row] = [
+            let expected2: [AllocBase.DecodedRow] = [
                 ["securityID": "VWO", "sharePrice": 50.922, "updatedAt": timestamp],
                 ["securityID": "VOO", "sharePrice": 40.922, "updatedAt": timestamp],
             ]
@@ -113,9 +113,9 @@ final class FidoPositionsTests: XCTestCase {
             XCTAssertTrue(areEqual(expected2, actual2))
             XCTAssertEqual(0, rejectedRows.count)
             
-            let actual3: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocAccount)
+            let actual3: [AllocBase.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocAccount)
 
-            let expected3: [MHolding.Row] = [
+            let expected3: [AllocBase.DecodedRow] = [
                 ["accountID": "Z00000000", "title": "AAAA"],
                 ["accountID": "Z00000001", "title": "BBBB"],
             ]
@@ -128,7 +128,7 @@ final class FidoPositionsTests: XCTestCase {
     
     /// cash holding may have "n/a" for share basis
     func testHoldingCashShareBasisSetToLastPrice() throws {
-        var rejectedRows = [MHolding.Row]()
+        var rejectedRows = [AllocBase.RawRow]()
         let rawRow: [String: String] = [
             "Account Number": "1",
             "Symbol": "SPAXX",
@@ -143,7 +143,7 @@ final class FidoPositionsTests: XCTestCase {
     }
     
     func testHoldingShareBasisMissing() throws {
-        var rejectedRows = [MHolding.Row]()
+        var rejectedRows = [AllocBase.RawRow]()
         let rawRow: [String: String] = [
             "Account Number": "1",
             "Symbol": "ABCXY",
@@ -170,10 +170,10 @@ final class FidoPositionsTests: XCTestCase {
         """
         
         let timestamp = Date()
-        var rejectedRows = [MHolding.Row]()
+        var rejectedRows = [AllocBase.RawRow]()
         let dataStr = str.data(using: .utf8)!
         
-        let actual: [MSourceMeta.Row] = try imp.decode(MSourceMeta.self,
+        let actual: [MSourceMeta.DecodedRow] = try imp.decode(MSourceMeta.self,
                                                        dataStr,
                                                        rejectedRows: &rejectedRows,
                                                        outputSchema: .allocMetaSource,

@@ -38,13 +38,13 @@ open class FINporter: Identifiable, Hashable {
 
     open func decode<T: AllocBase>(_: T.Type,
                                    _: Data,
-                                   rejectedRows _: inout [T.Row],
+                                   rejectedRows _: inout [T.RawRow],
                                    inputFormat _: AllocFormat? = nil,
                                    outputSchema _: AllocSchema? = nil,
                                    url _: URL? = nil,
                                    defTimeOfDay _: String? = nil,
                                    defTimeZone _: String? = nil,
-                                   timestamp _: Date? = nil) throws -> [T.Row] {
+                                   timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         throw FINporterError.notImplementedError
     }
 

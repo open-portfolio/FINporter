@@ -55,15 +55,15 @@ class FidoPositions: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocBase>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay _: String? = nil,
                                             defTimeZone _: String? = nil,
-                                            timestamp: Date? = nil) throws -> [T.Row] {
+                                            timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -72,7 +72,7 @@ class FidoPositions: FINporter {
             throw FINporterError.needExplicitOutputSchema(outputSchemas)
         }
 
-        var items = [T.Row]()
+        var items = [T.DecodedRow]()
         
         if outputSchema_ == .allocMetaSource {
 
@@ -96,32 +96,41 @@ class FidoPositions: FINporter {
         } else {
             if let csvRange = str.range(of: FidoPositions.csvRE, options: .regularExpression) {
                 let csvStr = str[csvRange]
-                let csv = try CSV(string: String(csvStr))
-                for row in csv.namedRows {
-                    var item: T.Row?
-                    
-                    switch outputSchema_ {
-                    case .allocAccount:
-                        item = account(row, rejectedRows: &rejectedRows)
-                    case .allocHolding:
-                        item = holding(row, rejectedRows: &rejectedRows)
-                    case .allocSecurity:
-                        item = security(row, rejectedRows: &rejectedRows, timestamp: timestamp)
-                    default:
-                        throw FINporterError.targetSchemaNotSupported(outputSchemas)
-                    }
-                    
-                    if let item_ = item {
-                        items.append(item_)
-                    }
-                }
+                let delimitedRows = try CSV(string: String(csvStr)).namedRows
+                let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
+                                           outputSchema_: outputSchema_,
+                                           rejectedRows: &rejectedRows,
+                                           timestamp: timestamp)
+                items.append(contentsOf: nuItems)
             }
         }
 
         return items
     }
-
-    internal func holding(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
+    
+    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+                                               outputSchema_: AllocSchema,
+                                               rejectedRows: inout [AllocBase.RawRow],
+                                               timestamp: Date?) -> [AllocBase.DecodedRow] {
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
+            switch outputSchema_ {
+            case .allocAccount:
+                guard let item = account(delimitedRow, rejectedRows: &rejectedRows) else { return }
+                decodedRows.append(item)
+            case .allocHolding:
+                guard let item = holding(delimitedRow, rejectedRows: &rejectedRows) else { return }
+                decodedRows.append(item)
+            case .allocSecurity:
+                guard let item = security(delimitedRow, rejectedRows: &rejectedRows, timestamp: timestamp) else { return }
+                decodedRows.append(item)
+            default:
+                rejectedRows.append(delimitedRow)
+                //throw FINporterError.targetSchemaNotSupported(outputSchemas)
+            }
+        }
+    }
+    
+    internal func holding(_ row: [String: String], rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
         // required values
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
@@ -168,7 +177,7 @@ class FidoPositions: FINporter {
         ]
     }
 
-    internal func security(_ row: [String: String], rejectedRows: inout [AllocBase.Row], timestamp: Date?) -> AllocBase.Row? {
+    internal func security(_ row: [String: String], rejectedRows: inout [AllocBase.RawRow], timestamp: Date?) -> AllocBase.DecodedRow? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               securityID != "Pending Activity",
@@ -185,7 +194,7 @@ class FidoPositions: FINporter {
         ]
     }
     
-    internal func account(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
+    internal func account(_ row: [String: String], rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
               let title = MHolding.parseString(row["Account Name"])

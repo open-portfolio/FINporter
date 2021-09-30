@@ -62,20 +62,20 @@ class ChuckHistory: FINporter {
         }
     }
     
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocBase>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay: String? = nil,
                                             defTimeZone: String? = nil,
-                                            timestamp: Date? = nil) throws -> [T.Row] {
+                                            timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
         
-        var items = [T.Row]()
+        var items = [T.DecodedRow]()
         
         // one block per account expected
         while let range = str.range(of: ChuckHistory.accountBlockRE,
@@ -93,48 +93,13 @@ class ChuckHistory: FINporter {
                let csvRange = block.range(of: ChuckHistory.csvRE,
                                           options: .regularExpression) {
                 let csvStr = block[csvRange]
-                let csv = try CSV(string: String(csvStr))
-                for row in csv.namedRows {
-                    
-                    guard let action = T.parseString(row["Action"]),
-                          ["Buy", "Sell"].contains(action),
-                          let securityID = T.parseString(row["Symbol"]),
-                          securityID.count > 0,
-                          let rawQuantity = T.parseDouble(row["Quantity"]),
-                          let sharePrice = T.parseDouble(row["Price"]),
-                          let rawDate = row["Date"],
-                          let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
-                    else {
-                        rejectedRows.append(row)
-                        continue
-                    }
-                    
-                    // optional values
-                    
-                    let shareCount: Double = {
-                        switch action {
-                        case "Buy":
-                            return rawQuantity
-                        case "Sell":
-                            return -1 * rawQuantity
-                        default:
-                            return 0
-                        }
-                    }()
-                    
-                    let lotID = ""
-                    
-                    items.append([
-                        MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
-                        MTransaction.CodingKeys.accountID.rawValue: _accountID,
-                        MTransaction.CodingKeys.securityID.rawValue: securityID,
-                        MTransaction.CodingKeys.lotID.rawValue: lotID,
-                        MTransaction.CodingKeys.shareCount.rawValue: shareCount,
-                        MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
-                        //MTransaction.CodingKeys.realizedGainShort.rawValue: nil,
-                        //MTransaction.CodingKeys.realizedGainLong.rawValue: nil,
-                    ])
-                }
+                let delimitedRows = try CSV(string: String(csvStr)).namedRows
+                let nuItems = try decodeDelimitedRows(delimitedRows: delimitedRows,
+                                                      accountID: _accountID,
+                                                      defTimeOfDay: defTimeOfDay,
+                                                      defTimeZone: defTimeZone,
+                                                      rejectedRows: &rejectedRows)
+                items.append(contentsOf: nuItems)
             }
             
             str.removeSubrange(range) // discard blocks as they are consumed
@@ -142,6 +107,57 @@ class ChuckHistory: FINporter {
         
         return items
     }
+    
+    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+                                      accountID: String,
+                                      defTimeOfDay: String?,
+                                      defTimeZone: String?,
+                                      rejectedRows: inout [AllocBase.RawRow]) throws -> [AllocBase.DecodedRow] {
+        
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRows in
+            
+            guard let action = MTransaction.parseString(delimitedRows["Action"]),
+                  ["Buy", "Sell"].contains(action),
+                  let securityID = MTransaction.parseString(delimitedRows["Symbol"]),
+                  securityID.count > 0,
+                  let rawQuantity = MTransaction.parseDouble(delimitedRows["Quantity"]),
+                  let sharePrice = MTransaction.parseDouble(delimitedRows["Price"]),
+                  let rawDate = delimitedRows["Date"],
+                  let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
+            else {
+                rejectedRows.append(delimitedRows)
+                return
+            }
+            
+            // optional values
+            
+            let shareCount: Double = {
+                switch action {
+                case "Buy":
+                    return rawQuantity
+                case "Sell":
+                    return -1 * rawQuantity
+                default:
+                    return 0
+                }
+            }()
+            
+            let lotID = ""
+            
+            decodedRows.append([
+                MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
+                MTransaction.CodingKeys.accountID.rawValue: accountID,
+                MTransaction.CodingKeys.securityID.rawValue: securityID,
+                MTransaction.CodingKeys.lotID.rawValue: lotID,
+                MTransaction.CodingKeys.shareCount.rawValue: shareCount,
+                MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
+                //MTransaction.CodingKeys.realizedGainShort.rawValue: nil,
+                //MTransaction.CodingKeys.realizedGainLong.rawValue: nil,
+            ])
+        }
+    }
+    
+    
     
     // parse ""Transactions  for account XXXX-1234 as of 09/26/2021 22:00:26 ET"" to extract "XXXX-1234"
     internal static func parseAccountID(_ rawStr: String) -> String? {

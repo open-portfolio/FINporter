@@ -67,15 +67,15 @@ class ChuckPositions: FINporter {
         }
     }
     
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocBase>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay _: String? = nil,
                                             defTimeZone _: String? = nil,
-                                            timestamp: Date? = nil) throws -> [T.Row] {
+                                            timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -84,7 +84,7 @@ class ChuckPositions: FINporter {
             throw FINporterError.needExplicitOutputSchema(outputSchemas)
         }
         
-        var items = [T.Row]()
+        var items = [T.DecodedRow]()
         
         if outputSchema_ == .allocMetaSource {
             let item = meta(str, url)
@@ -115,23 +115,13 @@ class ChuckPositions: FINporter {
                 } else if let csvRange = block.range(of: ChuckPositions.csvRE,
                                                      options: .regularExpression) {
                     let csvStr = block[csvRange]
-                    let csv = try CSV(string: String(csvStr))
-                    for row in csv.namedRows {
-                        var item: T.Row?
-                        
-                        switch outputSchema_ {
-                        case .allocHolding:
-                            item = holding(accountID, row, rejectedRows: &rejectedRows)
-                        case .allocSecurity:
-                            item = security(row, rejectedRows: &rejectedRows, timestamp: timestamp)
-                        default:
-                            throw FINporterError.targetSchemaNotSupported(outputSchemas)
-                        }
-                        
-                        if let item_ = item {
-                            items.append(item_)
-                        }
-                    }
+                    let delimitedRows = try CSV(string: String(csvStr)).namedRows
+                    let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
+                                                  outputSchema_: outputSchema_,
+                                                  accountID: accountID,
+                                                  rejectedRows: &rejectedRows,
+                                                  timestamp: timestamp)
+                    items.append(contentsOf: nuItems)
                 }
             }
             
@@ -141,7 +131,28 @@ class ChuckPositions: FINporter {
         return items
     }
     
-    internal func meta(_ str: String, _ url: URL?) -> AllocBase.Row {
+    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+                                      outputSchema_: AllocSchema,
+                                      accountID: String,
+                                      rejectedRows: inout [AllocBase.RawRow],
+                                      timestamp: Date?) -> [AllocBase.DecodedRow] {
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
+            switch outputSchema_ {
+            case .allocHolding:
+                guard let item = holding(accountID, delimitedRow, rejectedRows: &rejectedRows) else { return }
+                decodedRows.append(item)
+            case .allocSecurity:
+                guard let item = security(delimitedRow, rejectedRows: &rejectedRows, timestamp: timestamp) else { return }
+                decodedRows.append(item)
+            default:
+                //throw FINporterError.targetSchemaNotSupported(outputSchemas)
+                rejectedRows.append(delimitedRow)
+                return
+            }
+        }
+    }
+    
+    internal func meta(_ str: String, _ url: URL?) -> AllocBase.DecodedRow {
         var exportedAt: Date? = nil
         
         // extract exportedAt from "Positions for All-Accounts as of 09:59 PM ET, 09/26/2021" (with quotes)
@@ -160,7 +171,7 @@ class ChuckPositions: FINporter {
         ]
     }
     
-    internal func holding(_ accountID: String, _ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
+    internal func holding(_ accountID: String, _ row: [String: String], rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
         // required values
         
         // NOTE: 'Symbol' may be "Cash & Cash Investments" or "Account Total"
@@ -202,7 +213,7 @@ class ChuckPositions: FINporter {
         ]
     }
     
-    internal func security(_ row: [String: String], rejectedRows: inout [AllocBase.Row], timestamp: Date?) -> AllocBase.Row? {
+    internal func security(_ row: [String: String], rejectedRows: inout [AllocBase.RawRow], timestamp: Date?) -> AllocBase.DecodedRow? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               //securityID != "Pending Activity",

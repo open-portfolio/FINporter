@@ -97,13 +97,13 @@ final class ChuckHistoryTests: XCTestCase {
 
     func testRows() throws {
         let dataStr = goodBody.data(using: .utf8)!
-        var rr = [MTransaction.Row]()
+        var rr = [AllocBase.RawRow]()
         
         let timestamp1 = df.date(from: "2021-07-02T17:00:00Z")
         let timestamp2 = df.date(from: "2021-09-27T17:00:00Z")
 
-        let actual: [MTransaction.Row] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
-        let expected: [MTransaction.Row] = [
+        let actual: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
+        let expected: [AllocBase.DecodedRow] = [
             ["txnTransactedAt": timestamp1, "txnAccountID": "XXXX-1234", "txnSecurityID": "SCHB", "txnLotID": "", "txnSharePrice": 105.0736, "txnShareCount": 961.0],
             ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO" , "txnLotID": "", "txnSharePrice": 137.1222, "txnShareCount": -10.0],
         ]
@@ -115,4 +115,29 @@ final class ChuckHistoryTests: XCTestCase {
         let actual = ChuckHistory.parseAccountID(str)
         XCTAssertEqual("Xxxx-1234", actual)
     }
+    
+//    func testCashflow() throws {
+//        let body = """
+//        "Transactions  for account XXXX-1234 as of 09/27/2021 22:00:26 ET"
+//        "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
+//        "08/01/2021","Promotional Award","","PROMOTIONAL AWARD","","","","$100.00",
+//        "08/01/2021","Cash Dividend","SCHB","SCHWAB US BROAD MARKET ETF","","","","$32.13",
+//        "08/01/2021","Security Transfer","NO NUMBER","TOA ACAT 0226","","","","$1010.00",
+//        "08/16/2021 as of 08/15/2021","Bank Interest","","BANK INT 071621-081521 SCHWAB BANK","","","","$0.55",
+//        """
+//
+//        let dataStr = body.data(using: .utf8)!
+//        var rr = [AllocBase.RawRow]()
+//
+//        let timestamp1 = df.date(from: "2021-08-01T17:00:00Z")
+//        let timestamp2 = df.date(from: "2021-08-16T17:00:00Z")
+//
+//        let actual: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
+//        let expected: [AllocBase.DecodedRow] = [
+////            ["txnTransactedAt": timestamp1, "txnAccountID": "XXXX-1234", "txnSecurityID": "SCHB", "txnLotID": "", "txnSharePrice": 105.0736, "txnShareCount": 961.0],
+////            ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO" , "txnLotID": "", "txnSharePrice": 137.1222, "txnShareCount": -10.0],
+//        ]
+//        XCTAssertEqual(expected, actual)
+//    }
+
 }

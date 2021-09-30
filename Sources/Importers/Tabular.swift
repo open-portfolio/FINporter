@@ -66,13 +66,13 @@ public class Tabular: FINporter {
 
     override open func decode<T: AllocBase>(_: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay _: String? = nil,
                                             defTimeZone _: String? = nil,
-                                            timestamp _: Date? = nil) throws -> [T.Row] {
+                                            timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("Unable to parse data.")
         }

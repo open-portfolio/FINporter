@@ -45,7 +45,7 @@ extension Finporter {
             do {
                 let outputSchema_ = outputSchema != nil ? AllocSchema(rawValue: outputSchema!) : nil
 
-                var rejectedRows: [AllocBase.Row] = []
+                var rejectedRows: [AllocBase.RawRow] = []
                 let str = try handleTransform(inputFilePath: inputFilePath,
                                               rejectedRows: &rejectedRows,
                                               finPorterID: importer,

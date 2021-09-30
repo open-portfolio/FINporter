@@ -54,51 +54,65 @@ class FidoHistory: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocBase>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
                                             defTimeOfDay: String? = nil,
                                             defTimeZone: String? = nil,
-                                            timestamp _: Date? = nil) throws -> [T.Row] {
+                                            timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 
-        var items = [T.Row]()
+        var items = [T.DecodedRow]()
 
         if let csvRange = str.range(of: FidoHistory.csvRE, options: .regularExpression) {
             let csvStr = String(str[csvRange])
-            let csv = try CSV(string: csvStr)
+            let delimitedRows = try CSV(string: String(csvStr)).namedRows
+            let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
+                                              defTimeOfDay: defTimeOfDay,
+                                              defTimeZone: defTimeZone,
+                                              rejectedRows: &rejectedRows)
+            items.append(contentsOf: nuItems)
+        }
 
-            let trimFromTicker = CharacterSet(charactersIn: "*")
-
-            for row in csv.namedRows {
+        return items
+    }
+    
+    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+                                         defTimeOfDay: String?,
+                                         defTimeZone: String?,
+                                         rejectedRows: inout [AllocBase.RawRow]) -> [AllocBase.DecodedRow] {
+        
+        let trimFromTicker = CharacterSet(charactersIn: "*")
+            
+        return delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
                 // required values
-                guard let accountNameNumber = T.parseString(row["Account"]),
+                guard let accountNameNumber = MTransaction.parseString(delimitedRow["Account"]),
                       let accountID = accountNameNumber.split(separator: " ").last,
                       accountID.count > 0,
-                      let securityID = T.parseString(row["Symbol"], trimCharacters: trimFromTicker),
+                      let securityID = MTransaction.parseString(delimitedRow["Symbol"], trimCharacters: trimFromTicker),
                       securityID.count > 0,
-                      let shareCount = T.parseDouble(row["Quantity"]),
-                      let sharePrice = T.parseDouble(row["Price ($)"]),
-                      let runDate = row["Run Date"],
+                      let shareCount = MTransaction.parseDouble(delimitedRow["Quantity"]),
+                      let sharePrice = MTransaction.parseDouble(delimitedRow["Price ($)"]),
+                      let runDate = delimitedRow["Run Date"],
                       let transactedAt = parseFidoMMDDYYYY(runDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
                 else {
-                    rejectedRows.append(row)
-                    continue
+                    rejectedRows.append(delimitedRow)
+                    return
                 }
-
+                
                 // optional values
-
+                
                 // unfortunately, no realized gain/loss info available in this export
                 // see the fido_sales report for that
-
+                
                 let lotID = ""
-
-                items.append([
+                
+                decodedRows.append([
                     MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
                     MTransaction.CodingKeys.accountID.rawValue: accountID,
                     MTransaction.CodingKeys.securityID.rawValue: securityID,
@@ -110,7 +124,4 @@ class FidoHistory: FINporter {
                 ])
             }
         }
-
-        return items
     }
-}

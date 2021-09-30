@@ -50,15 +50,15 @@ class FidoSales: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocBase>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay: String? = nil,
                                             defTimeZone: String? = nil,
-                                            timestamp _: Date? = nil) throws -> [T.Row] {
+                                            timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -72,37 +72,47 @@ class FidoSales: FINporter {
             return nil
         }()
 
-        var items = [T.Row]()
-
-        let csv = try CSV(string: str)
-
-        for row in csv.namedRows {
+        let delimitedRows = try CSV(string: str).namedRows
+        
+        return decodeDelimitedRows(delimitedRows: delimitedRows,
+                                   defTimeOfDay: defTimeOfDay,
+                                   defTimeZone: defTimeZone,
+                                   rejectedRows: &rejectedRows,
+                                   accountID: accountID)
+    }
+    
+    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+                                         defTimeOfDay: String?,
+                                         defTimeZone: String?,
+                                         rejectedRows: inout [AllocBase.RawRow],
+                                         accountID: String?) -> [AllocBase.DecodedRow] {
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             // required values
-            guard let symbolCusip = T.parseString(row["Symbol(CUSIP)"]),
+            guard let symbolCusip = MTransaction.parseString(delimitedRow["Symbol(CUSIP)"]),
                   let symbol = symbolCusip.split(separator: "(").first,
                   symbol.count > 0,
-                  let shareCount = T.parseDouble(row["Quantity"]),
-                  let proceeds = T.parseDouble(row["Proceeds"]),
-                  let dateSold = row["Date Sold"],
+                  let shareCount = MTransaction.parseDouble(delimitedRow["Quantity"]),
+                  let proceeds = MTransaction.parseDouble(delimitedRow["Proceeds"]),
+                  let dateSold = delimitedRow["Date Sold"],
                   let transactedAt = parseFidoMMDDYYYY(dateSold, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
             else {
-                rejectedRows.append(row)
-                continue
+                rejectedRows.append(delimitedRow)
+                return
             }
-
+            
             // calculated values
             let sharePrice = (shareCount != 0) ? (proceeds / shareCount) : nil
-
+            
             // optional values
-            let realizedShort = T.parseDouble(row["Short Term Gain/Loss"])
-            let realizedLong = T.parseDouble(row["Long Term Gain/Loss"])
-
+            let realizedShort = MTransaction.parseDouble(delimitedRow["Short Term Gain/Loss"])
+            let realizedLong = MTransaction.parseDouble(delimitedRow["Long Term Gain/Loss"])
+            
             let securityID = String(symbol)
             let shareCount_ = -1 * shareCount // negative because it's a sale (reduction in shares)
-
+            
             let lotID = ""
-
-            items.append([
+            
+            decodedRows.append([
                 MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
                 MTransaction.CodingKeys.accountID.rawValue: accountID,
                 MTransaction.CodingKeys.securityID.rawValue: securityID,
@@ -113,7 +123,5 @@ class FidoSales: FINporter {
                 MTransaction.CodingKeys.realizedGainLong.rawValue: realizedLong,
             ])
         }
-
-        return items
     }
 }

@@ -22,11 +22,11 @@ import AllocData
 
 final class TabularTests: XCTestCase {
     var imp: Tabular!
-    var rejectedRows: [MCap.Row]!
+    var rejectedRows: [MCap.RawRow]!
 
     override func setUpWithError() throws {
         imp = Tabular()
-        rejectedRows = [MCap.Row]()
+        rejectedRows = [MCap.RawRow]()
     }
 
     func testUnableToDetermineInputFormat() {

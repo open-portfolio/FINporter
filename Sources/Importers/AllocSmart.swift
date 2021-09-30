@@ -96,20 +96,20 @@ class AllocSmart: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocBase>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
                                             defTimeOfDay _: String? = nil,
                                             defTimeZone _: String? = nil,
-                                            timestamp _: Date? = nil) throws -> [T.Row] {
+                                            timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 
-        var items = [T.Row]()
+        var items = [T.DecodedRow]()
 
         // returns first match to RE as Range<String.Index (nil if none)
         while let range = str.range(of: AllocSmart.blockRE, options: .regularExpression) {
@@ -121,34 +121,41 @@ class AllocSmart: FINporter {
 
             if let csvRange = block.range(of: AllocSmart.csvRE, options: .regularExpression) {
                 let csvStr = block[csvRange]
-                let csv = try CSV(string: String(csvStr))
-
-                for row in csv.namedRows {
-                    // required values
-                    guard let rawDescript = T.parseString(row["Description"]),
-                          rawDescript.count > 0,
-                          let assetID = AllocSmart.assetClassMap[rawDescript]?.rawValue,
-                          let targetPct = T.parsePercent(row["Optimal Allocation"]),
-                          targetPct >= 0
-                    else {
-                        rejectedRows.append(row)
-                        continue
-                    }
-
-                    // optional values
-
-                    items.append([
-                        MAllocation.CodingKeys.strategyID.rawValue: strategyID,
-                        MAllocation.CodingKeys.assetID.rawValue: assetID,
-                        MAllocation.CodingKeys.targetPct.rawValue: targetPct,
-                        MAllocation.CodingKeys.isLocked.rawValue: false
-                    ])
-                }
+                let delimitedRows = try CSV(string: String(csvStr)).namedRows
+                let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
+                                                  rejectedRows: &rejectedRows,
+                                                  strategyID: strategyID)
+                items.append(contentsOf: nuItems)
             }
 
             str.removeSubrange(range)
         }
 
-        return items // as! [T]
+        return items
+    }
+    
+    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+                                      rejectedRows: inout [AllocBase.RawRow],
+                                      strategyID: String) -> [AllocBase.DecodedRow] {
+        
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
+            guard let rawDescript = MAllocation.parseString(delimitedRow["Description"]),
+                  rawDescript.count > 0,
+                  let assetID = AllocSmart.assetClassMap[rawDescript]?.rawValue,
+                  let targetPct = MAllocation.parsePercent(delimitedRow["Optimal Allocation"]),
+                  targetPct >= 0
+            else {
+                rejectedRows.append(delimitedRow)
+                return
+            }
+            
+            decodedRows.append([
+                MAllocation.CodingKeys.strategyID.rawValue: strategyID,
+                MAllocation.CodingKeys.assetID.rawValue: assetID,
+                MAllocation.CodingKeys.targetPct.rawValue: targetPct,
+                MAllocation.CodingKeys.isLocked.rawValue: false
+            ])
+        }
     }
 }
+
