@@ -100,12 +100,12 @@ final class FidoHistoryTests: XCTestCase {
         XXX
         """
 
-        var rejectedRows = [AllocBase.RawRow]()
+        var rejectedRows = [AllocRowed.RawRow]()
         let dataStr = str.data(using: .utf8)!
-        let actual: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows)
 
         let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021")
-        let expected: AllocBase.DecodedRow = [
+        let expected: AllocRowed.DecodedRow = [
             "txnAction": MTransaction.Action.buy,
             "txnTransactedAt": YYYYMMDDts,
             "txnAccountID": "X00000000",

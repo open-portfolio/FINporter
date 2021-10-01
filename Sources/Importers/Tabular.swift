@@ -64,7 +64,7 @@ public class Tabular: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_ type: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
                                             rejectedRows: inout [T.RawRow],
                                             inputFormat: AllocFormat? = nil,

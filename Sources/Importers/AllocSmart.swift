@@ -96,7 +96,7 @@ class AllocSmart: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_ type: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
                                             rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
@@ -134,9 +134,9 @@ class AllocSmart: FINporter {
         return items
     }
     
-    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
-                                      rejectedRows: inout [AllocBase.RawRow],
-                                      strategyID: String) -> [AllocBase.DecodedRow] {
+    internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
+                                      rejectedRows: inout [AllocRowed.RawRow],
+                                      strategyID: String) -> [AllocRowed.DecodedRow] {
         
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             guard let rawDescript = MAllocation.parseString(delimitedRow["Description"]),

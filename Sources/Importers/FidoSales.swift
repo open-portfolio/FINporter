@@ -50,7 +50,7 @@ class FidoSales: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_ type: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
                                             rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
@@ -81,11 +81,11 @@ class FidoSales: FINporter {
                                    accountID: accountID)
     }
     
-    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+    internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                          defTimeOfDay: String? = nil,
                                          defTimeZone: String? = nil,
-                                         rejectedRows: inout [AllocBase.RawRow],
-                                         accountID: String?) -> [AllocBase.DecodedRow] {
+                                         rejectedRows: inout [AllocRowed.RawRow],
+                                         accountID: String?) -> [AllocRowed.DecodedRow] {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             // required values
             guard let symbolCusip = MTransaction.parseString(delimitedRow["Symbol(CUSIP)"]),

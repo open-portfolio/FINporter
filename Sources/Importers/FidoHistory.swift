@@ -54,7 +54,7 @@ class FidoHistory: FINporter {
         }
     }
     
-    override open func decode<T: AllocBase>(_ type: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
                                             rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
@@ -82,10 +82,10 @@ class FidoHistory: FINporter {
         return items
     }
     
-    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+    internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                       defTimeOfDay: String? = nil,
                                       defTimeZone: String? = nil,
-                                      rejectedRows: inout [AllocBase.RawRow]) -> [AllocBase.DecodedRow] {
+                                      rejectedRows: inout [AllocRowed.RawRow]) -> [AllocRowed.DecodedRow] {
         
         //let trimFromTicker = CharacterSet(charactersIn: "*")
         
@@ -118,13 +118,13 @@ class FidoHistory: FINporter {
         }
     }
 
-    internal func decodeRow(delimitedRow: AllocBase.RawRow,
+    internal func decodeRow(delimitedRow: AllocRowed.RawRow,
                             transactedAt: Date,
                             action: MTransaction.Action,
                             amount: Double,
-                            accountID: String) -> AllocBase.DecodedRow? {
+                            accountID: String) -> AllocRowed.DecodedRow? {
         
-        var decodedRow: AllocBase.DecodedRow = [
+        var decodedRow: AllocRowed.DecodedRow = [
             MTransaction.CodingKeys.action.rawValue: action,
             MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
             MTransaction.CodingKeys.accountID.rawValue: accountID,

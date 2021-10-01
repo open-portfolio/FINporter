@@ -24,7 +24,7 @@ import AllocData
 final class ChuckHistoryTests: XCTestCase {
     var imp: ChuckHistory!
     let df = ISO8601DateFormatter()
-    var rr: [AllocBase.RawRow]!
+    var rr: [AllocRowed.RawRow]!
 
     let goodHeader = """
     "Transactions  for account XXXX-1234 as of 09/26/2021 22:00:26 ET"
@@ -106,8 +106,8 @@ final class ChuckHistoryTests: XCTestCase {
         let timestamp3 = df.date(from: "2021-08-03T17:00:00Z")
         let timestamp4 = df.date(from: "2021-06-16T17:00:00Z")
 
-        let actual: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
-        let expected: [AllocBase.DecodedRow] = [
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
+        let expected: [AllocRowed.DecodedRow] = [
             ["txnAccountID": "XXXX-1234", "txnShareCount": 100.0, "txnSharePrice": 1.0, "txnTransactedAt": timestamp3, "txnAction": MTransaction.Action.miscellaneous],
             ["txnAction": MTransaction.Action.buy, "txnShareCount": 961.0, "txnSharePrice": 105.0736, "txnAccountID": "XXXX-1234", "txnTransactedAt": timestamp1, "txnSecurityID": "SCHB"],
             ["txnTransactedAt": timestamp4, "txnSharePrice": 1.0, "txnSecurityID": "", "txnAccountID": "XXXX-1234", "txnAction": MTransaction.Action.transfer, "txnShareCount": 101000.0],

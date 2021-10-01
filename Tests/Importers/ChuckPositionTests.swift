@@ -113,7 +113,7 @@ final class ChuckPositionsTests: XCTestCase {
     func testMetaOutput() throws {
         let dataStr = goodBody.data(using: .utf8)!
         let ts = Date()
-        var rr = [AllocBase.RawRow]()
+        var rr = [AllocRowed.RawRow]()
 
         let actual: [MSourceMeta.DecodedRow] = try imp.decode(MSourceMeta.self,
                                                         dataStr,
@@ -131,10 +131,10 @@ final class ChuckPositionsTests: XCTestCase {
     
     func testAccountOutput() throws {
         let dataStr = goodBody.data(using: .utf8)!
-        var rr = [AllocBase.RawRow]()
+        var rr = [AllocRowed.RawRow]()
         
-        let actual: [AllocBase.DecodedRow] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rr, outputSchema: .allocAccount)
-        let expected: [AllocBase.DecodedRow] = [
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rr, outputSchema: .allocAccount)
+        let expected: [AllocRowed.DecodedRow] = [
             ["accountID": "XXXX-1234", "title": "Individual"],
             ["accountID": "XXXX-5678", "title": "Roth IRA"],
         ]
@@ -143,10 +143,10 @@ final class ChuckPositionsTests: XCTestCase {
     
     func testHoldingOutput() throws {
         let dataStr = goodBody.data(using: .utf8)!
-        var rr = [AllocBase.RawRow]()
+        var rr = [AllocRowed.RawRow]()
         
-        let actual: [AllocBase.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rr, outputSchema: .allocHolding)
-        let expected: [AllocBase.DecodedRow] = [
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rr, outputSchema: .allocHolding)
+        let expected: [AllocRowed.DecodedRow] = [
             ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "SCHB", "shareBasis": 105.07360041623309, "shareCount": 961.0, "holdingLotID": ""],
             ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "CASH", "shareBasis": 1.0, "shareCount": 42.82, "holdingLotID": ""],
             ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "VOO", "shareBasis": 201.0, "shareCount": 10.0, "holdingLotID": ""],
@@ -159,10 +159,10 @@ final class ChuckPositionsTests: XCTestCase {
     func testSecurityOutput() throws {
         let dataStr = goodBody.data(using: .utf8)!
         let ts = Date()
-        var rr = [AllocBase.RawRow]()
+        var rr = [AllocRowed.RawRow]()
         
-        let actual: [AllocBase.DecodedRow] = try imp.decode(MSecurity.self, dataStr, rejectedRows: &rr, outputSchema: .allocSecurity, timestamp: ts)
-        let expected: [AllocBase.DecodedRow] = [
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MSecurity.self, dataStr, rejectedRows: &rr, outputSchema: .allocSecurity, timestamp: ts)
+        let expected: [AllocRowed.DecodedRow] = [
             ["securityID": "SCHB", "sharePrice": 117.42, "updatedAt": ts],
             ["securityID": "VOO","sharePrice": 211.0, "updatedAt": ts],
             ["securityID": "IAU","sharePrice": 111.0, "updatedAt": ts]
@@ -179,7 +179,7 @@ final class ChuckPositionsTests: XCTestCase {
         """
         
         let timestamp = Date()
-        var rejectedRows = [AllocBase.RawRow]()
+        var rejectedRows = [AllocRowed.RawRow]()
         let dataStr = str.data(using: .utf8)!
         
         let actual: [MSourceMeta.DecodedRow] = try imp.decode(MSourceMeta.self,

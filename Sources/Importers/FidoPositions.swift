@@ -55,7 +55,7 @@ class FidoPositions: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_ type: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
                                             rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
@@ -108,10 +108,10 @@ class FidoPositions: FINporter {
         return items
     }
     
-    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+    internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                                outputSchema_: AllocSchema,
-                                               rejectedRows: inout [AllocBase.RawRow],
-                                               timestamp: Date?) -> [AllocBase.DecodedRow] {
+                                               rejectedRows: inout [AllocRowed.RawRow],
+                                               timestamp: Date?) -> [AllocRowed.DecodedRow] {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             switch outputSchema_ {
             case .allocAccount:
@@ -130,7 +130,7 @@ class FidoPositions: FINporter {
         }
     }
     
-    internal func holding(_ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
+    internal func holding(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
         // required values
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
@@ -166,7 +166,7 @@ class FidoPositions: FINporter {
         }
 
         // because it appears that lots are averaged, assume only one per securityID
-        let lotID = AllocNilKey
+        let lotID = MHolding.AllocNilKey
 
         return [
             MHolding.CodingKeys.accountID.rawValue: accountID,
@@ -177,7 +177,7 @@ class FidoPositions: FINporter {
         ]
     }
 
-    internal func security(_ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow], timestamp: Date?) -> AllocBase.DecodedRow? {
+    internal func security(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow], timestamp: Date?) -> AllocRowed.DecodedRow? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               securityID != "Pending Activity",
@@ -194,7 +194,7 @@ class FidoPositions: FINporter {
         ]
     }
     
-    internal func account(_ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
+    internal func account(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
               let title = MHolding.parseString(row["Account Name"])

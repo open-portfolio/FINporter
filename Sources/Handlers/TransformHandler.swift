@@ -23,7 +23,7 @@ import AllocData
 
 /// Used in CLI
 public func handleTransform(inputFilePath: String,
-                            rejectedRows: inout [AllocBase.RawRow],
+                            rejectedRows: inout [AllocRowed.RawRow],
                             finPorterID: String? = nil,
                             outputSchema: AllocSchema? = nil,
                             defTimeOfDay: String? = nil,
@@ -107,7 +107,7 @@ internal func getPair(data: Data,
     return (importer, importer.outputSchemas.first!)
 }
 
-internal func decodeAndExport<T: AllocBase>(_: T.Type,
+internal func decodeAndExport<T: AllocBase & AllocRowed & AllocAttributable & Codable>(_: T.Type,
                                             _ finPorter: FINporter,
                                             _ data: Data,
                                             _ rejectedRows: inout [T.RawRow],

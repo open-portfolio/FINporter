@@ -67,7 +67,7 @@ class ChuckPositions: FINporter {
         }
     }
     
-    override open func decode<T: AllocBase>(_ type: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
                                             rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
@@ -131,11 +131,11 @@ class ChuckPositions: FINporter {
         return items
     }
     
-    internal func decodeDelimitedRows(delimitedRows: [AllocBase.RawRow],
+    internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                       outputSchema_: AllocSchema,
                                       accountID: String,
-                                      rejectedRows: inout [AllocBase.RawRow],
-                                      timestamp: Date?) -> [AllocBase.DecodedRow] {
+                                      rejectedRows: inout [AllocRowed.RawRow],
+                                      timestamp: Date?) -> [AllocRowed.DecodedRow] {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             switch outputSchema_ {
             case .allocHolding:
@@ -152,7 +152,7 @@ class ChuckPositions: FINporter {
         }
     }
     
-    internal func meta(_ str: String, _ url: URL?) -> AllocBase.DecodedRow {
+    internal func meta(_ str: String, _ url: URL?) -> AllocRowed.DecodedRow {
         var exportedAt: Date? = nil
         
         // extract exportedAt from "Positions for All-Accounts as of 09:59 PM ET, 09/26/2021" (with quotes)
@@ -171,7 +171,7 @@ class ChuckPositions: FINporter {
         ]
     }
     
-    internal func holding(_ accountID: String, _ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow]) -> AllocBase.DecodedRow? {
+    internal func holding(_ accountID: String, _ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
         // required values
         
         // NOTE: 'Symbol' may be "Cash & Cash Investments" or "Account Total"
@@ -202,7 +202,7 @@ class ChuckPositions: FINporter {
         }
         
         // because it appears that lots are averaged, assume only one per securityID
-        let lotID = AllocNilKey
+        let lotID = MHolding.AllocNilKey
         
         return [
             MHolding.CodingKeys.accountID.rawValue: accountID,
@@ -213,7 +213,7 @@ class ChuckPositions: FINporter {
         ]
     }
     
-    internal func security(_ row: AllocBase.RawRow, rejectedRows: inout [AllocBase.RawRow], timestamp: Date?) -> AllocBase.DecodedRow? {
+    internal func security(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow], timestamp: Date?) -> AllocRowed.DecodedRow? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               //securityID != "Pending Activity",

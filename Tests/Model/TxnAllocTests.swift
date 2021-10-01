@@ -22,11 +22,11 @@ import AllocData
 
 final class TxnAllocTests: XCTestCase {
     var imp: Tabular!
-    var rejectedRows: [AllocBase.RawRow]!
+    var rejectedRows: [AllocRowed.RawRow]!
     
     override func setUpWithError() throws {
         imp = Tabular()
-        rejectedRows = [AllocBase.RawRow]()
+        rejectedRows = [AllocRowed.RawRow]()
     }
     
     func testSourceFormats() {
@@ -99,8 +99,8 @@ final class TxnAllocTests: XCTestCase {
         buy,2020-12-31,   ,SPY,,1,1
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
-        XCTAssertEqual(1, rejectedRows.count)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        XCTAssertEqual(0, rejectedRows.count)
     }
     
     func testParseNoRejectedBadSecurityID() throws {
@@ -109,8 +109,8 @@ final class TxnAllocTests: XCTestCase {
         buy,2020-12-31,1,  ,,1,1
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
-        XCTAssertEqual(1, rejectedRows.count)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        XCTAssertEqual(0, rejectedRows.count)
     }
     
     func testParseAcceptedDespiteBadSharePrice() throws {
@@ -119,7 +119,7 @@ final class TxnAllocTests: XCTestCase {
         buy,2020-12-31,1,SPY,,xxx,1
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
     }
     
@@ -129,7 +129,7 @@ final class TxnAllocTests: XCTestCase {
         buy,2020-12-31,1,SPY,,1,xxx
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
     }
     
@@ -139,7 +139,7 @@ final class TxnAllocTests: XCTestCase {
         buy,,1,SPY,,1,1
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(1, rejectedRows.count)
     }
     
@@ -149,12 +149,12 @@ final class TxnAllocTests: XCTestCase {
         buy,2020-12-31,1,SPY,X,1,3,5,7,TRUE
         """
         let dataStr = csv.data(using: .utf8)!
-        let actual: [AllocBase.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
         
         let timestamp = MTransaction.parseDate("2020-12-31T00:00:00Z")!
         
-        let expected: AllocBase.DecodedRow = ["realizedGainShort": 7.0,
+        let expected: AllocRowed.DecodedRow = ["realizedGainShort": 7.0,
                                           "realizedGainLong": 5.0,
                                           "txnAction": MTransaction.Action.buy,
                                           "txnAccountID": "1",

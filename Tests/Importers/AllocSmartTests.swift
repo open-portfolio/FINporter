@@ -127,9 +127,9 @@ final class AllocSmartTests: XCTestCase {
     func testParseFullToJSON() throws {
         let dataStr = fullSource.data(using: .utf8)!
 
-        var rejectedRows = [AllocBase.RawRow]()
-        let actual: [AllocBase.DecodedRow] = try imp.decode(MAllocation.self, dataStr, rejectedRows: &rejectedRows)
-        let expected: [AllocBase.DecodedRow] = [
+        var rejectedRows = [AllocRowed.RawRow]()
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MAllocation.self, dataStr, rejectedRows: &rejectedRows)
+        let expected: [AllocRowed.DecodedRow] = [
             ["allocationStrategyID": "20M", "allocationAssetID": "Cmdty", "targetPct": 0.0000, "isLocked": false],
             ["allocationStrategyID": "20M", "allocationAssetID": "Intl", "targetPct": 0.0191, "isLocked": false],
             ["allocationStrategyID": "20M", "allocationAssetID": "Japan", "targetPct": 0.0000, "isLocked": false],
@@ -168,10 +168,10 @@ final class AllocSmartTests: XCTestCase {
         let detectActual = try imp.detect(dataPrefix: dataStr)
         XCTAssertEqual(detectExpected, detectActual)
 
-        var rejectedRows = [AllocBase.RawRow]()
-        let actual: [AllocBase.DecodedRow] = try imp.decode(MAllocation.self, dataStr, rejectedRows: &rejectedRows)
+        var rejectedRows = [AllocRowed.RawRow]()
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MAllocation.self, dataStr, rejectedRows: &rejectedRows)
 
-        let expected: [AllocBase.DecodedRow] = [
+        let expected: [AllocRowed.DecodedRow] = [
             ["allocationStrategyID": "20M", "allocationAssetID": "Cmdty", "targetPct": 0.00, "isLocked": false],
             ["allocationStrategyID": "20M", "allocationAssetID": "Intl", "targetPct": 0.0191, "isLocked": false],
         ]

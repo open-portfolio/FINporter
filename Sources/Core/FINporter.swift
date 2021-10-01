@@ -36,7 +36,7 @@ open class FINporter: Identifiable, Hashable {
         throw FINporterError.notImplementedError
     }
 
-    open func decode<T: AllocBase>(_ type: T.Type,
+    open func decode<T: AllocRowed>(_ type: T.Type,
                                    _: Data,
                                    rejectedRows _: inout [T.RawRow],
                                    inputFormat _: AllocFormat? = nil,
@@ -48,7 +48,7 @@ open class FINporter: Identifiable, Hashable {
         throw FINporterError.notImplementedError
     }
 
-    open func export<T: AllocBase>(elements: [T], format: AllocFormat) throws -> Data {
+    open func export<T: AllocBase & AllocRowed & Codable & AllocAttributable>(elements: [T], format: AllocFormat) throws -> Data {
         switch format {
         case .JSON:
             let encoder = JSONEncoder()
