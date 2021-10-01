@@ -102,7 +102,7 @@ $ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema
 
 Each command above will produce comma-separated value data in the following schemas, respectively.
 
-NOTE: "Cash & Cash Investments" holdings will be assigned a SecurityID of "CASH".
+NOTE: "Cash & Cash Investments" holdings will be assigned a SecurityID of "CORE".
 
 The 'source meta' can extract the export date from the content, if present, as well as other details.
 

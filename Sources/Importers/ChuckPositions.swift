@@ -187,7 +187,7 @@ class ChuckPositions: FINporter {
         var netShareCount: Double? = nil
         
         if rawSymbol == "Cash & Cash Investments" {
-            netSymbol = "CASH"
+            netSymbol = "CORE"
             shareBasis = 1.0
             netShareCount = MHolding.parseDouble(row["Market Value"])
         } else if let shareCount = MHolding.parseDouble(row["Quantity"]),

@@ -148,10 +148,10 @@ final class ChuckPositionsTests: XCTestCase {
         let actual: [AllocRowed.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rr, outputSchema: .allocHolding)
         let expected: [AllocRowed.DecodedRow] = [
             ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "SCHB", "shareBasis": 105.07360041623309, "shareCount": 961.0],
-            ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "CASH", "shareBasis": 1.0, "shareCount": 42.82],
+            ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "CORE", "shareBasis": 1.0, "shareCount": 42.82],
             ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "VOO", "shareBasis": 201.0, "shareCount": 10.0],
             ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "IAU", "shareBasis": 101.0, "shareCount": 50.0],
-            ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "CASH", "shareBasis": 1.0, "shareCount": 42.82],
+            ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "CORE", "shareBasis": 1.0, "shareCount": 42.82],
         ]
         XCTAssertEqual(expected, actual)
     }
