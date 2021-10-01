@@ -119,7 +119,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "SCHB", "txnShareCount": 122.13, "txnAccountID": "1", "txnAction": MTransaction.Action.dividendIncome, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "SCHB", "txnShareCount": 122.13, "txnAccountID": "1", "txnAction": MTransaction.Action.dividend, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
 
@@ -135,7 +135,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 0.51, "txnAccountID": "1", "txnAction": MTransaction.Action.interestIncome, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 0.51, "txnAccountID": "1", "txnAction": MTransaction.Action.interest, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
 
@@ -151,7 +151,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 100.00, "txnAccountID": "1", "txnAction": MTransaction.Action.miscellaneous, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 100.00, "txnAccountID": "1", "txnAction": MTransaction.Action.misc, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
 
@@ -167,7 +167,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": -100.00, "txnAccountID": "1", "txnAction": MTransaction.Action.miscellaneous, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": -100.00, "txnAccountID": "1", "txnAction": MTransaction.Action.misc, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
 

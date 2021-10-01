@@ -108,11 +108,11 @@ final class ChuckHistoryTests: XCTestCase {
 
         let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
         let expected: [AllocRowed.DecodedRow] = [
-            ["txnAccountID": "XXXX-1234", "txnShareCount": 100.0, "txnSharePrice": 1.0, "txnTransactedAt": timestamp3, "txnAction": MTransaction.Action.miscellaneous],
+            ["txnAccountID": "XXXX-1234", "txnShareCount": 100.0, "txnSharePrice": 1.0, "txnTransactedAt": timestamp3, "txnAction": MTransaction.Action.misc],
             ["txnAction": MTransaction.Action.buy, "txnShareCount": 961.0, "txnSharePrice": 105.0736, "txnAccountID": "XXXX-1234", "txnTransactedAt": timestamp1, "txnSecurityID": "SCHB"],
             ["txnTransactedAt": timestamp4, "txnSharePrice": 1.0, "txnSecurityID": "", "txnAccountID": "XXXX-1234", "txnAction": MTransaction.Action.transfer, "txnShareCount": 101000.0],
             ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO", "txnAction": MTransaction.Action.sell, "txnShareCount": -10.0, "txnSharePrice": 137.1222],
-            ["txnAccountID": "XXXX-5678", "txnShareCount": 0.55, "txnSharePrice": 1.0, "txnAction": MTransaction.Action.interestIncome, "txnTransactedAt": timestamp4]
+            ["txnAccountID": "XXXX-5678", "txnShareCount": 0.55, "txnSharePrice": 1.0, "txnAction": MTransaction.Action.interest, "txnTransactedAt": timestamp4]
 
         ]
         XCTAssertEqual(expected, actual)

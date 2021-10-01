@@ -160,7 +160,7 @@ class FidoHistory: FINporter {
                 decodedRow[MTransaction.CodingKeys.securityID.rawValue] = ""
             }
 
-        case .dividendIncome:
+        case .dividend:
             guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
                   symbol.count > 0
             else {
@@ -171,7 +171,7 @@ class FidoHistory: FINporter {
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
             decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
 
-        case .interestIncome, .miscellaneous:
+        case .interest, .misc:
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
         }
@@ -188,11 +188,11 @@ class FidoHistory: FINporter {
         case let str where str.starts(with: "TRANSFER OF ASSETS "):
             return .transfer
         case let str where str.starts(with: "DIVIDEND RECEIVED "):
-            return .dividendIncome
+            return .dividend
         case let str where str.starts(with: "INTEREST EARNED "):
-            return .interestIncome
+            return .interest
         default:
-            return .miscellaneous
+            return .misc
         }
     }
 }

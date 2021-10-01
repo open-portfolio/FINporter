@@ -166,7 +166,7 @@ class FidoPositions: FINporter {
         }
 
         // because it appears that lots are averaged, assume only one per securityID
-        let lotID = MHolding.AllocNilKey
+        let lotID = ""
 
         return [
             MHolding.CodingKeys.accountID.rawValue: accountID,

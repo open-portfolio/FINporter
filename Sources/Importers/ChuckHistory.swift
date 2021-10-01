@@ -202,7 +202,7 @@ class ChuckHistory: FINporter {
                 decodedRow[MTransaction.CodingKeys.securityID.rawValue] = rawSymbol
             }
             
-        case .dividendIncome:
+        case .dividend:
             guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
                   symbol.count > 0
             else {
@@ -213,7 +213,7 @@ class ChuckHistory: FINporter {
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
             decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
 
-        case .interestIncome, .miscellaneous:
+        case .interest, .misc:
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
         }
@@ -239,11 +239,11 @@ class ChuckHistory: FINporter {
         case "Security Transfer":
             return .transfer
         case "Cash Dividend":
-            return .dividendIncome
+            return .dividend
         case "Bank Interest":
-            return .interestIncome
+            return .interest
         default:
-            return .miscellaneous
+            return .misc
         }
     }
 }
