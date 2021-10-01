@@ -92,7 +92,6 @@ class FidoHistory: FINporter {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             // required values
             guard let rawAction = MTransaction.parseString(delimitedRow["Action"]),
-                  case let action = FidoHistory.decodeAction(rawAction: rawAction),
                   let rawDate = delimitedRow["Run Date"],
                   let transactedAt = parseFidoMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone),
                   let accountNameNumber = MTransaction.parseString(delimitedRow["Account"]),
@@ -106,7 +105,7 @@ class FidoHistory: FINporter {
             
             guard let decodedRow = decodeRow(delimitedRow: delimitedRow,
                                              transactedAt: transactedAt,
-                                             action: action,
+                                             rawAction: rawAction,
                                              amount: amount,
                                              accountID: String(accountID))
             else {
@@ -120,18 +119,39 @@ class FidoHistory: FINporter {
 
     internal func decodeRow(delimitedRow: AllocRowed.RawRow,
                             transactedAt: Date,
-                            action: MTransaction.Action,
+                            rawAction: String,
                             amount: Double,
                             accountID: String) -> AllocRowed.DecodedRow? {
         
+        let netAction: MTransaction.Action = {
+            switch rawAction {
+            case let str where str.starts(with: "YOU BOUGHT "):
+                return .buysell
+            case let str where str.starts(with: "PURCHASE INTO "):
+                return .buysell
+            case let str where str.starts(with: "YOU SOLD "):
+                return .buysell
+            case let str where str.starts(with: "REDEMPTION FROM "):
+                return .buysell
+            case let str where str.starts(with: "TRANSFER OF ASSETS "):
+                return .transfer
+            case let str where str.starts(with: "DIVIDEND RECEIVED "):
+                return .income
+            case let str where str.starts(with: "INTEREST EARNED "):
+                return .income
+            default:
+                return .misc
+            }
+        }()
+        
         var decodedRow: AllocRowed.DecodedRow = [
-            MTransaction.CodingKeys.action.rawValue: action,
+            MTransaction.CodingKeys.action.rawValue: netAction,
             MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
             MTransaction.CodingKeys.accountID.rawValue: accountID,
         ]
-        
-        switch action {
-        case .buy, .sell:
+
+        switch netAction {
+        case .buysell:
             guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
                   let shareCount = MTransaction.parseDouble(delimitedRow["Quantity"]),
                   let sharePrice = MTransaction.parseDouble(delimitedRow["Price ($)"])
@@ -160,41 +180,16 @@ class FidoHistory: FINporter {
                 decodedRow[MTransaction.CodingKeys.securityID.rawValue] = ""
             }
 
-        case .dividend:
-            guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
-                  symbol.count > 0
-            else {
-                return nil
-            }
-            
+        case .income, .misc:
+            let symbol = MTransaction.parseString(delimitedRow["Symbol"])
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
             decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
-
-        case .interest, .misc:
-            decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
-            decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
         }
         
         return decodedRow
     }
     
-    static func decodeAction(rawAction: String) -> MTransaction.Action {
-        switch rawAction {
-        case let str where str.starts(with: "YOU BOUGHT "):
-            return .buy
-        case let str where str.starts(with: "YOU SOLD "):
-            return .sell
-        case let str where str.starts(with: "TRANSFER OF ASSETS "):
-            return .transfer
-        case let str where str.starts(with: "DIVIDEND RECEIVED "):
-            return .dividend
-        case let str where str.starts(with: "INTEREST EARNED "):
-            return .interest
-        default:
-            return .misc
-        }
-    }
 }
 
 

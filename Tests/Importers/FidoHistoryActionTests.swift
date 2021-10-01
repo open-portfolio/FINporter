@@ -41,7 +41,7 @@ final class FidoHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "VEA", "txnShareCount": 0.446, "txnAccountID": "200000000", "txnAction": AllocData.MTransaction.Action.buy, "txnTransactedAt": timestamp1, "txnSharePrice": 51.38]]
+        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "VEA", "txnShareCount": 0.446, "txnAccountID": "200000000", "txnAction": AllocData.MTransaction.Action.buysell, "txnTransactedAt": timestamp1, "txnSharePrice": 51.38]]
         XCTAssertEqual(expected, actual)
     }
     
@@ -55,7 +55,7 @@ final class FidoHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "TLT", "txnShareCount": -86.0, "txnAccountID": "200000000", "txnAction": AllocData.MTransaction.Action.sell, "txnTransactedAt": timestamp1, "txnSharePrice": 144.41]]
+        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "TLT", "txnShareCount": -86.0, "txnAccountID": "200000000", "txnAction": AllocData.MTransaction.Action.buysell, "txnTransactedAt": timestamp1, "txnSharePrice": 144.41]]
         XCTAssertEqual(expected, actual)
     }
     
@@ -113,7 +113,7 @@ final class FidoHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "VPL", "txnShareCount": 297.62, "txnAccountID": "200000000", "txnAction": AllocData.MTransaction.Action.dividend, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "VPL", "txnShareCount": 297.62, "txnAccountID": "200000000", "txnAction": AllocData.MTransaction.Action.income, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
     
@@ -127,11 +127,11 @@ final class FidoHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 1.56, "txnAccountID": "Z00000000", "txnAction": AllocData.MTransaction.Action.interest, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 1.56, "txnAccountID": "Z00000000", "txnSecurityID": "QXXXX", "txnAction": AllocData.MTransaction.Action.income, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
 
-    func testMiscCredit() throws {
+    func testRedemption() throws {
         let csvStr = """
         Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
         07/30/2021,CASH MGMT Z00000000, REDEMPTION FROM CORE ACCOUNT FDIC INSURED DEPOSIT AT JP MORGAN BK NO (QXXXX) (Cash), QXXXX, FDIC INSURED DEPOSIT AT JP MORGAN BK NO,Cash,-1010,1,,,,1010,
@@ -141,7 +141,7 @@ final class FidoHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 1010, "txnAccountID": "Z00000000", "txnAction": AllocData.MTransaction.Action.misc, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": -1010, "txnAccountID": "Z00000000", "txnSecurityID": "QXXXX", "txnAction": AllocData.MTransaction.Action.buysell, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
 

@@ -117,7 +117,6 @@ class ChuckHistory: FINporter {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             
             guard let rawAction = MTransaction.parseString(delimitedRow["Action"]),
-                  case let action = ChuckHistory.decodeAction(rawAction: rawAction),
                   let rawDate = delimitedRow["Date"],
                   let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone),
                   let amount = MTransaction.parseDouble(delimitedRow["Amount"])
@@ -128,7 +127,7 @@ class ChuckHistory: FINporter {
             
             guard let decodedRow = decodeRow(delimitedRow: delimitedRow,
                                              transactedAt: transactedAt,
-                                             action: action,
+                                             rawAction: rawAction,
                                              amount: amount,
                                              accountID: accountID)
             else {
@@ -142,18 +141,36 @@ class ChuckHistory: FINporter {
     
     internal func decodeRow(delimitedRow: AllocRowed.RawRow,
                             transactedAt: Date,
-                            action: MTransaction.Action,
+                            rawAction: String,
                             amount: Double,
                             accountID: String) -> AllocRowed.DecodedRow? {
         
+        var isSale = false
+        
+        let netAction: MTransaction.Action = {
+            switch rawAction {
+            case "Buy":
+                return .buysell
+            case "Sell":
+                isSale = true
+                return .buysell
+            case "Security Transfer":
+                return .transfer
+            case "Cash Dividend", "Bank Interest", "Promotional Award":
+                return .income
+            default:
+                return .misc
+            }
+        }()
+        
         var decodedRow: AllocRowed.DecodedRow = [
-            MTransaction.CodingKeys.action.rawValue: action,
+            MTransaction.CodingKeys.action.rawValue: netAction,
             MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
             MTransaction.CodingKeys.accountID.rawValue: accountID,
         ]
         
-        switch action {
-        case .buy, .sell:
+        switch netAction {
+        case .buysell:
             guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
                   let rawQuantity = MTransaction.parseDouble(delimitedRow["Quantity"]),
                   let sharePrice = MTransaction.parseDouble(delimitedRow["Price"])
@@ -165,16 +182,7 @@ class ChuckHistory: FINporter {
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
             
             /// AllocData uses sign on shareCount to determine whether sale or purchase
-            let shareCount: Double = {
-                switch action {
-                case .buy:
-                    return rawQuantity
-                case .sell:
-                    return -1 * rawQuantity
-                default:
-                    return 0
-                }
-            }()
+            let shareCount: Double = rawQuantity * (isSale ? -1 : 1)
 
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = shareCount
             
@@ -202,18 +210,13 @@ class ChuckHistory: FINporter {
                 decodedRow[MTransaction.CodingKeys.securityID.rawValue] = rawSymbol
             }
             
-        case .dividend:
-            guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
-                  symbol.count > 0
-            else {
-                return nil
-            }
-            
+        case .income:
+            let symbol = MTransaction.parseString(delimitedRow["Symbol"])
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
             decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
 
-        case .interest, .misc:
+        default:
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
         }
@@ -228,22 +231,5 @@ class ChuckHistory: FINporter {
               captured.count == 1
         else { return nil }
         return captured[0]
-    }
-    
-    static func decodeAction(rawAction: String) -> MTransaction.Action {
-        switch rawAction {
-        case "Buy":
-            return .buy
-        case "Sell":
-            return .sell
-        case "Security Transfer":
-            return .transfer
-        case "Cash Dividend":
-            return .dividend
-        case "Bank Interest":
-            return .interest
-        default:
-            return .misc
-        }
     }
 }

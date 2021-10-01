@@ -156,7 +156,7 @@ final class TxnAllocTests: XCTestCase {
         
         let expected: AllocRowed.DecodedRow = ["realizedGainShort": 7.0,
                                           "realizedGainLong": 5.0,
-                                          "txnAction": MTransaction.Action.buy,
+                                          "txnAction": MTransaction.Action.buysell,
                                           "txnAccountID": "1",
                                           "txnSecurityID": "SPY",
                                           "txnLotID": "X",
