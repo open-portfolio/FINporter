@@ -94,8 +94,8 @@ final class FidoPositionsTests: XCTestCase {
             let actual: [AllocRowed.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocHolding)
 
             let expected: [AllocRowed.DecodedRow] = [
-                ["holdingAccountID": "Z00000000", "holdingSecurityID": "VWO", "holdingLotID": "", "shareCount": 900.0, "shareBasis": 28.96],
-                ["holdingAccountID": "Z00000001", "holdingSecurityID": "VOO", "holdingLotID": "", "shareCount": 800.0, "shareBasis": 18.96],
+                ["holdingAccountID": "Z00000000", "holdingSecurityID": "VWO", "shareCount": 900.0, "shareBasis": 28.96],
+                ["holdingAccountID": "Z00000001", "holdingSecurityID": "VOO", "shareCount": 800.0, "shareBasis": 18.96],
             ]
 
             XCTAssertTrue(areEqual(expected, actual))

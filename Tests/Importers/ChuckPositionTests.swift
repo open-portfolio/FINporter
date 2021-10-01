@@ -122,7 +122,7 @@ final class ChuckPositionsTests: XCTestCase {
                                                         url: URL(string: "http://blah.com"),
                                                         timestamp: ts)
         XCTAssertNotNil(actual[0]["sourceMetaID"]!)
-        XCTAssertEqual(URL(string: "http://blah.com"), actual[0]["url"]!)
+        XCTAssertEqual(URL(string: "http://blah.com"), actual[0]["url"])
         XCTAssertEqual("chuck_positions", actual[0]["importerID"])
         let exportedAt: Date? = actual[0]["exportedAt"] as? Date
         let expectedExportedAt = df.date(from: "2021-09-27T01:59:00+0000")!
@@ -147,11 +147,11 @@ final class ChuckPositionsTests: XCTestCase {
         
         let actual: [AllocRowed.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rr, outputSchema: .allocHolding)
         let expected: [AllocRowed.DecodedRow] = [
-            ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "SCHB", "shareBasis": 105.07360041623309, "shareCount": 961.0, "holdingLotID": ""],
-            ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "CASH", "shareBasis": 1.0, "shareCount": 42.82, "holdingLotID": ""],
-            ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "VOO", "shareBasis": 201.0, "shareCount": 10.0, "holdingLotID": ""],
-            ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "IAU", "shareBasis": 101.0, "shareCount": 50.0, "holdingLotID": ""],
-            ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "CASH", "shareBasis": 1.0, "shareCount": 42.82, "holdingLotID": ""],
+            ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "SCHB", "shareBasis": 105.07360041623309, "shareCount": 961.0],
+            ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "CASH", "shareBasis": 1.0, "shareCount": 42.82],
+            ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "VOO", "shareBasis": 201.0, "shareCount": 10.0],
+            ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "IAU", "shareBasis": 101.0, "shareCount": 50.0],
+            ["holdingAccountID": "XXXX-5678", "holdingSecurityID": "CASH", "shareBasis": 1.0, "shareCount": 42.82],
         ]
         XCTAssertEqual(expected, actual)
     }
@@ -191,7 +191,7 @@ final class ChuckPositionsTests: XCTestCase {
         
         XCTAssertEqual(1, actual.count)
         XCTAssertNotNil(actual[0]["sourceMetaID"]!)
-        XCTAssertEqual(URL(string: "http://blah.com"), actual[0]["url"]!)
+        XCTAssertEqual(URL(string: "http://blah.com"), actual[0]["url"])
         XCTAssertEqual("chuck_positions", actual[0]["importerID"])
         let exportedAt: Date? = actual[0]["exportedAt"] as? Date
         let expectedExportedAt = df.date(from: "2021-09-27T01:59:00+0000")!

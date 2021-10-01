@@ -104,7 +104,7 @@ final class FidoHistoryTests: XCTestCase {
         let dataStr = str.data(using: .utf8)!
         let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows)
 
-        let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021")
+        let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021")!
         let expected: AllocRowed.DecodedRow = [
             "txnAction": MTransaction.Action.buysell,
             "txnTransactedAt": YYYYMMDDts,

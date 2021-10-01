@@ -117,10 +117,10 @@ class ChuckPositions: FINporter {
                     let csvStr = block[csvRange]
                     let delimitedRows = try CSV(string: String(csvStr)).namedRows
                     let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
-                                                  outputSchema_: outputSchema_,
-                                                  accountID: accountID,
-                                                  rejectedRows: &rejectedRows,
-                                                  timestamp: timestamp)
+                                                      outputSchema_: outputSchema_,
+                                                      accountID: accountID,
+                                                      rejectedRows: &rejectedRows,
+                                                      timestamp: timestamp)
                     items.append(contentsOf: nuItems)
                 }
             }
@@ -152,28 +152,27 @@ class ChuckPositions: FINporter {
         }
     }
     
-    internal func meta(_ str: String, _ url: URL?) -> AllocRowed.DecodedRow {
-        var exportedAt: Date? = nil
+    internal func meta(_ str: String, _ url: URL?) -> AllocRowed.DecodedRow {        
+        var decodedRow: AllocRowed.DecodedRow = [
+            MSourceMeta.CodingKeys.sourceMetaID.rawValue: UUID().uuidString,
+            MSourceMeta.CodingKeys.importerID.rawValue: self.id,
+        ]
+        
+        if let _url = url {
+            decodedRow[MSourceMeta.CodingKeys.url.rawValue] = _url
+        }
         
         // extract exportedAt from "Positions for All-Accounts as of 09:59 PM ET, 09/26/2021" (with quotes)
         let ddRE = #"(?<=\"Positions for All-Accounts as of ).+(?=\")"#
-        if let dd = str.range(of: ddRE, options: .regularExpression) {
-            exportedAt = chuckDateFormatter.date(from: String(str[dd]))
+        if let dd = str.range(of: ddRE, options: .regularExpression),
+           let exportedAt = chuckDateFormatter.date(from: String(str[dd])) {
+            decodedRow[MSourceMeta.CodingKeys.exportedAt.rawValue] = exportedAt
         }
         
-        let sourceMetaID = UUID().uuidString
-        
-        return [
-            MSourceMeta.CodingKeys.sourceMetaID.rawValue: sourceMetaID,
-            MSourceMeta.CodingKeys.url.rawValue: url,
-            MSourceMeta.CodingKeys.importerID.rawValue: self.id,
-            MSourceMeta.CodingKeys.exportedAt.rawValue: exportedAt,
-        ]
+        return decodedRow
     }
     
     internal func holding(_ accountID: String, _ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
-        // required values
-        
         // NOTE: 'Symbol' may be "Cash & Cash Investments" or "Account Total"
         guard let rawSymbol = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               rawSymbol.count > 0,
@@ -182,8 +181,6 @@ class ChuckPositions: FINporter {
             rejectedRows.append(row)
             return nil
         }
-        
-        // optional values
         
         var netSymbol: String? = nil
         var shareBasis: Double? = nil
@@ -200,34 +197,43 @@ class ChuckPositions: FINporter {
             shareBasis = rawCostBasis / shareCount
             netShareCount = shareCount
         }
-        
-        // because it appears that lots are averaged, assume only one per securityID
-        let lotID = ""
-        
-        return [
+
+        var decodedRow: AllocRowed.DecodedRow = [
             MHolding.CodingKeys.accountID.rawValue: accountID,
-            MHolding.CodingKeys.securityID.rawValue: netSymbol,
-            MHolding.CodingKeys.lotID.rawValue: lotID,
-            MHolding.CodingKeys.shareCount.rawValue: netShareCount,
-            MHolding.CodingKeys.shareBasis.rawValue: shareBasis
         ]
+
+        if let _netSymbol = netSymbol {
+            decodedRow[MHolding.CodingKeys.securityID.rawValue] = _netSymbol
+        }
+        if let _netShareCount = netShareCount {
+            decodedRow[MHolding.CodingKeys.shareCount.rawValue] = _netShareCount
+        }
+        if let _shareBasis = shareBasis {
+            decodedRow[MHolding.CodingKeys.shareBasis.rawValue] = _shareBasis
+        }
+        
+        return decodedRow
     }
     
     internal func security(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow], timestamp: Date?) -> AllocRowed.DecodedRow? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
-              //securityID != "Pending Activity",
               let sharePrice = MHolding.parseDouble(row["Price"])
         else {
             rejectedRows.append(row)
             return nil
         }
         
-        return [
+        var decodedRow: AllocRowed.DecodedRow = [
             MSecurity.CodingKeys.securityID.rawValue: securityID,
             MSecurity.CodingKeys.sharePrice.rawValue: sharePrice,
-            MSecurity.CodingKeys.updatedAt.rawValue: timestamp
         ]
+        
+        if let updatedAt = timestamp {
+            decodedRow[MSecurity.CodingKeys.updatedAt.rawValue] = updatedAt
+        }
+        
+        return decodedRow
     }
     
     // parse ""Individual Something                       XXXX-1234"" to ["Individual Something", "XXXX-1234"]

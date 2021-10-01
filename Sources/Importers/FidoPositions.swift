@@ -144,7 +144,11 @@ class FidoPositions: FINporter {
             return nil
         }
 
-        // optional values
+        var decodedRow: AllocRowed.DecodedRow = [
+            MHolding.CodingKeys.accountID.rawValue: accountID,
+            MHolding.CodingKeys.securityID.rawValue: securityID,
+            MHolding.CodingKeys.shareCount.rawValue: shareCount,
+        ]
         
         // holding may have "n/a" for share basis
         var shareBasis: Double? = nil
@@ -165,16 +169,11 @@ class FidoPositions: FINporter {
             }
         }
 
-        // because it appears that lots are averaged, assume only one per securityID
-        let lotID = ""
-
-        return [
-            MHolding.CodingKeys.accountID.rawValue: accountID,
-            MHolding.CodingKeys.securityID.rawValue: securityID,
-            MHolding.CodingKeys.lotID.rawValue: lotID,
-            MHolding.CodingKeys.shareCount.rawValue: shareCount,
-            MHolding.CodingKeys.shareBasis.rawValue: shareBasis
-        ]
+        if let _shareBasis = shareBasis {
+            decodedRow[MHolding.CodingKeys.shareBasis.rawValue] = _shareBasis
+        }
+        
+        return decodedRow
     }
 
     internal func security(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow], timestamp: Date?) -> AllocRowed.DecodedRow? {
@@ -187,11 +186,16 @@ class FidoPositions: FINporter {
             return nil
         }
 
-        return [
+        var decodedRow: AllocRowed.DecodedRow = [
             MSecurity.CodingKeys.securityID.rawValue: securityID,
             MSecurity.CodingKeys.sharePrice.rawValue: sharePrice,
-            MSecurity.CodingKeys.updatedAt.rawValue: timestamp
         ]
+
+        if let updatedAt = timestamp {
+            decodedRow[MSecurity.CodingKeys.updatedAt.rawValue] = updatedAt
+        }
+        
+        return decodedRow
     }
     
     internal func account(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
