@@ -58,7 +58,7 @@ Output schemas:
 * [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
 * [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
 
-### Fido (Fidelity) History
+### Fido (Fidelity) Transaction History
 
 To transform the "Accounts_History.csv" export, which contains a record of recent sales, purchases, and other transactions:
 
@@ -72,7 +72,7 @@ NOTE: output changed to the new MTransaction from the deprecated MHistory.
 
 Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
 
-### Fido (Fidelity) Sales
+### Fido (Fidelity) Transaction Sales
 
 To transform the "Realized_Gain_Loss_Account_00000000.csv" export, available in the 'Closed Positions' view of taxable accounts:
 
@@ -112,7 +112,7 @@ Output schemas:
 * [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
 * [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
 
-### Chuck (Schwab) History **BETA**
+### Chuck (Schwab) Transaction History **BETA**
 
 _This is an early release, and probably has bugs._
 
@@ -127,6 +127,19 @@ The command above will produce comma-separated value data in the following schem
 NOTE: Schwab's transaction export does not contain realized gains and losses of sales, and so they are not in the imported transaction.
 
 Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
+
+### Chuck (Schwab) Transaction Sales **BETA**
+
+To transform the "XXXX1234_GainLoss_Realized_YYYYMMDD-HHMMSS.CSV" export, available in the 'Closed Positions' view of taxable accounts:
+
+```bash
+$ finport transform XXXX1234_GainLoss_Realized_YYYYMMDD-HHMMSS.CSV
+```
+
+The command above will produce comma-separated value data in the following schema.
+
+Output schema: 
+* [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
 
 ### AllocSmart (Allocate Smartly) Export
 

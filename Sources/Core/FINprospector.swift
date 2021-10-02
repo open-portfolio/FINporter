@@ -34,6 +34,7 @@ public struct FINprospector {
         importers.append(FidoSales())
         importers.append(ChuckPositions())
         importers.append(ChuckHistory())
+        importers.append(ChuckSales())
 
         // consolidated importer for delimited tables with recognized schema
         importers.append(Tabular())

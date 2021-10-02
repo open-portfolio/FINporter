@@ -115,7 +115,7 @@ class FidoSales: FINporter {
             decodedRows.append([
                 MTransaction.CodingKeys.action.rawValue: MTransaction.Action.buysell,
                 MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
-                MTransaction.CodingKeys.accountID.rawValue: accountID,
+                MTransaction.CodingKeys.accountID.rawValue: accountID ?? "",
                 MTransaction.CodingKeys.securityID.rawValue: securityID,
                 MTransaction.CodingKeys.lotID.rawValue: lotID,
                 MTransaction.CodingKeys.shareCount.rawValue: shareCount_,
