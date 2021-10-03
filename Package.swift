@@ -19,12 +19,13 @@ import PackageDescription
 
 let package = Package(
     name: "FINporter",
+    platforms: [.macOS(.v10_12)],
     products: [
         .library(name: "FINporter", targets: ["FINporter"]),
         .executable(name: "finport", targets: ["FINporterCLI"]),
     ],
     dependencies: [
-        .package(name: "AllocData", url: "https://github.com/openalloc/AllocData.git", from: "1.0.0"),
+        .package(name: "AllocData", url: "https://github.com/reedes/AllocData.git", from: "1.0.0"),
         .package(name: "SwiftCSV", url: "https://github.com/openalloc/SwiftCSV.git", .upToNextMajor(from: "0.6.1")),
         .package(url: "https://github.com/apple/swift-argument-parser.git", .upToNextMajor(from: "0.4.3")),
     ],

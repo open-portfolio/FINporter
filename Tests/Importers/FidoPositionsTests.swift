@@ -22,6 +22,11 @@ import AllocData
 
 final class FidoPositionsTests: XCTestCase {
     var imp: FidoPositions!
+    let df = ISO8601DateFormatter()
+
+    let goodHeader = """
+    Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+    """
 
     override func setUpWithError() throws {
         imp = FidoPositions()
@@ -34,36 +39,28 @@ final class FidoPositionsTests: XCTestCase {
     }
 
     func testTargetSchema() {
-        let expected: [AllocSchema] = [.allocAccount, .allocHolding, .allocSecurity]
+        let expected: [AllocSchema] = [.allocMetaSource, .allocAccount, .allocHolding, .allocSecurity]
         let actual = imp.outputSchemas
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectFailsDueToHeaderMismatch() throws {
-        let badHeader = """
-        AXXount Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-        """
+        let badHeader = goodHeader.replacingOccurrences(of: "Symbol", with: "Symbal")
         let expected: FINporter.DetectResult = [:]
         let actual = try imp.detect(dataPrefix: badHeader.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectSucceeds() throws {
-        let header = """
-        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-        """
-        let expected: FINporter.DetectResult = [.allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
-        let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
+        let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let actual = try imp.detect(dataPrefix: goodHeader.data(using: .utf8)!)
         XCTAssertEqual(expected, actual)
     }
 
     func testDetectViaMain() throws {
-        let header = """
-        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-        """
-        let expected: FINporter.DetectResult = [.allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
+        let expected: FINporter.DetectResult = [.allocMetaSource: [.CSV], .allocAccount: [.CSV], .allocHolding: [.CSV], .allocSecurity: [.CSV]]
         let main = FINprospector()
-        let data = header.data(using: .utf8)!
+        let data = goodHeader.data(using: .utf8)!
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
         XCTAssertEqual(1, actual.count)
         _ = actual.map { key, value in
@@ -92,13 +89,13 @@ final class FidoPositionsTests: XCTestCase {
             Z00000001,BBBB,VOO,VANGUARD S&P 500 ETF,800,$40.922,+$0.160,"$45,900.35",+$150.25,+0.32%,"+$11,945.20",+31.10%,15.05%,"$38,362.05",$18.96,Cash,
             """,
         ] {
-            var rejectedRows = [MHolding.Row]()
+            var rejectedRows = [AllocRowed.RawRow]()
             let dataStr = str.data(using: .utf8)!
-            let actual: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocHolding)
+            let actual: [AllocRowed.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocHolding)
 
-            let expected: [MHolding.Row] = [
-                ["holdingAccountID": "Z00000000", "holdingSecurityID": "VWO", "holdingLotID": "", "shareCount": 900.0, "shareBasis": 28.96],
-                ["holdingAccountID": "Z00000001", "holdingSecurityID": "VOO", "holdingLotID": "", "shareCount": 800.0, "shareBasis": 18.96],
+            let expected: [AllocRowed.DecodedRow] = [
+                ["holdingAccountID": "Z00000000", "holdingSecurityID": "VWO", "shareCount": 900.0, "shareBasis": 28.96],
+                ["holdingAccountID": "Z00000001", "holdingSecurityID": "VOO", "shareCount": 800.0, "shareBasis": 18.96],
             ]
 
             XCTAssertTrue(areEqual(expected, actual))
@@ -106,9 +103,9 @@ final class FidoPositionsTests: XCTestCase {
             XCTAssertEqual(0, rejectedRows.count)
 
             let timestamp = Date()
-            let actual2: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocSecurity, timestamp: timestamp)
+            let actual2: [AllocRowed.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocSecurity, timestamp: timestamp)
 
-            let expected2: [MHolding.Row] = [
+            let expected2: [AllocRowed.DecodedRow] = [
                 ["securityID": "VWO", "sharePrice": 50.922, "updatedAt": timestamp],
                 ["securityID": "VOO", "sharePrice": 40.922, "updatedAt": timestamp],
             ]
@@ -116,9 +113,9 @@ final class FidoPositionsTests: XCTestCase {
             XCTAssertTrue(areEqual(expected2, actual2))
             XCTAssertEqual(0, rejectedRows.count)
             
-            let actual3: [MHolding.Row] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocAccount)
+            let actual3: [AllocRowed.DecodedRow] = try imp.decode(MHolding.self, dataStr, rejectedRows: &rejectedRows, outputSchema: .allocAccount)
 
-            let expected3: [MHolding.Row] = [
+            let expected3: [AllocRowed.DecodedRow] = [
                 ["accountID": "Z00000000", "title": "AAAA"],
                 ["accountID": "Z00000001", "title": "BBBB"],
             ]
@@ -127,5 +124,68 @@ final class FidoPositionsTests: XCTestCase {
             XCTAssertEqual(0, rejectedRows.count)
 
         }
+    }
+    
+    /// cash holding may have "n/a" for share basis
+    func testHoldingCashShareBasisSetToLastPrice() throws {
+        var rejectedRows = [AllocRowed.RawRow]()
+        let rawRow: AllocRowed.RawRow = [
+            "Account Number": "1",
+            "Symbol": "SPAXX",
+            "Last Price": "1.00",
+            "Quantity": "1",
+            "Cost Basis Per Share": "n/a",
+        ]
+        
+        let actual = imp.holding(rawRow, rejectedRows: &rejectedRows)
+        XCTAssertNotNil(actual)
+        XCTAssertEqual(actual!["shareBasis"]!, 1.00)
+    }
+    
+    func testHoldingShareBasisMissing() throws {
+        var rejectedRows = [AllocRowed.RawRow]()
+        let rawRow: AllocRowed.RawRow = [
+            "Account Number": "1",
+            "Symbol": "ABCXY",
+            "Last Price": "$16.5587",
+            "Quantity": "3333.821",
+            "Cost Basis Per Share": "n/a",
+            "Cost Basis": "$48323.69",
+        ]
+        
+        let actual = imp.holding(rawRow, rejectedRows: &rejectedRows)
+        XCTAssertNotNil(actual)
+        XCTAssertEqual(actual?["shareBasis"] as! Double, 14.49, accuracy: 0.01)
+    }
+    
+    func testParseSourceMeta() throws {
+        
+        let str = """
+        Account Number,Account Name,...
+        "XYZ","ABC",...
+        
+        "Date downloaded 07/30/2021 2:26 PM ET"
+            
+        "legalese down here"
+        """
+        
+        let timestamp = Date()
+        var rejectedRows = [AllocRowed.RawRow]()
+        let dataStr = str.data(using: .utf8)!
+        
+        let actual: [MSourceMeta.DecodedRow] = try imp.decode(MSourceMeta.self,
+                                                       dataStr,
+                                                       rejectedRows: &rejectedRows,
+                                                       outputSchema: .allocMetaSource,
+                                                       url: URL(string: "http://blah.com"),
+                                                       timestamp: timestamp)
+        
+        XCTAssertEqual(1, actual.count)
+        XCTAssertNotNil(actual[0]["sourceMetaID"]!)
+        XCTAssertEqual(URL(string: "http://blah.com"), actual[0]["url"]!)
+        XCTAssertEqual("fido_positions", actual[0]["importerID"])
+        let exportedAt: Date? = actual[0]["exportedAt"] as? Date
+        let expectedExportedAt = df.date(from: "2021-07-30T18:26:00+0000")!
+        XCTAssertEqual(expectedExportedAt, exportedAt)
     }
 }

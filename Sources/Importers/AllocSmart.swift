@@ -67,16 +67,25 @@ class AllocSmart: FINporter {
     override var sourceFormats: [AllocFormat] { [.CSV] }
     override var outputSchemas: [AllocSchema] { [.allocAllocation] }
 
+    internal static let headerRE = #"""
+    AllocateSmart.*
+    Model Portfolio.*
+    Export time:.*
+
+    """#
+
+    internal static let blockRE = #"""
+    .+
+    Account Size, \d+.*
+    Asset,Description,.+
+    (?:.+[\n])+
+    """#
+    
+    internal static let csvRE = #"Asset,Description,(?:.+(\n|\Z))+"#
+
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        let headerRE = #"""
-        AllocateSmart.*
-        Model Portfolio.*
-        Export time:.*
-
-        """#
-
-        guard let str = String(data: dataPrefix, encoding: .utf8),
-              str.range(of: headerRE,
+        guard let str = FINporter.normalizeDecode(dataPrefix),
+              str.range(of: AllocSmart.headerRE,
                         options: .regularExpression) != nil
         else {
             return [:]
@@ -87,66 +96,66 @@ class AllocSmart: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
-                                            timestamp _: Date = Date()) throws -> [T.Row] {
-        guard var str = String(data: data, encoding: .utf8) else {
+                                            defTimeOfDay _: String? = nil,
+                                            defTimeZone _: String? = nil,
+                                            timestamp _: Date? = nil) throws -> [T.DecodedRow] {
+        guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 
-        var items = [T.Row]()
-
-        let blockRE = #"""
-        .+
-        Account Size, \d+.*
-        Asset,Description,.+
-        (?:.+[\n\r])+
-        """#
+        var items = [T.DecodedRow]()
 
         // returns first match to RE as Range<String.Index (nil if none)
-        while let range = str.range(of: blockRE, options: .regularExpression) {
+        while let range = str.range(of: AllocSmart.blockRE, options: .regularExpression) {
             let block = str[range]
 
             // first line is the title
             let titleRange = block.lineRange(for: ..<block.startIndex)
             let strategyID = block[titleRange].trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let csvRE = #"Asset,Description,(?:.+(\r?\n|\Z))+"#
-
-            if let csvRange = block.range(of: csvRE, options: .regularExpression) {
+            if let csvRange = block.range(of: AllocSmart.csvRE, options: .regularExpression) {
                 let csvStr = block[csvRange]
-                let csv = try CSV(string: String(csvStr))
-
-                for row in csv.namedRows {
-                    // required values
-                    guard let rawDescript = T.parseString(row["Description"]),
-                          rawDescript.count > 0,
-                          let assetID = AllocSmart.assetClassMap[rawDescript]?.rawValue,
-                          let targetPct = T.parsePercent(row["Optimal Allocation"]),
-                          targetPct >= 0
-                    else {
-                        rejectedRows.append(row)
-                        continue
-                    }
-
-                    // optional values
-
-                    items.append([
-                        MAllocation.CodingKeys.strategyID.rawValue: strategyID,
-                        MAllocation.CodingKeys.assetID.rawValue: assetID,
-                        MAllocation.CodingKeys.targetPct.rawValue: targetPct,
-                        MAllocation.CodingKeys.isLocked.rawValue: false
-                    ])
-                }
+                let delimitedRows = try CSV(string: String(csvStr)).namedRows
+                let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
+                                                  rejectedRows: &rejectedRows,
+                                                  strategyID: strategyID)
+                items.append(contentsOf: nuItems)
             }
 
             str.removeSubrange(range)
         }
 
-        return items // as! [T]
+        return items
+    }
+    
+    internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
+                                      rejectedRows: inout [AllocRowed.RawRow],
+                                      strategyID: String) -> [AllocRowed.DecodedRow] {
+        
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
+            guard let rawDescript = MAllocation.parseString(delimitedRow["Description"]),
+                  rawDescript.count > 0,
+                  let assetID = AllocSmart.assetClassMap[rawDescript]?.rawValue,
+                  let targetPct = MAllocation.parsePercent(delimitedRow["Optimal Allocation"]),
+                  targetPct >= 0
+            else {
+                rejectedRows.append(delimitedRow)
+                return
+            }
+            
+            decodedRows.append([
+                MAllocation.CodingKeys.strategyID.rawValue: strategyID,
+                MAllocation.CodingKeys.assetID.rawValue: assetID,
+                MAllocation.CodingKeys.targetPct.rawValue: targetPct,
+                MAllocation.CodingKeys.isLocked.rawValue: false
+            ])
+        }
     }
 }
+

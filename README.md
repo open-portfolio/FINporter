@@ -39,13 +39,16 @@ $ finport detect mystery.txt
 
 ### Fido (Fidelity) Positions
 
-To transform the "Portfolio_Positions_Mmm-dd-yyyy.csv" export requires three(3) commands, as there are three outputs: accounts, account holdings, and securities:
+To transform the "Portfolio_Positions_Mmm-dd-yyyy.csv" export requires four separate commands, as there are four outputs: accounts, account holdings, securities, and 'source meta':
 
 ```bash
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/account
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/holding
 $ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/security
+$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/meta/source
 ```
+
+The 'source meta' can extract the export date from the content, if present, as well as other details.
 
 Each command above will produce comma-separated value data in the following schemas, respectively.
 
@@ -53,10 +56,11 @@ Output schemas:
 * [openalloc/account](https://github.com/openalloc/AllocData#maccount)
 * [openalloc/holding](https://github.com/openalloc/AllocData#mholding)
 * [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
+* [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
 
-### Fido (Fidelity) Purchases
+### Fido (Fidelity) Transaction History
 
-To transform the "Accounts_History.csv" export:
+To transform the "Accounts_History.csv" export, which contains a record of recent sales, purchases, and other transactions:
 
 ```bash
 $ finport transform Accounts_History.csv
@@ -64,9 +68,11 @@ $ finport transform Accounts_History.csv
 
 The command above will produce comma-separated value data in the following schema.
 
-Output schema:  [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
+NOTE: output changed to the new MTransaction from the deprecated MHistory.
 
-### Fido (Fidelity) Sales
+Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
+
+### Fido (Fidelity) Transaction Sales
 
 To transform the "Realized_Gain_Loss_Account_00000000.csv" export, available in the 'Closed Positions' view of taxable accounts:
 
@@ -76,8 +82,64 @@ $ finport transform Realized_Gain_Loss_Account_00000000.csv
 
 The command above will produce comma-separated value data in the following schema.
 
+NOTE: output changed to the new MTransaction from the deprecated MHistory.
+
 Output schema: 
-* [openalloc/history](https://github.com/openalloc/AllocData#mhistory)
+* [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
+
+### Chuck (Schwab) Positions **BETA**
+
+_This is an early release, and probably has bugs._
+
+To transform the "All-Accounts-Positions-YYYY-MM-DD-000000.CSV" export requires four separate commands, as there are four outputs: accounts, account holdings, securities, and 'source meta':
+
+```bash
+$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/account
+$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/holding
+$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/security
+$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/meta/source
+```
+
+Each command above will produce comma-separated value data in the following schemas, respectively.
+
+NOTE: "Cash & Cash Investments" holdings will be assigned a SecurityID of "CORE".
+
+The 'source meta' can extract the export date from the content, if present, as well as other details.
+
+Output schemas: 
+* [openalloc/account](https://github.com/openalloc/AllocData#maccount)
+* [openalloc/holding](https://github.com/openalloc/AllocData#mholding)
+* [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
+* [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
+
+### Chuck (Schwab) Transaction History **BETA**
+
+_This is an early release, and probably has bugs._
+
+To transform the "XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV" export, which contains a record of recent sales, purchases, and other transactions:
+
+```bash
+$ finport transform XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV
+```
+
+The command above will produce comma-separated value data in the following schema.
+
+NOTE: Schwab's transaction export does not contain realized gains and losses of sales, and so they are not in the imported transaction.
+
+Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
+
+### Chuck (Schwab) Transaction Sales **BETA**
+
+To transform the "XXXX1234_GainLoss_Realized_YYYYMMDD-HHMMSS.CSV" export, available in the 'Closed Positions' view of taxable accounts:
+
+```bash
+$ finport transform XXXX1234_GainLoss_Realized_YYYYMMDD-HHMMSS.CSV
+```
+
+The command above will produce comma-separated value data in the following schema.
+
+Output schema: 
+* [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
 
 ### AllocSmart (Allocate Smartly) Export
 

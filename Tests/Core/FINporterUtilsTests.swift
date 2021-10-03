@@ -1,5 +1,5 @@
 //
-//  TabularTests.swift
+//  FINporterUtilsTests.swift
 //
 // Copyright 2021 FlowAllocator LLC
 //
@@ -18,21 +18,12 @@
 @testable import FINporter
 import XCTest
 
-import AllocData
-
-final class TabularTests: XCTestCase {
-    var imp: Tabular!
-    var rejectedRows: [MCap.RawRow]!
-
-    override func setUpWithError() throws {
-        imp = Tabular()
-        rejectedRows = [MCap.RawRow]()
-    }
-
-    func testUnableToDetermineInputFormat() {
-        let dataStr = "foo,bar".data(using: .utf8)!
-        XCTAssertThrowsError(try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows)) { error in
-            XCTAssertEqual(error as! FINporterError, FINporterError.decodingError("Unable to infer format (and delimiter) from url."))
-        }
+final class FINporterUtilsTests: XCTestCase {
+    
+    func testDecodeWithNormalization() {
+        let rawText = "\"Positions\"\r\n\r\n\"Individual                        XXXX-1234\"\r\n"
+        let expected = "\"Positions\"\n\n\"Individual                        XXXX-1234\"\n"
+        let actual = FINporter.normalizeDecode(rawText.data(using: .utf8)!)
+        XCTAssertEqual(expected, actual)
     }
 }

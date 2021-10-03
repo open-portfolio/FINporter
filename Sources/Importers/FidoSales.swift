@@ -31,13 +31,15 @@ class FidoSales: FINporter {
     override var id: String { "fido_sales" }
     override var description: String { "Detect and decode realized sale export files from Fidelity." }
     override var sourceFormats: [AllocFormat] { [.CSV] }
-    override var outputSchemas: [AllocSchema] { [.allocHistory] }
+    override var outputSchemas: [AllocSchema] { [.allocTransaction] }
+
+    internal static let headerRE = #"Symbol\(CUSIP\),Security Description,Quantity,Date Acquired,Date Sold,Proceeds,Cost Basis,Short Term Gain/Loss,Long Term Gain/Loss"#
+
+    internal static let csvRE = #"[A-Za-z0-9]+(?=\.)"#
 
     override func detect(dataPrefix: Data) throws -> DetectResult {
-        let headerRE = #"Symbol\(CUSIP\),Security Description,Quantity,Date Acquired,Date Sold,Proceeds,Cost Basis,Short Term Gain/Loss,Long Term Gain/Loss"#
-
-        guard let str = String(data: dataPrefix, encoding: .utf8),
-              str.range(of: headerRE,
+        guard let str = FINporter.normalizeDecode(dataPrefix),
+              str.range(of: FidoSales.headerRE,
                         options: .regularExpression) != nil
         else {
             return [:]
@@ -48,68 +50,79 @@ class FidoSales: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
-                                            timestamp _: Date = Date()) throws -> [T.Row] {
-        guard let str = String(data: data, encoding: .utf8) else {
+                                            defTimeOfDay: String? = nil,
+                                            defTimeZone: String? = nil,
+                                            timestamp _: Date? = nil) throws -> [T.DecodedRow] {
+        guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 
         // Extract X12345678 from "...Realized_Gain_Loss_Account_X12345678.csv"
         let accountID: String? = {
-            let csvRE = #"[A-Za-z0-9]+(?=\.)"#
             if let urlStr = url?.absoluteString,
-               let accountIDRange = urlStr.range(of: csvRE, options: .regularExpression) {
+               let accountIDRange = urlStr.range(of: FidoSales.csvRE, options: .regularExpression) {
                 return String(urlStr[accountIDRange])
             }
             return nil
         }()
 
-        var items = [T.Row]()
-
-        let csv = try CSV(string: str)
-
-        for row in csv.namedRows {
+        let delimitedRows = try CSV(string: str).namedRows
+        
+        return decodeDelimitedRows(delimitedRows: delimitedRows,
+                                   defTimeOfDay: defTimeOfDay,
+                                   defTimeZone: defTimeZone,
+                                   rejectedRows: &rejectedRows,
+                                   accountID: accountID)
+    }
+    
+    internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
+                                         defTimeOfDay: String? = nil,
+                                         defTimeZone: String? = nil,
+                                         rejectedRows: inout [AllocRowed.RawRow],
+                                         accountID: String?) -> [AllocRowed.DecodedRow] {
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             // required values
-            guard let symbolCusip = T.parseString(row["Symbol(CUSIP)"]),
+            guard let symbolCusip = MTransaction.parseString(delimitedRow["Symbol(CUSIP)"]),
                   let symbol = symbolCusip.split(separator: "(").first,
                   symbol.count > 0,
-                  let shareCount = T.parseDouble(row["Quantity"]),
-                  let proceeds = T.parseDouble(row["Proceeds"]),
-                  // let costBasis = parseDouble(row["Cost Basis"]),
-                  let transactedAt = T.parseMMDDYYYY(row["Date Sold"], separator: "/")
+                  let shareCount = MTransaction.parseDouble(delimitedRow["Quantity"]),
+                  let proceeds = MTransaction.parseDouble(delimitedRow["Proceeds"]),
+                  let dateSold = delimitedRow["Date Sold"],
+                  let transactedAt = parseFidoMMDDYYYY(dateSold, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
             else {
-                rejectedRows.append(row)
-                continue
+                rejectedRows.append(delimitedRow)
+                return
             }
-
+            
             // calculated values
             let sharePrice = (shareCount != 0) ? (proceeds / shareCount) : nil
-
+            
             // optional values
-            let transactionID = String(abs(row.hashValue % 100_000_000))
-            let realizedShort = T.parseDouble(row["Short Term Gain/Loss"])
-            let realizedLong = T.parseDouble(row["Long Term Gain/Loss"])
-
+            let realizedShort = MTransaction.parseDouble(delimitedRow["Short Term Gain/Loss"])
+            let realizedLong = MTransaction.parseDouble(delimitedRow["Long Term Gain/Loss"])
+            
             let securityID = String(symbol)
             let shareCount_ = -1 * shareCount // negative because it's a sale (reduction in shares)
-
-            items.append([
-                MHistory.CodingKeys.transactionID.rawValue: transactionID,
-                MHistory.CodingKeys.accountID.rawValue: accountID,
-                MHistory.CodingKeys.securityID.rawValue: securityID,
-                MHistory.CodingKeys.shareCount.rawValue: shareCount_,
-                MHistory.CodingKeys.sharePrice.rawValue: sharePrice,
-                MHistory.CodingKeys.realizedGainShort.rawValue: realizedShort,
-                MHistory.CodingKeys.realizedGainLong.rawValue: realizedLong,
-                MHistory.CodingKeys.transactedAt.rawValue: transactedAt
+            
+            let lotID = ""
+            
+            decodedRows.append([
+                MTransaction.CodingKeys.action.rawValue: MTransaction.Action.buysell,
+                MTransaction.CodingKeys.transactedAt.rawValue: transactedAt,
+                MTransaction.CodingKeys.accountID.rawValue: accountID ?? "",
+                MTransaction.CodingKeys.securityID.rawValue: securityID,
+                MTransaction.CodingKeys.lotID.rawValue: lotID,
+                MTransaction.CodingKeys.shareCount.rawValue: shareCount_,
+                MTransaction.CodingKeys.sharePrice.rawValue: sharePrice,
+                MTransaction.CodingKeys.realizedGainShort.rawValue: realizedShort,
+                MTransaction.CodingKeys.realizedGainLong.rawValue: realizedLong,
             ])
         }
-
-        return items
     }
 }

@@ -1,5 +1,5 @@
 //
-//  Date+Formatters.swift
+//  TxnIDGenTests.swift
 //
 // Copyright 2021 FlowAllocator LLC
 //
@@ -15,18 +15,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
+@testable import FINporter
+import XCTest
 
-public extension Date {
-    // format a date when the WASM compiler doesn't allow DateFormatters
-    static func formatYYYYMMDD(_ date: Date?) -> String? {
-        guard let date_ = date else { return nil }
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month, .day], from: date_)
-        guard let year = components.year,
-              let month = components.month,
-              let day = components.day
-        else { return nil }
-        return String(format: "%04d-%02d-%02d", year, month, day)
+final class TxnIDGenTests: XCTestCase {
+    let df = ISO8601DateFormatter()
+    
+    func testBasic() throws {
+        let transactionDate = df.date(from: "2021-03-01T17:00:00Z")!
+        let actual = generateTransactionID(prefix: "A", transactionDate: transactionDate, transactionNo: 325)
+        let expected = "A2021030100325"
+        XCTAssertEqual(expected, actual)
     }
 }

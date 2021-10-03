@@ -1,7 +1,7 @@
 //
 //  Tabular.swift
 //
-//  Importer supporting detection and decoding of schema-supported tabular documents (e.g., history.csv to [MHistory])
+//  Importer supporting detection and decoding of schema-supported tabular documents (e.g., history.csv to [MTransaction])
 //
 // Copyright 2021 FlowAllocator LLC
 //
@@ -32,7 +32,7 @@ public class Tabular: FINporter {
         .allocAllocation,
         .allocAsset,
         .allocCap,
-        .allocHistory,
+        .allocTransaction,
         .allocHolding,
         .allocSecurity,
         .allocStrategy,
@@ -40,14 +40,14 @@ public class Tabular: FINporter {
     ]}
 
     override public func detect(dataPrefix: Data) throws -> DetectResult {
-        guard let dataStr = String(data: dataPrefix, encoding: .utf8) else {
+        guard let str = FINporter.normalizeDecode(dataPrefix) else {
             return [:]
         }
 
         return sourceFormats.reduce(into: [:]) { map, sourceFormat in
             guard let delimiter = sourceFormat.delimiter else { return }
             do {
-                let table = try CSV(string: dataStr, delimiter: delimiter)
+                let table = try CSV(string: str, delimiter: delimiter)
 
                 let documentSignature = AllocSchema.generateSignature(table.header)
 
@@ -64,14 +64,16 @@ public class Tabular: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat: AllocFormat? = nil,
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
-                                            timestamp _: Date = Date()) throws -> [T.Row] {
-        guard let str = String(data: data, encoding: .utf8) else {
+                                            defTimeOfDay _: String? = nil,
+                                            defTimeZone _: String? = nil,
+                                            timestamp _: Date? = nil) throws -> [T.DecodedRow] {
+        guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("Unable to parse data.")
         }
 

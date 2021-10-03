@@ -1,5 +1,5 @@
 //
-//  FidoHistoryTests.swift
+//  FidoSalesTests.swift
 //
 // Copyright 2021 FlowAllocator LLC
 //
@@ -20,11 +20,11 @@ import XCTest
 
 import AllocData
 
-final class FidoHistoryTests: XCTestCase {
-    var imp: FidoHistory!
+final class FidoSalesTests: XCTestCase {
+    var imp: FidoSales!
 
     override func setUpWithError() throws {
-        imp = FidoHistory()
+        imp = FidoSales()
     }
 
     func testSourceFormats() {
@@ -41,12 +41,7 @@ final class FidoHistoryTests: XCTestCase {
 
     func testDetectFailsDueToHeaderMismatch() throws {
         let badHeader = """
-
-
-
-        Breakerage
-
-        Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
+        Xymbol(CUSIP),Security Description,Quantity,Date Acquired,Date Sold,Proceeds,Cost Basis,Short Term Gain/Loss,Long Term Gain/Loss
         """
         let expected: FINporter.DetectResult = [:]
         let actual = try imp.detect(dataPrefix: badHeader.data(using: .utf8)!)
@@ -55,12 +50,7 @@ final class FidoHistoryTests: XCTestCase {
 
     func testDetectSucceeds() throws {
         let header = """
-
-
-
-        Brokerage
-
-        Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
+        Symbol(CUSIP),Security Description,Quantity,Date Acquired,Date Sold,Proceeds,Cost Basis,Short Term Gain/Loss,Long Term Gain/Loss
         """
         let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let actual = try imp.detect(dataPrefix: header.data(using: .utf8)!)
@@ -69,12 +59,7 @@ final class FidoHistoryTests: XCTestCase {
 
     func testDetectViaMain() throws {
         let header = """
-
-
-
-        Brokerage
-
-        Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
+        Symbol(CUSIP),Security Description,Quantity,Date Acquired,Date Sold,Proceeds,Cost Basis,Short Term Gain/Loss,Long Term Gain/Loss
         """
         let expected: FINporter.DetectResult = [.allocTransaction: [.CSV]]
         let main = FINprospector()
@@ -82,39 +67,36 @@ final class FidoHistoryTests: XCTestCase {
         let actual = try main.prospect(sourceFormats: [.CSV], dataPrefix: data)
         XCTAssertEqual(1, actual.count)
         _ = actual.map { key, value in
-            XCTAssertNotNil(key as? FidoHistory)
+            XCTAssertNotNil(key as? FidoSales)
             XCTAssertEqual(expected, value)
         }
     }
 
     func testParse() throws {
         let str = """
-
-
-
-        Brokerage
-
-        Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
-         03/01/2021,MY TACTICAL (taxable) X00000000, YOU BOUGHT VANGUARD LARGE-CAP INDEX FUND (VV) (Cash), VV, VANGUARD LARGE-CAP INDEX FUND,Cash,0.999,180.95,,,,-150.00,03/03/2021
-
-        XXX
+        Symbol(CUSIP),Security Description,Quantity,Date Acquired,Date Sold,Proceeds,Cost Basis,Short Term Gain/Loss,Long Term Gain/Loss
+        VEA(100000000),"VANGUARD TAX-MANAGEDINTL FD FTSE DEV MKTETF",3.0,08/31/2020,01/29/2021,"$12.00 ","$10.00 ","$1.50 ","$0.50 "
         """
 
+        let url = URL(fileURLWithPath: "Realized_Gain_Loss_Account_X12345678.csv")
         var rejectedRows = [AllocRowed.RawRow]()
         let dataStr = str.data(using: .utf8)!
-        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, url: url)
 
-        let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021")!
+        let YYYYMMDDts = parseFidoMMDDYYYY("01/29/2021")!
         let expected: AllocRowed.DecodedRow = [
             "txnAction": MTransaction.Action.buysell,
             "txnTransactedAt": YYYYMMDDts,
-            "txnAccountID": "X00000000",
-            "txnSecurityID": "VV",
-            "txnShareCount": 0.999,
-            "txnSharePrice": 180.95,
+            "txnAccountID": "X12345678",
+            "txnSecurityID": "VEA",
+            "txnLotID": "",
+            "txnShareCount": -3.000,
+            "txnSharePrice": 4.000,
+            "realizedGainShort": 1.50,
+            "realizedGainLong": 0.50,
         ]
 
-        XCTAssertTrue(areEqual(expected, actual.first!))
+        XCTAssertTrue(areEqual([expected], actual))
         XCTAssertEqual(0, rejectedRows.count)
     }
 }

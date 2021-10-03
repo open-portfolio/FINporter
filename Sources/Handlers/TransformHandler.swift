@@ -23,9 +23,11 @@ import AllocData
 
 /// Used in CLI
 public func handleTransform(inputFilePath: String,
-                            rejectedRows: inout [AllocBase.Row],
+                            rejectedRows: inout [AllocRowed.RawRow],
                             finPorterID: String? = nil,
-                            outputSchema: AllocSchema? = nil) throws -> String {
+                            outputSchema: AllocSchema? = nil,
+                            defTimeOfDay: String? = nil,
+                            defTimeZone: String? = nil) throws -> String {
     let fileURL = URL(fileURLWithPath: inputFilePath)
     let data = try Data(contentsOf: fileURL)
 
@@ -33,19 +35,19 @@ public func handleTransform(inputFilePath: String,
 
     switch pair.schema {
     case .allocAccount:
-        return try decodeAndExport(MAccount.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MAccount.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocAllocation:
-        return try decodeAndExport(MAllocation.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MAllocation.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocAsset:
-        return try decodeAndExport(MAsset.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MAsset.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocHolding:
-        return try decodeAndExport(MHolding.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MHolding.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocSecurity:
-        return try decodeAndExport(MSecurity.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MSecurity.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     case .allocStrategy:
-        return try decodeAndExport(MStrategy.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
-    case .allocHistory:
-        return try decodeAndExport(MHistory.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL)
+        return try decodeAndExport(MStrategy.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
+    case .allocTransaction:
+        return try decodeAndExport(MTransaction.self, pair.finPorter, data, &rejectedRows, pair.schema, fileURL, defTimeOfDay, defTimeZone)
     default:
         throw FINporterError.notImplementedError
     }
@@ -105,18 +107,22 @@ internal func getPair(data: Data,
     return (importer, importer.outputSchemas.first!)
 }
 
-internal func decodeAndExport<T: AllocBase>(_: T.Type,
+internal func decodeAndExport<T: AllocBase & AllocRowed & AllocAttributable & Codable>(_: T.Type,
                                             _ finPorter: FINporter,
                                             _ data: Data,
-                                            _ rejectedRows: inout [T.Row],
+                                            _ rejectedRows: inout [T.RawRow],
                                             _ outputSchema: AllocSchema,
-                                            _ url: URL) throws -> String {
-    let finRows: [T.Row] = try finPorter.decode(T.self,
+                                            _ url: URL,
+                                            _ defTimeOfDay: String? = nil,
+                                            _ defTimeZone: String?) throws -> String {
+    let finRows: [T.DecodedRow] = try finPorter.decode(T.self,
                                                 data,
                                                 rejectedRows: &rejectedRows,
                                                 outputSchema: outputSchema,
-                                                url: url)
+                                                url: url,
+                                                defTimeOfDay: defTimeOfDay,
+                                                defTimeZone: defTimeZone)
     let items: [T] = try finRows.map { try T(from: $0) }
     let data = try finPorter.export(elements: items, format: .CSV)
-    return String(data: data, encoding: .utf8) ?? ""
+    return FINporter.normalizeDecode(data) ?? ""
 }

@@ -4,7 +4,7 @@
 //
 //  Input: for use with Portfolio_Positions_Mmm-DD-YYYY.csv from Fidelity Brokerage Services
 //
-//  Output: supports openalloc/holding and openalloc/security schemas
+//  Output: supports openalloc/holding, /security, /account, and /meta schemas
 //
 // Copyright 2021 FlowAllocator LLC
 //
@@ -31,17 +31,20 @@ class FidoPositions: FINporter {
     override var id: String { "fido_positions" }
     override var description: String { "Detect and decode position export files from Fidelity." }
     override var sourceFormats: [AllocFormat] { [.CSV] }
-    override var outputSchemas: [AllocSchema] { [.allocAccount, .allocHolding, .allocSecurity] }
+    override var outputSchemas: [AllocSchema] { [.allocMetaSource, .allocAccount, .allocHolding, .allocSecurity] }
 
     private let trimFromTicker = CharacterSet(charactersIn: "*")
 
-    override func detect(dataPrefix: Data) throws -> DetectResult {
-        let headerRE = #"""
-        Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
-        """#
+    internal static let headerRE = #"""
+    Account Number,Account Name,Symbol,Description,Quantity,Last Price,Last Price Change,Current Value,Today's Gain/Loss Dollar,Today's Gain/Loss Percent,Total Gain/Loss Dollar,Total Gain/Loss Percent,Percent Of Account,Cost Basis,Cost Basis Per Share,Type
+    """#
 
-        guard let str = String(data: dataPrefix, encoding: .utf8),
-              str.range(of: headerRE,
+    // should match all lines, until a blank line or end of block/file
+    internal static let csvRE = #"Account Number,Account Name,Symbol,Description,Quantity,(?:.+(\n|\Z))+"#
+    
+    override func detect(dataPrefix: Data) throws -> DetectResult {
+        guard let str = FINporter.normalizeDecode(dataPrefix),
+              str.range(of: FidoPositions.headerRE,
                         options: .regularExpression) != nil
         else {
             return [:]
@@ -52,14 +55,16 @@ class FidoPositions: FINporter {
         }
     }
 
-    override open func decode<T: AllocBase>(_: T.Type,
+    override open func decode<T: AllocRowed>(_ type: T.Type,
                                             _ data: Data,
-                                            rejectedRows: inout [T.Row],
+                                            rejectedRows: inout [T.RawRow],
                                             inputFormat _: AllocFormat? = nil,
                                             outputSchema: AllocSchema? = nil,
-                                            url _: URL? = nil,
-                                            timestamp: Date = Date()) throws -> [T.Row] {
-        guard let str = String(data: data, encoding: .utf8) else {
+                                            url: URL? = nil,
+                                            defTimeOfDay _: String? = nil,
+                                            defTimeZone _: String? = nil,
+                                            timestamp: Date? = nil) throws -> [T.DecodedRow] {
+        guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
 
@@ -67,66 +72,111 @@ class FidoPositions: FINporter {
             throw FINporterError.needExplicitOutputSchema(outputSchemas)
         }
 
-        var items = [T.Row]()
+        var items = [T.DecodedRow]()
+        
+        if outputSchema_ == .allocMetaSource {
 
-        // should match all lines, until a blank line or end of block/file
-        let csvRE = #"Account Number,Account Name,Symbol,Description,Quantity,(?:.+(\r?\n|\Z))+"#
-
-        if let csvRange = str.range(of: csvRE, options: .regularExpression) {
-            let csvStr = str[csvRange]
-            let csv = try CSV(string: String(csvStr))
-            for row in csv.namedRows {
-                var item: T.Row?
-
-                switch outputSchema_ {
-                case .allocAccount:
-                    item = account(row, rejectedRows: &rejectedRows)
-                case .allocHolding:
-                    item = holding(row, rejectedRows: &rejectedRows)
-                case .allocSecurity:
-                    item = security(row, rejectedRows: &rejectedRows, timestamp: timestamp)
-                default:
-                    throw FINporterError.targetSchemaNotSupported(outputSchemas)
-                }
-
-                if let item_ = item {
-                    items.append(item_)
-                }
+            var exportedAt: Date? = nil
+            
+            // extract exportedAt from "Date downloaded 07/30/2021 2:26 PM ET" (with quotes)
+            let ddRE = #"(?<=\"Date downloaded ).+(?=\")"#
+            if let dd = str.range(of: ddRE, options: .regularExpression) {
+                exportedAt = fidoDateFormatter.date(from: String(str[dd]))
+            }
+            
+            let sourceMetaID = UUID().uuidString
+            
+            items.append([
+                MSourceMeta.CodingKeys.sourceMetaID.rawValue: sourceMetaID,
+                MSourceMeta.CodingKeys.url.rawValue: url,
+                MSourceMeta.CodingKeys.importerID.rawValue: self.id,
+                MSourceMeta.CodingKeys.exportedAt.rawValue: exportedAt,
+            ])
+            
+        } else {
+            if let csvRange = str.range(of: FidoPositions.csvRE, options: .regularExpression) {
+                let csvStr = str[csvRange]
+                let delimitedRows = try CSV(string: String(csvStr)).namedRows
+                let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
+                                           outputSchema_: outputSchema_,
+                                           rejectedRows: &rejectedRows,
+                                           timestamp: timestamp)
+                items.append(contentsOf: nuItems)
             }
         }
 
         return items
     }
-
-    private func holding(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
+    
+    internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
+                                               outputSchema_: AllocSchema,
+                                               rejectedRows: inout [AllocRowed.RawRow],
+                                               timestamp: Date?) -> [AllocRowed.DecodedRow] {
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
+            switch outputSchema_ {
+            case .allocAccount:
+                guard let item = account(delimitedRow, rejectedRows: &rejectedRows) else { return }
+                decodedRows.append(item)
+            case .allocHolding:
+                guard let item = holding(delimitedRow, rejectedRows: &rejectedRows) else { return }
+                decodedRows.append(item)
+            case .allocSecurity:
+                guard let item = security(delimitedRow, rejectedRows: &rejectedRows, timestamp: timestamp) else { return }
+                decodedRows.append(item)
+            default:
+                rejectedRows.append(delimitedRow)
+                //throw FINporterError.targetSchemaNotSupported(outputSchemas)
+            }
+        }
+    }
+    
+    internal func holding(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
         // required values
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
               let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               securityID != "Pending Activity",
-              let shareCount = MHolding.parseDouble(row["Quantity"])
+              let shareCount = MHolding.parseDouble(row["Quantity"]),
+              shareCount != 0
         else {
             rejectedRows.append(row)
             return nil
         }
 
-        // optional values
-        let shareBasis = MHolding.parseDouble(row["Cost Basis Per Share"])
-
-        // because it appears that lots are averaged, assume only one per securityID
-        let lotID = AllocNilKey
-
-        return [
+        var decodedRow: AllocRowed.DecodedRow = [
             MHolding.CodingKeys.accountID.rawValue: accountID,
             MHolding.CodingKeys.securityID.rawValue: securityID,
-            MHolding.CodingKeys.lotID.rawValue: lotID,
             MHolding.CodingKeys.shareCount.rawValue: shareCount,
-            MHolding.CodingKeys.shareBasis.rawValue: shareBasis
         ]
+        
+        // holding may have "n/a" for share basis
+        var shareBasis: Double? = nil
+        shareBasis = MHolding.parseDouble(row["Cost Basis Per Share"])
+        if (shareBasis == nil || shareBasis == 0),
+            row["Cost Basis Per Share"] == "n/a" {
+            
+            if let sharePrice = MHolding.parseDouble(row["Last Price"]),
+               sharePrice == 1.0 {
+                
+                // assume it's cash, where the share basis is 1.00
+                shareBasis = 1.0
+            } else if let costBasis = MHolding.parseDouble(row["Cost Basis"]),
+                      costBasis > 0 {
+                
+                // reconstruct the shareBasis
+                shareBasis = costBasis / shareCount
+            }
+        }
+
+        if let _shareBasis = shareBasis {
+            decodedRow[MHolding.CodingKeys.shareBasis.rawValue] = _shareBasis
+        }
+        
+        return decodedRow
     }
 
-    private func security(_ row: [String: String], rejectedRows: inout [AllocBase.Row], timestamp: Date = Date()) -> AllocBase.Row? {
+    internal func security(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow], timestamp: Date?) -> AllocRowed.DecodedRow? {
         guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               securityID.count > 0,
               securityID != "Pending Activity",
@@ -136,14 +186,19 @@ class FidoPositions: FINporter {
             return nil
         }
 
-        return [
+        var decodedRow: AllocRowed.DecodedRow = [
             MSecurity.CodingKeys.securityID.rawValue: securityID,
             MSecurity.CodingKeys.sharePrice.rawValue: sharePrice,
-            MSecurity.CodingKeys.updatedAt.rawValue: timestamp
         ]
+
+        if let updatedAt = timestamp {
+            decodedRow[MSecurity.CodingKeys.updatedAt.rawValue] = updatedAt
+        }
+        
+        return decodedRow
     }
     
-    private func account(_ row: [String: String], rejectedRows: inout [AllocBase.Row]) -> AllocBase.Row? {
+    internal func account(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
         guard let accountID = MHolding.parseString(row["Account Number"]),
               accountID.count > 0,
               let title = MHolding.parseString(row["Account Name"])

@@ -20,6 +20,7 @@ import XCTest
 
 final class DelimitedEncoderTests: XCTestCase {
     // TODO: ensure string values with commas are escaped if they contain delimiter
+    let df = ISO8601DateFormatter()
 
     func parseYYYYMMDD(_ dateStr: String?, separator: Character = "-") -> Date? {
         guard let components = dateStr?.trimmingCharacters(in: .whitespaces).split(separator: separator),
@@ -66,14 +67,14 @@ final class DelimitedEncoderTests: XCTestCase {
     }
 
     func testDate() throws {
-        let halloween = parseYYYYMMDD("2020-10-31", separator: "-")!
-        let christmas = parseYYYYMMDD("2020-12-25", separator: "-")!
+        let halloween = df.date(from: "2020-10-31T00:00:00Z")!
+        let christmas = df.date(from: "2020-12-25T00:00:00Z")!
         struct Foo: Encodable { var bar: Date; var baz: Date }
         let row = Foo(bar: halloween, baz: christmas)
         let encoder = DelimitedEncoder()
         let rows = try encoder.encode(rows: row)
         let actual = String(data: rows, encoding: .utf8)!
-        XCTAssertEqual("2020-10-31,2020-12-25", actual)
+        XCTAssertEqual("2020-10-31T00:00:00Z,2020-12-25T00:00:00Z", actual)
     }
 
     func testDouble() throws {

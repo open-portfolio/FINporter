@@ -36,17 +36,19 @@ open class FINporter: Identifiable, Hashable {
         throw FINporterError.notImplementedError
     }
 
-    open func decode<T: AllocBase>(_: T.Type,
+    open func decode<T: AllocRowed>(_ type: T.Type,
                                    _: Data,
-                                   rejectedRows _: inout [T.Row],
+                                   rejectedRows _: inout [T.RawRow],
                                    inputFormat _: AllocFormat? = nil,
                                    outputSchema _: AllocSchema? = nil,
                                    url _: URL? = nil,
-                                   timestamp _: Date = Date()) throws -> [T.Row] {
+                                   defTimeOfDay _: String? = nil,
+                                   defTimeZone _: String? = nil,
+                                   timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         throw FINporterError.notImplementedError
     }
 
-    open func export<T: AllocBase>(elements: [T], format: AllocFormat) throws -> Data {
+    open func export<T: AllocBase & AllocRowed & Codable & AllocAttributable>(elements: [T], format: AllocFormat) throws -> Data {
         switch format {
         case .JSON:
             let encoder = JSONEncoder()

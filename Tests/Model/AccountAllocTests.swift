@@ -22,11 +22,11 @@ import AllocData
 
 final class AccountAllocTests: XCTestCase {
     var imp: Tabular!
-    var rejectedRows: [MAccount.Row]!
+    var rejectedRows: [AllocRowed.RawRow]!
 
     override func setUpWithError() throws {
         imp = Tabular()
-        rejectedRows = [MAccount.Row]()
+        rejectedRows = [AllocRowed.RawRow]()
     }
 
     func testSourceFormats() {
@@ -41,7 +41,7 @@ final class AccountAllocTests: XCTestCase {
             .allocAllocation,
             .allocAsset,
             .allocCap,
-            .allocHistory,
+            .allocTransaction,
             .allocHolding,
             .allocSecurity,
             .allocStrategy,
@@ -99,7 +99,7 @@ final class AccountAllocTests: XCTestCase {
         theTitle,   ,true,true
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MAccount.Row] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(1, rejectedRows.count)
     }
 
@@ -109,7 +109,7 @@ final class AccountAllocTests: XCTestCase {
         1,   ,true,true
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MAccount.Row] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
     }
 
@@ -119,7 +119,7 @@ final class AccountAllocTests: XCTestCase {
         1,X,  ,true
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MAccount.Row] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
     }
 
@@ -129,7 +129,7 @@ final class AccountAllocTests: XCTestCase {
         1,X,  ,true
         """
         let dataStr = csv.data(using: .utf8)!
-        let _: [MAccount.Row] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let _: [AllocRowed.DecodedRow] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
     }
 
@@ -139,14 +139,13 @@ final class AccountAllocTests: XCTestCase {
         1,X,true,true,3,true,xxx
         """
         let dataStr = csv.data(using: .utf8)!
-        let actual: [MAccount.Row] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows, inputFormat: .CSV)
         XCTAssertEqual(0, rejectedRows.count)
-        let expected: MAccount.Row = ["accountID": "1",
+        let expected: AllocRowed.DecodedRow = ["accountID": "1",
                                       "title": "X",
                                       "isActive": true,
                                       "isTaxable": true,
-                                      "canTrade": true,
-                                      "accountStrategyID": nil]
+                                      "canTrade": true]
         XCTAssertEqual([expected], actual)
     }
 }
