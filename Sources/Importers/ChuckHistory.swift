@@ -159,7 +159,7 @@ class ChuckHistory: FINporter {
             case "Cash Dividend", "Bank Interest", "Promotional Award":
                 return .income
             default:
-                return .misc
+                return .miscflow
             }
         }()
         

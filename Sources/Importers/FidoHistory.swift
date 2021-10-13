@@ -140,7 +140,7 @@ class FidoHistory: FINporter {
             case let str where str.starts(with: "INTEREST EARNED "):
                 return .income
             default:
-                return .misc
+                return .miscflow
             }
         }()
         
@@ -180,7 +180,7 @@ class FidoHistory: FINporter {
                 decodedRow[MTransaction.CodingKeys.securityID.rawValue] = ""
             }
 
-        case .income, .misc:
+        case .income, .miscflow:
             let symbol = MTransaction.parseString(delimitedRow["Symbol"])
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
