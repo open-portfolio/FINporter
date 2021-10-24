@@ -69,7 +69,7 @@ class ChuckSales: FINporter {
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay: String? = nil,
-                                            timeZoneID: String? = nil,
+                                            timeZone: TimeZone,
                                             timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
@@ -97,7 +97,7 @@ class ChuckSales: FINporter {
                 let nuItems = try decodeDelimitedRows(delimitedRows: delimitedRows,
                                                       accountID: _accountID,
                                                       defTimeOfDay: defTimeOfDay,
-                                                      timeZoneID: timeZoneID,
+                                                      timeZone: timeZone,
                                                       rejectedRows: &rejectedRows)
                 items.append(contentsOf: nuItems)
             }
@@ -111,7 +111,7 @@ class ChuckSales: FINporter {
     internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                       accountID: String,
                                       defTimeOfDay: String? = nil,
-                                      timeZoneID: String? = nil,
+                                      timeZone: TimeZone,
                                       rejectedRows: inout [AllocRowed.RawRow]) throws -> [AllocRowed.DecodedRow] {
         
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
@@ -121,7 +121,7 @@ class ChuckSales: FINporter {
                   let shareCount = MTransaction.parseDouble(delimitedRow["Quantity"]),
                   let proceeds = MTransaction.parseDouble(delimitedRow["Proceeds"]),
                   let dateSold = delimitedRow["Closed Date"],
-                  let transactedAt = parseChuckMMDDYYYY(dateSold, defTimeOfDay: defTimeOfDay, timeZoneID: timeZoneID)
+                  let transactedAt = parseChuckMMDDYYYY(dateSold, defTimeOfDay: defTimeOfDay, timeZone: timeZone)
             else {
                 rejectedRows.append(delimitedRow)
                 return

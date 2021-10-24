@@ -32,7 +32,7 @@ let chuckDateFormatter: DateFormatter = {
 /// If "08/16/2021 as of 08/15/2021" just parse the first date and ignore the second.
 func parseChuckMMDDYYYY(_ rawDateStr: String?,
                        defTimeOfDay: String? = nil,
-                       timeZoneID: String? = nil) -> Date? {
+                       timeZone: TimeZone) -> Date? {
     let pattern = #"^(\d\d/\d\d/\d\d\d\d)( as of.+)?"#
     
     let timeOfDay: String = defTimeOfDay ?? "12:00"
@@ -44,7 +44,7 @@ func parseChuckMMDDYYYY(_ rawDateStr: String?,
     
     let df = DateFormatter()
     df.dateFormat = "MM/dd/yyyy HH:mm"
-    df.timeZone = TimeZone(identifier: timeZoneID ?? "") ?? TimeZone.current
+    df.timeZone = timeZone
     
     let dateStr = "\(foundDateStr) \(timeOfDay)"
     let result = df.date(from: dateStr)

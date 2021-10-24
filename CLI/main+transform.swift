@@ -46,12 +46,13 @@ extension Finporter {
                 let outputSchema_ = outputSchema != nil ? AllocSchema(rawValue: outputSchema!) : nil
 
                 var rejectedRows: [AllocRowed.RawRow] = []
+                let timeZone = TimeZone(identifier: timeZoneID ?? "") ?? TimeZone.current
                 let str = try handleTransform(inputFilePath: inputFilePath,
                                               rejectedRows: &rejectedRows,
                                               finPorterID: importer,
                                               outputSchema: outputSchema_,
                                               defTimeOfDay: defTimeOfDay,
-                                              timeZoneID: timeZoneID)
+                                              timeZone: timeZone)
                 print(str)
             } catch let CSVParseError.generic(message) {
                 fputs("CSV generic: \(message)", stderr)

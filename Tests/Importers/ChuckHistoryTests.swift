@@ -25,6 +25,7 @@ final class ChuckHistoryTests: XCTestCase {
     var imp: ChuckHistory!
     let df = ISO8601DateFormatter()
     var rr: [AllocRowed.RawRow]!
+    let tzNewYork = TimeZone(identifier: "America/New_York")!
 
     let goodHeader = """
     "Transactions  for account XXXX-1234 as of 09/26/2021 22:00:26 ET"
@@ -110,7 +111,7 @@ final class ChuckHistoryTests: XCTestCase {
                                                              dataStr,
                                                              rejectedRows: &rr,
                                                              outputSchema: .allocTransaction,
-                                                             timeZoneID: "America/New_York")
+                                                             timeZone: tzNewYork)
         
         let expected: [AllocRowed.DecodedRow] = [
             ["txnAccountID": "XXXX-1234", "txnShareCount": 100.0, "txnSharePrice": 1.0, "txnTransactedAt": timestamp3, "txnAction": MTransaction.Action.income],

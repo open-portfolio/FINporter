@@ -25,7 +25,7 @@ final class ChuckHistoryActionTests: XCTestCase {
     var imp: ChuckHistory!
     let df = ISO8601DateFormatter()
     var rr: [AllocRowed.RawRow]!
-    let tzNewYork = "America/New_York"
+    let tzNewYork = TimeZone(identifier: "America/New_York")!
 
     override func setUpWithError() throws {
         imp = ChuckHistory()
@@ -42,7 +42,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                  rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "SCHB", "txnShareCount": 961.0, "txnAccountID": "1", "txnAction": MTransaction.Action.buysell, "txnTransactedAt": timestamp1, "txnSharePrice": 105.0736]]
         XCTAssertEqual(expected, actual)
@@ -58,7 +58,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "VOO", "txnShareCount": -10.0, "txnAccountID": "1", "txnAction": MTransaction.Action.buysell, "txnTransactedAt": timestamp1, "txnSharePrice": 137.1222]]
         XCTAssertEqual(expected, actual)
@@ -74,7 +74,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "", "txnShareCount": 101000.00, "txnAccountID": "1", "txnAction": MTransaction.Action.transfer, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
@@ -91,7 +91,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "EEM", "txnShareCount": 100.0, "txnAccountID": "1", "txnAction": MTransaction.Action.transfer, "txnTransactedAt": timestamp1, "txnSharePrice": -120.0010]]
         XCTAssertEqual(expected, actual)
@@ -108,7 +108,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "EEM", "txnShareCount": 100.0, "txnAccountID": "1", "txnAction": MTransaction.Action.transfer, "txnTransactedAt": timestamp1, "txnSharePrice": 120.0010]]
         XCTAssertEqual(expected, actual)
@@ -124,7 +124,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "SCHB", "txnShareCount": 122.13, "txnAccountID": "1", "txnAction": MTransaction.Action.income, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
@@ -141,7 +141,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 0.51, "txnAccountID": "1", "txnAction": MTransaction.Action.income, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
@@ -158,7 +158,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 100.00, "txnAccountID": "1", "txnAction": MTransaction.Action.income, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
@@ -175,7 +175,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = [["txnShareCount": -100.00, "txnAccountID": "1", "txnAction": MTransaction.Action.miscflow, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
@@ -190,7 +190,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let delimitedRows = try CSV(string: String(csvStr)).namedRows
         let actual = try imp.decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   accountID: "1",
-                                                 timeZoneID: tzNewYork,
+                                                 timeZone: tzNewYork,
                                                   rejectedRows: &rr)
         let expected: [AllocRowed.DecodedRow] = []
         XCTAssertEqual(expected, actual)

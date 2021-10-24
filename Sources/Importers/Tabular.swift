@@ -71,7 +71,7 @@ public class Tabular: FINporter {
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay _: String? = nil,
-                                            timeZoneID _: String? = nil,
+                                            timeZone _: TimeZone = TimeZone.current,
                                             timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("Unable to parse data.")

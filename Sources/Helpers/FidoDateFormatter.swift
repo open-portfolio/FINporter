@@ -31,7 +31,7 @@ let fidoDateFormatter: DateFormatter = {
 /// assume noon of current time zone for any Fido date
 func parseFidoMMDDYYYY(_ mmddyyyy: String?,
                        defTimeOfDay: String? = nil,
-                       timeZoneID: String? = nil) -> Date? {
+                       timeZone: TimeZone) -> Date? {
     let timeOfDay: String = defTimeOfDay ?? "12:00"
     guard let _mmddyyyy = mmddyyyy,
           timeOfDay.count == 5
@@ -39,7 +39,7 @@ func parseFidoMMDDYYYY(_ mmddyyyy: String?,
     
     let df = DateFormatter()
     df.dateFormat = "MM/dd/yyyy HH:mm"
-    df.timeZone = TimeZone(identifier: timeZoneID ?? "") ?? TimeZone.current
+    df.timeZone = timeZone
     
     let dateStr = "\(_mmddyyyy) \(timeOfDay)"
     let result = df.date(from: dateStr)
