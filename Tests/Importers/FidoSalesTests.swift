@@ -22,6 +22,7 @@ import AllocData
 
 final class FidoSalesTests: XCTestCase {
     var imp: FidoSales!
+    let tzNewYork = TimeZone(identifier: "America/New_York")!
 
     override func setUpWithError() throws {
         imp = FidoSales()
@@ -81,9 +82,9 @@ final class FidoSalesTests: XCTestCase {
         let url = URL(fileURLWithPath: "Realized_Gain_Loss_Account_X12345678.csv")
         var rejectedRows = [AllocRowed.RawRow]()
         let dataStr = str.data(using: .utf8)!
-        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, url: url)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, url: url, timeZone: tzNewYork)
 
-        let YYYYMMDDts = parseFidoMMDDYYYY("01/29/2021")!
+        let YYYYMMDDts = parseFidoMMDDYYYY("01/29/2021", timeZone: tzNewYork)!
         let expected: AllocRowed.DecodedRow = [
             "txnAction": MTransaction.Action.buysell,
             "txnTransactedAt": YYYYMMDDts,

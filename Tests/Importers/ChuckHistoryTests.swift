@@ -25,6 +25,7 @@ final class ChuckHistoryTests: XCTestCase {
     var imp: ChuckHistory!
     let df = ISO8601DateFormatter()
     var rr: [AllocRowed.RawRow]!
+    let tzNewYork = TimeZone(identifier: "America/New_York")!
 
     let goodHeader = """
     "Transactions  for account XXXX-1234 as of 09/26/2021 22:00:26 ET"
@@ -101,12 +102,16 @@ final class ChuckHistoryTests: XCTestCase {
     func testRows() throws {
         let dataStr = goodBody.data(using: .utf8)!
         
-        let timestamp1 = df.date(from: "2021-07-02T17:00:00Z")!
-        let timestamp2 = df.date(from: "2021-09-27T17:00:00Z")!
-        let timestamp3 = df.date(from: "2021-08-03T17:00:00Z")!
-        let timestamp4 = df.date(from: "2021-06-16T17:00:00Z")!
+        let timestamp1 = df.date(from: "2021-07-02T16:00:00Z")!
+        let timestamp2 = df.date(from: "2021-09-27T16:00:00Z")!
+        let timestamp3 = df.date(from: "2021-08-03T16:00:00Z")!
+        let timestamp4 = df.date(from: "2021-06-16T16:00:00Z")!
 
-        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, outputSchema: .allocTransaction)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self,
+                                                             dataStr,
+                                                             rejectedRows: &rr,
+                                                             outputSchema: .allocTransaction,
+                                                             timeZone: tzNewYork)
         
         let expected: [AllocRowed.DecodedRow] = [
             ["txnAccountID": "XXXX-1234", "txnShareCount": 100.0, "txnSharePrice": 1.0, "txnTransactedAt": timestamp3, "txnAction": MTransaction.Action.income],

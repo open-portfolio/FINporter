@@ -22,6 +22,7 @@ import AllocData
 
 final class ChuckSalesTests: XCTestCase {
     var imp: ChuckSales!
+    let tzNewYork = TimeZone(identifier: "America/New_York")!
 
     override func setUpWithError() throws {
         imp = ChuckSales()
@@ -84,9 +85,9 @@ final class ChuckSalesTests: XCTestCase {
 
         var rejectedRows = [AllocRowed.RawRow]()
         let dataStr = str.data(using: .utf8)!
-        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, timeZone: tzNewYork)
 
-        let YYYYMMDDts = parseChuckMMDDYYYY("09/27/2021")!
+        let YYYYMMDDts = parseChuckMMDDYYYY("09/27/2021", timeZone: tzNewYork)!
         let expected: AllocRowed.DecodedRow = [
             "txnAction": MTransaction.Action.buysell,
             "txnTransactedAt": YYYYMMDDts,

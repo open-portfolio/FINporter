@@ -57,7 +57,7 @@ class FidoSales: FINporter {
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay: String? = nil,
-                                            defTimeZone: String? = nil,
+                                            timeZone: TimeZone = TimeZone.current,
                                             timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
@@ -76,14 +76,14 @@ class FidoSales: FINporter {
         
         return decodeDelimitedRows(delimitedRows: delimitedRows,
                                    defTimeOfDay: defTimeOfDay,
-                                   defTimeZone: defTimeZone,
+                                   timeZone: timeZone,
                                    rejectedRows: &rejectedRows,
                                    accountID: accountID)
     }
     
     internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                          defTimeOfDay: String? = nil,
-                                         defTimeZone: String? = nil,
+                                         timeZone: TimeZone = TimeZone.current,
                                          rejectedRows: inout [AllocRowed.RawRow],
                                          accountID: String?) -> [AllocRowed.DecodedRow] {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
@@ -94,7 +94,7 @@ class FidoSales: FINporter {
                   let shareCount = MTransaction.parseDouble(delimitedRow["Quantity"]),
                   let proceeds = MTransaction.parseDouble(delimitedRow["Proceeds"]),
                   let dateSold = delimitedRow["Date Sold"],
-                  let transactedAt = parseFidoMMDDYYYY(dateSold, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
+                  let transactedAt = parseFidoMMDDYYYY(dateSold, defTimeOfDay: defTimeOfDay, timeZone: timeZone)
             else {
                 rejectedRows.append(delimitedRow)
                 return

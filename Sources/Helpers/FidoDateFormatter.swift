@@ -27,28 +27,22 @@ let fidoDateFormatter: DateFormatter = {
     return df
 }()
 
-private let fidoDateFormatterGeneric: DateFormatter = {
-    let df = DateFormatter()
-    // HH: Hour [00-23]
-    // mm: minute [00-59] (2 for zero padding)
-    // Z: Use one to three letters for RFC 822, four letters for GMT format.
-    df.dateFormat = "MM/dd/yyyy HH:mm zzz"
-    return df
-}()
-
 /// parse a 'naked' MM/dd/yyyy date into a fully resolved date
-/// assume noon ET for any Fido date
+/// assume noon of current time zone for any Fido date
 func parseFidoMMDDYYYY(_ mmddyyyy: String?,
                        defTimeOfDay: String? = nil,
-                       defTimeZone: String? = nil) -> Date? {
+                       timeZone: TimeZone) -> Date? {
     let timeOfDay: String = defTimeOfDay ?? "12:00"
-    let timeZone: String = defTimeZone ?? "EST" // "-05:00"
     guard let _mmddyyyy = mmddyyyy,
-          timeOfDay.count == 5,
-          timeZone.count > 0
+          timeOfDay.count == 5
     else { return nil }
-    let dateStr = "\(_mmddyyyy) \(timeOfDay) \(timeZone)"
-    let result = fidoDateFormatterGeneric.date(from: dateStr)
+    
+    let df = DateFormatter()
+    df.dateFormat = "MM/dd/yyyy HH:mm"
+    df.timeZone = timeZone
+    
+    let dateStr = "\(_mmddyyyy) \(timeOfDay)"
+    let result = df.date(from: dateStr)
     return result
 }
     

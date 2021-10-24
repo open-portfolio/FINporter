@@ -61,7 +61,7 @@ class FidoHistory: FINporter {
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
                                             defTimeOfDay: String? = nil,
-                                            defTimeZone: String? = nil,
+                                            timeZone: TimeZone = TimeZone.current,
                                             timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
@@ -74,7 +74,7 @@ class FidoHistory: FINporter {
             let delimitedRows = try CSV(string: String(csvStr)).namedRows
             let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
                                               defTimeOfDay: defTimeOfDay,
-                                              defTimeZone: defTimeZone,
+                                              timeZone: timeZone,
                                               rejectedRows: &rejectedRows)
             items.append(contentsOf: nuItems)
         }
@@ -84,7 +84,7 @@ class FidoHistory: FINporter {
     
     internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                       defTimeOfDay: String? = nil,
-                                      defTimeZone: String? = nil,
+                                      timeZone: TimeZone = TimeZone.current,
                                       rejectedRows: inout [AllocRowed.RawRow]) -> [AllocRowed.DecodedRow] {
         
         //let trimFromTicker = CharacterSet(charactersIn: "*")
@@ -93,7 +93,7 @@ class FidoHistory: FINporter {
             // required values
             guard let rawAction = MTransaction.parseString(delimitedRow["Action"]),
                   let rawDate = delimitedRow["Run Date"],
-                  let transactedAt = parseFidoMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone),
+                  let transactedAt = parseFidoMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, timeZone: timeZone),
                   let accountNameNumber = MTransaction.parseString(delimitedRow["Account"]),
                   let amount = MTransaction.parseDouble(delimitedRow["Amount ($)"]),
                   let accountID = accountNameNumber.split(separator: " ").last,
@@ -206,7 +206,7 @@ class FidoHistory: FINporter {
 //                  let shareCount = MTransaction.parseDouble(delimitedRow["Quantity"]),
 //                  let sharePrice = MTransaction.parseDouble(delimitedRow["Price ($)"]),
 //                  let runDate = delimitedRow["Run Date"],
-//                  let transactedAt = parseFidoMMDDYYYY(runDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone)
+//                  let transactedAt = parseFidoMMDDYYYY(runDate, defTimeOfDay: defTimeOfDay, timeZone: timeZone)
 
 // unfortunately, no realized gain/loss info available in this export
 // see the fido_sales report for that
