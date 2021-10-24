@@ -69,7 +69,7 @@ class ChuckHistory: FINporter {
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay: String? = nil,
-                                            defTimeZone: String? = nil,
+                                            timeZoneID: String? = nil,
                                             timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
@@ -97,7 +97,7 @@ class ChuckHistory: FINporter {
                 let nuItems = try decodeDelimitedRows(delimitedRows: delimitedRows,
                                                       accountID: _accountID,
                                                       defTimeOfDay: defTimeOfDay,
-                                                      defTimeZone: defTimeZone,
+                                                      timeZoneID: timeZoneID,
                                                       rejectedRows: &rejectedRows)
                 items.append(contentsOf: nuItems)
             }
@@ -111,14 +111,14 @@ class ChuckHistory: FINporter {
     internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                       accountID: String,
                                       defTimeOfDay: String? = nil,
-                                      defTimeZone: String? = nil,
+                                      timeZoneID: String? = nil,
                                       rejectedRows: inout [AllocRowed.RawRow]) throws -> [AllocRowed.DecodedRow] {
         
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             
             guard let rawAction = MTransaction.parseString(delimitedRow["Action"]),
                   let rawDate = delimitedRow["Date"],
-                  let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, defTimeZone: defTimeZone),
+                  let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, timeZoneID: timeZoneID),
                   let amount = MTransaction.parseDouble(delimitedRow["Amount"])
             else {
                 rejectedRows.append(delimitedRow)

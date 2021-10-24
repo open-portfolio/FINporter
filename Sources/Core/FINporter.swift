@@ -43,7 +43,7 @@ open class FINporter: Identifiable, Hashable {
                                    outputSchema _: AllocSchema? = nil,
                                    url _: URL? = nil,
                                    defTimeOfDay _: String? = nil,
-                                   defTimeZone _: String? = nil,
+                                   timeZoneID _: String? = nil,
                                    timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         throw FINporterError.notImplementedError
     }

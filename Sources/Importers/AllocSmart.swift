@@ -103,7 +103,7 @@ class AllocSmart: FINporter {
                                             outputSchema _: AllocSchema? = nil,
                                             url _: URL? = nil,
                                             defTimeOfDay _: String? = nil,
-                                            defTimeZone _: String? = nil,
+                                            timeZoneID _: String? = nil,
                                             timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")

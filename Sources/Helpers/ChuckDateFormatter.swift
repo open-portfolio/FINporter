@@ -27,32 +27,26 @@ let chuckDateFormatter: DateFormatter = {
     return df
 }()
 
-private let chuckDateFormatterGeneric: DateFormatter = {
-    let df = DateFormatter()
-    // HH: Hour [00-23]
-    // mm: minute [00-59] (2 for zero padding)
-    // Z: Use one to three letters for RFC 822, four letters for GMT format.
-    df.dateFormat = "MM/dd/yyyy HH:mm zzz"
-    return df
-}()
-
 /// Parse a 'naked' MM/dd/yyyy date into a fully resolved date.
-/// Assume noon ET for any Chuck date.
+/// Assume noon of current time zone for any Chuck date.
 /// If "08/16/2021 as of 08/15/2021" just parse the first date and ignore the second.
 func parseChuckMMDDYYYY(_ rawDateStr: String?,
                        defTimeOfDay: String? = nil,
-                       defTimeZone: String? = nil) -> Date? {
+                       timeZoneID: String? = nil) -> Date? {
     let pattern = #"^(\d\d/\d\d/\d\d\d\d)( as of.+)?"#
     
     let timeOfDay: String = defTimeOfDay ?? "12:00"
-    let timeZone: String = defTimeZone ?? "EST" // "-05:00"
     guard let _rawDateStr = rawDateStr,
           let captureGroups = _rawDateStr.captureGroups(for: pattern),
           let foundDateStr = captureGroups.first,
-          timeOfDay.count == 5,
-          timeZone.count > 0
+          timeOfDay.count == 5
     else { return nil }
-    let dateStr = "\(foundDateStr) \(timeOfDay) \(timeZone)"
-    let result = chuckDateFormatterGeneric.date(from: dateStr)
+    
+    let df = DateFormatter()
+    df.dateFormat = "MM/dd/yyyy HH:mm"
+    df.timeZone = TimeZone(identifier: timeZoneID ?? "") ?? TimeZone.current
+    
+    let dateStr = "\(foundDateStr) \(timeOfDay)"
+    let result = df.date(from: dateStr)
     return result
 }

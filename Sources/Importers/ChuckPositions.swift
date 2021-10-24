@@ -74,7 +74,7 @@ class ChuckPositions: FINporter {
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay _: String? = nil,
-                                            defTimeZone _: String? = nil,
+                                            timeZoneID _: String? = nil,
                                             timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
