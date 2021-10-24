@@ -117,4 +117,49 @@ final class FidoHistoryTests: XCTestCase {
         XCTAssertTrue(areEqual(expected, actual.first!))
         XCTAssertEqual(0, rejectedRows.count)
     }
+    
+    func testMiscFlow() throws {
+        let str = """
+        Brokerage
+
+        Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
+         03/01/2021,CASH MGMT X0000000A, DEBIT CARD PURCHASE, , No Description,Cash,,,,,,-17.00,
+         03/01/2021,CASH MGMT X0000000B, DIRECT DEBIT BLAH, , No Description,Cash,,,,,,-23.00,
+         03/01/2021,CASH MGMT X0000000C, DIRECT DEPOSIT BLAH, , No Description,Cash,,,,,,7.00,
+
+        XXX
+        """
+
+        var rejectedRows = [AllocRowed.RawRow]()
+        let dataStr = str.data(using: .utf8)!
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows)
+
+        let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021")!
+        let expected: [AllocRowed.DecodedRow] = [
+            [
+                "txnAction": MTransaction.Action.miscflow,
+                "txnTransactedAt": YYYYMMDDts,
+                "txnAccountID": "X0000000A",
+                "txnShareCount": -17.0,
+                "txnSharePrice": 1.0,
+            ],
+            [
+                "txnAction": MTransaction.Action.miscflow,
+                "txnTransactedAt": YYYYMMDDts,
+                "txnAccountID": "X0000000B",
+                "txnShareCount": -23.0,
+                "txnSharePrice": 1.0,
+            ],
+            [
+                "txnAction": MTransaction.Action.miscflow,
+                "txnTransactedAt": YYYYMMDDts,
+                "txnAccountID": "X0000000C",
+                "txnShareCount": 7.0,
+                "txnSharePrice": 1.0,
+            ]
+        ]
+
+        XCTAssertEqual(expected, actual)
+        XCTAssertEqual(0, rejectedRows.count)
+    }
 }
