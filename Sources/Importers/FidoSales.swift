@@ -57,7 +57,7 @@ class FidoSales: FINporter {
                                             outputSchema _: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay: String? = nil,
-                                            timeZone: TimeZone,
+                                            timeZone: TimeZone = TimeZone.current,
                                             timestamp _: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
@@ -83,7 +83,7 @@ class FidoSales: FINporter {
     
     internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                          defTimeOfDay: String? = nil,
-                                         timeZone: TimeZone,
+                                         timeZone: TimeZone = TimeZone.current,
                                          rejectedRows: inout [AllocRowed.RawRow],
                                          accountID: String?) -> [AllocRowed.DecodedRow] {
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in

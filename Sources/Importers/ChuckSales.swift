@@ -69,7 +69,7 @@ class ChuckSales: FINporter {
                                             outputSchema: AllocSchema? = nil,
                                             url: URL? = nil,
                                             defTimeOfDay: String? = nil,
-                                            timeZone: TimeZone,
+                                            timeZone: TimeZone = TimeZone.current,
                                             timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
@@ -111,7 +111,7 @@ class ChuckSales: FINporter {
     internal func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
                                       accountID: String,
                                       defTimeOfDay: String? = nil,
-                                      timeZone: TimeZone,
+                                      timeZone: TimeZone = TimeZone.current,
                                       rejectedRows: inout [AllocRowed.RawRow]) throws -> [AllocRowed.DecodedRow] {
         
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
