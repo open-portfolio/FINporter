@@ -36,7 +36,7 @@ class ChuckPositions: FINporter {
     private let trimFromTicker = CharacterSet(charactersIn: "*")
     
     internal static let headerRE = #"""
-    "Positions for .+? as of .+"
+    "Positions for All-Accounts as of .+"
     
     ".+"
     "Symbol","Description","Quantity","Price","Price Change \$","Price Change %","Market Value","Day Change \$","Day Change %","Cost Basis",.+
@@ -163,7 +163,7 @@ class ChuckPositions: FINporter {
         }
         
         // extract exportedAt from "Positions for All-Accounts as of 09:59 PM ET, 09/26/2021" (with quotes)
-        let ddRE = #"(?<= as of ).+(?=\")"#
+        let ddRE = #"(?<=\"Positions for All-Accounts as of ).+(?=\")"#
         if let dd = str.range(of: ddRE, options: .regularExpression),
            let exportedAt = chuckDateFormatter.date(from: String(str[dd])) {
             decodedRow[MSourceMeta.CodingKeys.exportedAt.rawValue] = exportedAt
