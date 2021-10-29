@@ -25,16 +25,16 @@ final class ChuckPositionsTests: XCTestCase {
     let df = ISO8601DateFormatter()
 
     let goodHeader1 = """
-    "Positions for All-Accounts as of 09:59 PM ET, 09/26/2021"
+    "Positions for AAA-AAAAAAAAA as of 09:59 PM ET, 09/26/2021"
 
     "Individual                        XXXX-1234"
     "Symbol","Description","Quantity","Price","Price Change $","Price Change %","Market Value","Day Change $","Day Change %","Cost Basis","Gain/Loss $",...
     """
     
-    let goodHeader2 = "\"Positions for All-Accounts as of 09:59 PM ET, 09/26/2021\"\r\n\r\n\"Individual                        XXXX-1234\"\r\n\"Symbol\",\"Description\",\"Quantity\",\"Price\",\"Price Change $\",\"Price Change %\",\"Market Value\",\"Day Change $\",\"Day Change %\",\"Cost Basis\",\"Gain/Loss $\",\"Gain/Loss %\",\"Reinvest Dividends?\",\"Capital Gains?\",\"% Of Account\",\"Dividend Yield\",\"Last Dividend\",\"Ex-Dividend Date\",\"P/E Ratio\",\"52 Week Low\",\"52 Week High\",\"Volume\",\"Intrinsic Value\",\"In The Money\",\"Security Type\",\r\n"
+    let goodHeader2 = "\"Positions for AAA-AAAAAAAAA as of 09:59 PM ET, 09/26/2021\"\r\n\r\n\"Individual                        XXXX-1234\"\r\n\"Symbol\",\"Description\",\"Quantity\",\"Price\",\"Price Change $\",\"Price Change %\",\"Market Value\",\"Day Change $\",\"Day Change %\",\"Cost Basis\",\"Gain/Loss $\",\"Gain/Loss %\",\"Reinvest Dividends?\",\"Capital Gains?\",\"% Of Account\",\"Dividend Yield\",\"Last Dividend\",\"Ex-Dividend Date\",\"P/E Ratio\",\"52 Week Low\",\"52 Week High\",\"Volume\",\"Intrinsic Value\",\"In The Money\",\"Security Type\",\r\n"
     
     let goodBody = """
-    "Positions for All-Accounts as of 09:59 PM ET, 09/26/2021"
+    "Positions for AAA-AAAAAAAAA as of 09:59 PM ET, 09/26/2021"
 
     "Individual                        XXXX-1234"
     "Symbol","Description","Quantity","Price","Price Change $","Price Change %","Market Value","Day Change $","Day Change %","Cost Basis","Gain/Loss $","Gain/Loss %","Reinvest Dividends?","Capital Gains?","% Of Account","Dividend Yield","Last Dividend","Ex-Dividend Date","P/E Ratio","52 Week Low","52 Week High","Volume","Intrinsic Value","In The Money","Security Type",
