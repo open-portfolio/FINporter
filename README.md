@@ -91,13 +91,18 @@ Output schema:
 
 _This is an early release, and probably has bugs._
 
-To transform the "All-Accounts-Positions-YYYY-MM-DD-000000.CSV" export requires four separate commands, as there are four outputs: accounts, account holdings, securities, and 'source meta':
+There are actually two importers to handle Schwab positions. One for 'All' accounts, and a second for 'Individual' accounts. The files are named differently:
+
+* All-Accounts-Positions-YYYY-MM-DD-000000.CSV
+* Individual-Positions-YYYY-MM-DD-000000.CSV
+
+To transform either export requires four separate commands, as there are four outputs: accounts, account holdings, securities, and 'source meta':
 
 ```bash
-$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/account
-$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/holding
-$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/security
-$ finport transform All-Accounts-Positions-2021-06-30-012345.CSV --output-schema openalloc/meta/source
+$ finport transform SOMETHING-Positions-2021-06-30-012345.CSV --output-schema openalloc/account
+$ finport transform SOMETHING-Positions-2021-06-30-012345.CSV --output-schema openalloc/holding
+$ finport transform SOMETHING-Positions-2021-06-30-012345.CSV --output-schema openalloc/security
+$ finport transform SOMETHING-Positions-2021-06-30-012345.CSV --output-schema openalloc/meta/source
 ```
 
 Each command above will produce comma-separated value data in the following schemas, respectively.
