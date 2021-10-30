@@ -32,7 +32,8 @@ public struct FINprospector {
         importers.append(FidoHistory())
         importers.append(FidoPositions())
         importers.append(FidoSales())
-        importers.append(ChuckPositions())
+        importers.append(ChuckPositionsAll())
+        importers.append(ChuckPositionsIndiv())
         importers.append(ChuckHistory())
         importers.append(ChuckSales())
 
