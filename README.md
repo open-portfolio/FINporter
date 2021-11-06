@@ -4,7 +4,7 @@
 
 Available both as a `finport` command line executable and as a Swift library to be incorporated in other apps.
 
-Used by investing apps like [FlowAllocator](https://flowallocator.app), a new rebalancing tool for macOS.
+Used by investing apps like [FlowAllocator](https://flowallocator.app/FlowAllocator/index.html) and [FlowWorth](https://flowallocator.app/FlowWorth/index.html).
 
 ## Disclaimer
 
@@ -185,6 +185,12 @@ SUBCOMMANDS:
 ```
 
 If your favorite product (e.g., _FlowAllocator_) hasn't yet incorporated the latest FINporter library supporting your service, you can still transform exports using `finport`. See examples above.
+
+## Applications using FINporter
+
+* [FlowAllocator](https://flowallocator.app/FlowAllocator/index.html) - portfolio rebalancing tool for macOS
+
+* [FlowWorth](https://flowallocator.app/FlowWorth/index.html) - a new portfolio performance and valuation tracking tool for macOS
 
 ## License
 
