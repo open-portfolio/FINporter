@@ -2,7 +2,9 @@
 
 <img align="right" src="https://github.com/openalloc/FINporter/blob/main/Images/logo.png" width="100" height="100"/>A utility for transforming financial data.
 
-Available both as a `finport` command line executable and as a Swift library to be incorporated in other apps.
+Available both as a `finport` command line executable and as an open source Swift library to be incorporated in other apps.
+
+_FINporter_ is part of the [OpenAlloc](https://github.com/openalloc) family of open source Swift software tools.
 
 Used by investing apps like [FlowAllocator](https://flowallocator.app/FlowAllocator/index.html) and [FlowWorth](https://flowallocator.app/FlowWorth/index.html).
 
@@ -186,10 +188,18 @@ SUBCOMMANDS:
 
 If your favorite product (e.g., _FlowAllocator_) hasn't yet incorporated the latest FINporter library supporting your service, you can still transform exports using `finport`. See examples above.
 
-## Applications using FINporter
+## See Also
+
+Swift open-source libraries (by the same author):
+
+* [AllocData](https://github.com/openalloc/AllocData) - standardized data formats for investing-focused apps and tools
+* [SwiftCompactor](https://github.com/openalloc/SwiftCompactor) - formatters for the concise display of Numbers, Currency, and Time Intervals
+* [SwiftSimpleTree](https://github.com/openalloc/SwiftSimpleTree) - a nested data structure that’s flexible and easy to use
+* [SwiftRegressor](https://github.com/openalloc/SwiftRegressor) - a linear regression tool that’s flexible and easy to use
+
+And commercial apps using this library (by the same author):
 
 * [FlowAllocator](https://flowallocator.app/FlowAllocator/index.html) - portfolio rebalancing tool for macOS
-
 * [FlowWorth](https://flowallocator.app/FlowWorth/index.html) - a new portfolio performance and valuation tracking tool for macOS
 
 ## License
