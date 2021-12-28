@@ -33,27 +33,44 @@ extension Finporter {
         )
         @Argument(help: "input file")
         var inputFilePath: String
-        @Option(help: "importer (e.g. \"fido_history\")")
+        @Option(help: "importer (e.g. \"fido_history\") (default: auto detect)")
         var importer: String?
-        @Option(help: "the target schema (e.g. \"openalloc/history\")")
+        @Option(help: "the target schema (e.g. \"openalloc/history\") (default: auto detect)")
         var outputSchema: String?
         @Option(help: "default time of day, in 24 hour format, for parsing naked dates (e.g. \"13:00\")")
         var defTimeOfDay: String?
         @Option(help: "geopolitical time zone identifier, for parsing naked dates (e.g. \"America/New_York\")")
         var timeZoneID: String?
+        @Flag(help: "show rejected rows (default: false)")
+        var showRejectedRows: Bool = false
         func run() {
             do {
-                let outputSchema_ = outputSchema != nil ? AllocSchema(rawValue: outputSchema!) : nil
+                let _outputSchema = outputSchema != nil ? AllocSchema(rawValue: outputSchema!) : nil
 
                 var rejectedRows: [AllocRowed.RawRow] = []
                 let timeZone = TimeZone(identifier: timeZoneID ?? "") ?? TimeZone.current
                 let str = try handleTransform(inputFilePath: inputFilePath,
                                               rejectedRows: &rejectedRows,
                                               finPorterID: importer,
-                                              outputSchema: outputSchema_,
+                                              outputSchema: _outputSchema,
                                               defTimeOfDay: defTimeOfDay,
                                               timeZone: timeZone)
-                print(str)
+                if showRejectedRows {
+//                    for row in rejectedRows {
+//                        print(row)
+//                    }
+                    for (n, row) in rejectedRows.enumerated() {
+                        print("Rejected Row #\(n + 1):")
+                        for key in row.map(\.key).sorted() {
+                            guard let value = row[key],
+                                  value.count > 0
+                            else { continue }
+                            print("  \(key): \(value)")
+                        }
+                    }
+                } else {
+                    print(str)
+                }
             } catch let CSVParseError.generic(message) {
                 fputs("CSV generic: \(message)", stderr)
             } catch let CSVParseError.quotation(message) {
