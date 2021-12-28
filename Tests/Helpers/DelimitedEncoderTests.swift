@@ -114,4 +114,23 @@ final class DelimitedEncoderTests: XCTestCase {
         let actual = String(data: rows, encoding: .utf8)
         XCTAssertEqual("\"bl\\\"a,h\",bleep", actual)
     }
+    
+    func testNilStringDouble() throws {
+        struct Foo: Encodable { var floo: String?; var bar: Double? }
+        let row = Foo(floo: nil, bar: nil)
+        let encoder = DelimitedEncoder()
+        let rows = try encoder.encode(rows: row)
+        let actual = String(data: rows, encoding: .utf8)!
+        XCTAssertEqual(",", actual)
+    }
+    
+    // TODO broken
+//    func testNilDates() throws {
+//        struct Foo: Encodable { var floo: Date?; var bar: Date? }
+//        let row = Foo(floo: nil, bar: nil)
+//        let encoder = DelimitedEncoder()
+//        let rows = try encoder.encode(rows: row)
+//        let actual = String(data: rows, encoding: .utf8)!
+//        XCTAssertEqual(",", actual)
+//    }
 }
