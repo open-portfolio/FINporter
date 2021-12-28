@@ -23,6 +23,7 @@ import AllocData
 final class TabularTests: XCTestCase {
     var imp: Tabular!
     var rejectedRows: [MCap.RawRow]!
+    let df = ISO8601DateFormatter()
 
     override func setUpWithError() throws {
         imp = Tabular()
@@ -34,5 +35,15 @@ final class TabularTests: XCTestCase {
         XCTAssertThrowsError(try imp.decode(MAccount.self, dataStr, rejectedRows: &rejectedRows)) { error in
             XCTAssertEqual(error as! FINporterError, FINporterError.decodingError("Unable to infer format (and delimiter) from url."))
         }
+    }
+
+    // ensure the missing gains show as blank ('') in output and not 'nil'
+    func testExportedMissingGainsAreBlank() throws {
+        let datetime1 = df.date(from: "2021-03-01T17:00:00Z")!
+        let txn = MTransaction(action: .buysell, transactedAt: datetime1, accountID: "1", securityID: "SPY", lotID: "", shareCount: 3, sharePrice: 4, realizedGainShort: nil, realizedGainLong: nil)
+        let data = try imp.export(elements: [txn], format: .CSV)
+        let actual = String(data: data, encoding: .utf8)
+        let expected = "txnAction,txnTransactedAt,txnAccountID,txnSecurityID,txnLotID,txnShareCount,txnSharePrice,realizedGainShort,realizedGainLong\nbuysell,2021-03-01T17:00:00Z,1,SPY,,3.0,4.0,,\n"
+        XCTAssertEqual(expected, actual)
     }
 }
