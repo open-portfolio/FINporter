@@ -119,7 +119,7 @@ public class DelimitedEncoder: Encoder {
             }
         }
 
-        mutating func encode<T>(_ value: T, forKey _: K) throws where T: Encodable {
+        mutating func encode<T>(_ value: T, forKey key: K) throws where T: Encodable {
             if isFirstColumn {
                 isFirstColumn = false
             } else {
@@ -135,7 +135,7 @@ public class DelimitedEncoder: Encoder {
                     let escapedValue = rawValue.replacingOccurrences(of: "\"", with: "\\\"")
                     return hasDelim ? "\"\(escapedValue)\"" : escapedValue
                 }
-                return String(describing: value)
+                return "" // assume nil and render as blank
             }()
 
             encoder.write(value_)
