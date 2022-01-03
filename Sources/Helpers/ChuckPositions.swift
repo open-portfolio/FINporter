@@ -145,8 +145,6 @@ struct ChuckPositions {
                                           accountTitleRE: String,
                                           csvRE: String) throws -> [T.DecodedRow] {
         
-        var items = [T.DecodedRow]()
-        
         // first line has the account ID & title
         let tuple: (id: String, title: String)? = {
             let _range = str.lineRange(for: ..<str.startIndex)
@@ -157,24 +155,23 @@ struct ChuckPositions {
         if let (accountID, accountTitle) = tuple {
             
             if outputSchema == .allocAccount {
-                items.append([
+                return [[
                     MAccount.CodingKeys.accountID.rawValue: accountID,
                     MAccount.CodingKeys.title.rawValue: accountTitle
-                ])
+                ]]
                 
             } else if let csvRange = str.range(of: csvRE,
                                                options: .regularExpression) {
                 let csvStr = str[csvRange]
                 let delimitedRows = try CSV(string: String(csvStr)).namedRows
-                let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
+                return decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   outputSchema_: outputSchema,
                                                   accountID: accountID,
                                                   rejectedRows: &rejectedRows,
                                                   timestamp: timestamp)
-                items.append(contentsOf: nuItems)
             }
         }
         
-        return items
+        return []
     }
 }
