@@ -47,7 +47,7 @@ class ChuckPositionsIndiv: FINporter {
     """#
     
     internal static let accountTitleRE = #""Positions for account (.+?)\s+([A-Z0-9-_]+) as of .+""# // lazy greedy non-space
-
+    
     override func detect(dataPrefix: Data) throws -> DetectResult {
         guard let str = FINporter.normalizeDecode(dataPrefix),
               str.range(of: ChuckPositionsIndiv.headerRE,
@@ -62,14 +62,14 @@ class ChuckPositionsIndiv: FINporter {
     }
     
     override open func decode<T: AllocRowed>(_ type: T.Type,
-                                            _ data: Data,
-                                            rejectedRows: inout [T.RawRow],
-                                            inputFormat _: AllocFormat? = nil,
-                                            outputSchema: AllocSchema? = nil,
-                                            url: URL? = nil,
-                                            defTimeOfDay _: String? = nil,
-                                            timeZone _: TimeZone = TimeZone.current,
-                                            timestamp: Date? = nil) throws -> [T.DecodedRow] {
+                                             _ data: Data,
+                                             rejectedRows: inout [T.RawRow],
+                                             inputFormat _: AllocFormat? = nil,
+                                             outputSchema: AllocSchema? = nil,
+                                             url: URL? = nil,
+                                             defTimeOfDay _: String? = nil,
+                                             timeZone _: TimeZone = TimeZone.current,
+                                             timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard let str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -86,34 +86,18 @@ class ChuckPositionsIndiv: FINporter {
             return items
         }
         
-        // first line has the account ID & title
-        let tuple: (id: String, title: String)? = {
-            let _range = str.lineRange(for: ..<str.startIndex)
-            let rawStr = str[_range].trimmingCharacters(in: .whitespacesAndNewlines)
-            return ChuckPositions.parseAccountTitleID(ChuckPositionsIndiv.accountTitleRE, rawStr)
-        }()
+        try ChuckPositions.parseBlock(str: str,
+                                      outputSchema: outputSchema_,
+                                      items: &items,
+                                      rejectedRows: &rejectedRows,
+                                      timestamp: timestamp,
+                                      accountTitleRE: ChuckPositionsIndiv.accountTitleRE,
+                                      csvRE: ChuckPositionsIndiv.csvRE)
         
-        if let (accountID, accountTitle) = tuple {
-            
-            if outputSchema_ == .allocAccount {
-                items.append([
-                    MAccount.CodingKeys.accountID.rawValue: accountID,
-                    MAccount.CodingKeys.title.rawValue: accountTitle
-                ])
-                
-            } else if let csvRange = str.range(of: ChuckPositionsIndiv.csvRE,
-                                                 options: .regularExpression) {
-                let csvStr = str[csvRange]
-                let delimitedRows = try CSV(string: String(csvStr)).namedRows
-                let nuItems = ChuckPositions.decodeDelimitedRows(delimitedRows: delimitedRows,
-                                                                 outputSchema_: outputSchema_,
-                                                                 accountID: accountID,
-                                                                 rejectedRows: &rejectedRows,
-                                                                 timestamp: timestamp)
-                items.append(contentsOf: nuItems)
-            }
-        }
-
         return items
     }
+    
+    
+    
+    
 }

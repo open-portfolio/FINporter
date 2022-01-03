@@ -136,4 +136,41 @@ struct ChuckPositions {
         else { return nil }
         return (captured[1], captured[0])
     }
+    
+    static func parseBlock(str: String,
+                            outputSchema: AllocSchema,
+                            items: inout [[String : AnyHashable]],
+                            rejectedRows: inout [[String : String]],
+                            timestamp: Date?,
+                            accountTitleRE: String,
+                            csvRE: String) throws {
+        
+        // first line has the account ID & title
+        let tuple: (id: String, title: String)? = {
+            let _range = str.lineRange(for: ..<str.startIndex)
+            let rawStr = str[_range].trimmingCharacters(in: .whitespacesAndNewlines)
+            return parseAccountTitleID(accountTitleRE, rawStr)
+        }()
+        
+        if let (accountID, accountTitle) = tuple {
+            
+            if outputSchema == .allocAccount {
+                items.append([
+                    MAccount.CodingKeys.accountID.rawValue: accountID,
+                    MAccount.CodingKeys.title.rawValue: accountTitle
+                ])
+                
+            } else if let csvRange = str.range(of: csvRE,
+                                               options: .regularExpression) {
+                let csvStr = str[csvRange]
+                let delimitedRows = try CSV(string: String(csvStr)).namedRows
+                let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
+                                                                 outputSchema_: outputSchema,
+                                                                 accountID: accountID,
+                                                                 rejectedRows: &rejectedRows,
+                                                                 timestamp: timestamp)
+                items.append(contentsOf: nuItems)
+            }
+        }
+    }
 }
