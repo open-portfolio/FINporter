@@ -46,13 +46,7 @@ struct ChuckPositions {
     
     static func holding(_ accountID: String, _ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
         // NOTE: 'Symbol' may be "Cash & Cash Investments" or "Account Total"
-        guard let rawSymbol = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
-              rawSymbol.count > 0,
-              rawSymbol != "Account Total"
-        else {
-            rejectedRows.append(row)
-            return nil
-        }
+        guard let rawSymbol = getRawSymbol(row) else { return nil }
         
         var netSymbol: String? = nil
         var shareBasis: Double? = nil
@@ -88,16 +82,19 @@ struct ChuckPositions {
     }
     
     static func security(_ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow], timestamp: Date?) -> AllocRowed.DecodedRow? {
-        guard let securityID = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
-              securityID.count > 0,
-              let sharePrice = MHolding.parseDouble(row["Price"])
+        
+        guard let rawSymbol = getRawSymbol(row),
+              rawSymbol != "Cash & Cash Investments"    // ignore cash
+        else { return nil }
+        
+        guard let sharePrice = MHolding.parseDouble(row["Price"])
         else {
             rejectedRows.append(row)
             return nil
         }
         
         var decodedRow: AllocRowed.DecodedRow = [
-            MSecurity.CodingKeys.securityID.rawValue: securityID,
+            MSecurity.CodingKeys.securityID.rawValue: rawSymbol,
             MSecurity.CodingKeys.sharePrice.rawValue: sharePrice,
         ]
         
@@ -106,6 +103,16 @@ struct ChuckPositions {
         }
         
         return decodedRow
+    }
+    
+    /// obtain the ticker, ignoring row if blank/missing (or if "Account Total")
+    internal static func getRawSymbol(_ row: AllocRowed.RawRow) -> String? {
+        guard let rawSymbol = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
+              rawSymbol.count > 0,
+              rawSymbol != "Account Total"
+        else { return nil }
+        
+        return rawSymbol
     }
     
     static func parseBlock(block: String,
