@@ -138,7 +138,7 @@ struct ChuckPositions {
     }
     
     static func parseBlock<T: AllocRowed>(_ type: T.Type,
-                                          str: String,
+                                          block: String,
                                           outputSchema: AllocSchema,
                                           rejectedRows: inout [[String : String]],
                                           timestamp: Date?,
@@ -147,8 +147,8 @@ struct ChuckPositions {
         
         // first line has the account ID & title
         let tuple: (id: String, title: String)? = {
-            let _range = str.lineRange(for: ..<str.startIndex)
-            let rawStr = str[_range].trimmingCharacters(in: .whitespacesAndNewlines)
+            let _range = block.lineRange(for: ..<block.startIndex)
+            let rawStr = block[_range].trimmingCharacters(in: .whitespacesAndNewlines)
             return parseAccountTitleID(accountTitleRE, rawStr)
         }()
         
@@ -160,9 +160,9 @@ struct ChuckPositions {
                     MAccount.CodingKeys.title.rawValue: accountTitle
                 ]]
                 
-            } else if let csvRange = str.range(of: csvRE,
+            } else if let csvRange = block.range(of: csvRE,
                                                options: .regularExpression) {
-                let csvStr = str[csvRange]
+                let csvStr = block[csvRange]
                 let delimitedRows = try CSV(string: String(csvStr)).namedRows
                 return decodeDelimitedRows(delimitedRows: delimitedRows,
                                                   outputSchema_: outputSchema,

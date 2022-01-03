@@ -98,7 +98,7 @@ class ChuckPositionsAll: FINporter {
             let block = str[range]
             
             let nuItems = try ChuckPositions.parseBlock(type,
-                                                        str: String(block),
+                                                        block: String(block),
                                                         outputSchema: outputSchema_,
                                                         
                                                         rejectedRows: &rejectedRows,
