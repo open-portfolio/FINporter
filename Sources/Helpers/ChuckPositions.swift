@@ -137,13 +137,15 @@ struct ChuckPositions {
         return (captured[1], captured[0])
     }
     
-    static func parseBlock(str: String,
-                            outputSchema: AllocSchema,
-                            items: inout [[String : AnyHashable]],
-                            rejectedRows: inout [[String : String]],
-                            timestamp: Date?,
-                            accountTitleRE: String,
-                            csvRE: String) throws {
+    static func parseBlock<T: AllocRowed>(_ type: T.Type,
+                                          str: String,
+                                          outputSchema: AllocSchema,
+                                          rejectedRows: inout [[String : String]],
+                                          timestamp: Date?,
+                                          accountTitleRE: String,
+                                          csvRE: String) throws -> [T.DecodedRow] {
+        
+        var items = [T.DecodedRow]()
         
         // first line has the account ID & title
         let tuple: (id: String, title: String)? = {
@@ -165,12 +167,14 @@ struct ChuckPositions {
                 let csvStr = str[csvRange]
                 let delimitedRows = try CSV(string: String(csvStr)).namedRows
                 let nuItems = decodeDelimitedRows(delimitedRows: delimitedRows,
-                                                                 outputSchema_: outputSchema,
-                                                                 accountID: accountID,
-                                                                 rejectedRows: &rejectedRows,
-                                                                 timestamp: timestamp)
+                                                  outputSchema_: outputSchema,
+                                                  accountID: accountID,
+                                                  rejectedRows: &rejectedRows,
+                                                  timestamp: timestamp)
                 items.append(contentsOf: nuItems)
             }
         }
+        
+        return items
     }
 }

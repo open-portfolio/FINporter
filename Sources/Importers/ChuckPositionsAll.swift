@@ -97,13 +97,16 @@ class ChuckPositionsAll: FINporter {
                                     options: .regularExpression) {
             let block = str[range]
             
-            try ChuckPositions.parseBlock(str: String(block),
-                                          outputSchema: outputSchema_,
-                                          items: &items,
-                                          rejectedRows: &rejectedRows,
-                                          timestamp: timestamp,
-                                          accountTitleRE: ChuckPositionsAll.accountTitleRE,
-                                          csvRE: ChuckPositionsAll.csvRE)
+            let nuItems = try ChuckPositions.parseBlock(type,
+                                                        str: String(block),
+                                                        outputSchema: outputSchema_,
+                                                        
+                                                        rejectedRows: &rejectedRows,
+                                                        timestamp: timestamp,
+                                                        accountTitleRE: ChuckPositionsAll.accountTitleRE,
+                                                        csvRE: ChuckPositionsAll.csvRE)
+            
+            items.append(contentsOf: nuItems)
             
             str.removeSubrange(range) // discard blocks as they are consumed
         }

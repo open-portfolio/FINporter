@@ -78,23 +78,18 @@ class ChuckPositionsIndiv: FINporter {
             throw FINporterError.needExplicitOutputSchema(outputSchemas)
         }
         
-        var items = [T.DecodedRow]()
-        
         if outputSchema_ == .allocMetaSource {
             let item = ChuckPositions.meta(self.id, str, url)
-            items.append(item)
-            return items
+            return [item]
         }
         
-        try ChuckPositions.parseBlock(str: str,
-                                      outputSchema: outputSchema_,
-                                      items: &items,
-                                      rejectedRows: &rejectedRows,
-                                      timestamp: timestamp,
-                                      accountTitleRE: ChuckPositionsIndiv.accountTitleRE,
-                                      csvRE: ChuckPositionsIndiv.csvRE)
-        
-        return items
+        return try ChuckPositions.parseBlock(type,
+                                             str: str,
+                                             outputSchema: outputSchema_,
+                                             rejectedRows: &rejectedRows,
+                                             timestamp: timestamp,
+                                             accountTitleRE: ChuckPositionsIndiv.accountTitleRE,
+                                             csvRE: ChuckPositionsIndiv.csvRE)
     }
     
     
