@@ -90,8 +90,4 @@ class ChuckPositionsIndiv: FINporter {
                                              accountTitleRE: ChuckPositionsIndiv.accountTitleRE,
                                              csvRE: ChuckPositionsIndiv.csvRE)
     }
-    
-    
-    
-    
 }
