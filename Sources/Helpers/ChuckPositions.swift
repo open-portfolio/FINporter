@@ -44,27 +44,6 @@ struct ChuckPositions {
         return decodedRow
     }
     
-    static func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
-                                    outputSchema_: AllocSchema,
-                                    accountID: String,
-                                    rejectedRows: inout [AllocRowed.RawRow],
-                                    timestamp: Date?) -> [AllocRowed.DecodedRow] {
-        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
-            switch outputSchema_ {
-            case .allocHolding:
-                guard let item = holding(accountID, delimitedRow, rejectedRows: &rejectedRows) else { return }
-                decodedRows.append(item)
-            case .allocSecurity:
-                guard let item = security(delimitedRow, rejectedRows: &rejectedRows, timestamp: timestamp) else { return }
-                decodedRows.append(item)
-            default:
-                //throw FINporterError.targetSchemaNotSupported(outputSchemas)
-                rejectedRows.append(delimitedRow)
-                return
-            }
-        }
-    }
-    
     static func holding(_ accountID: String, _ row: AllocRowed.RawRow, rejectedRows: inout [AllocRowed.RawRow]) -> AllocRowed.DecodedRow? {
         // NOTE: 'Symbol' may be "Cash & Cash Investments" or "Account Total"
         guard let rawSymbol = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
@@ -129,18 +108,10 @@ struct ChuckPositions {
         return decodedRow
     }
     
-    // parse ""Individual Something                       XXXX-1234"" to ["Individual Something", "XXXX-1234"]
-    static func parseAccountTitleID(_ pattern: String, _ rawStr: String) -> (id: String, title: String)? {
-        guard let captured = rawStr.captureGroups(for: pattern, options: .caseInsensitive),
-              captured.count == 2
-        else { return nil }
-        return (captured[1], captured[0])
-    }
-    
     static func parseBlock<T: AllocRowed>(_ type: T.Type,
                                           block: String,
                                           outputSchema: AllocSchema,
-                                          rejectedRows: inout [[String : String]],
+                                          rejectedRows: inout [AllocRowed.RawRow],
                                           timestamp: Date?,
                                           accountTitleRE: String,
                                           csvRE: String) throws -> [T.DecodedRow] {
@@ -161,17 +132,46 @@ struct ChuckPositions {
                 ]]
                 
             } else if let csvRange = block.range(of: csvRE,
-                                               options: .regularExpression) {
+                                                 options: .regularExpression) {
                 let csvStr = block[csvRange]
                 let delimitedRows = try CSV(string: String(csvStr)).namedRows
                 return decodeDelimitedRows(delimitedRows: delimitedRows,
-                                                  outputSchema_: outputSchema,
-                                                  accountID: accountID,
-                                                  rejectedRows: &rejectedRows,
-                                                  timestamp: timestamp)
+                                           outputSchema: outputSchema,
+                                           accountID: accountID,
+                                           rejectedRows: &rejectedRows,
+                                           timestamp: timestamp)
             }
         }
         
         return []
+    }
+    
+    // parse ""Individual Something                       XXXX-1234"" to ["Individual Something", "XXXX-1234"]
+    internal static func parseAccountTitleID(_ pattern: String, _ rawStr: String) -> (id: String, title: String)? {
+        guard let captured = rawStr.captureGroups(for: pattern, options: .caseInsensitive),
+              captured.count == 2
+        else { return nil }
+        return (captured[1], captured[0])
+    }
+    
+    internal static func decodeDelimitedRows(delimitedRows: [AllocRowed.RawRow],
+                                             outputSchema: AllocSchema,
+                                             accountID: String,
+                                             rejectedRows: inout [AllocRowed.RawRow],
+                                             timestamp: Date?) -> [AllocRowed.DecodedRow] {
+        delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
+            switch outputSchema {
+            case .allocHolding:
+                guard let item = holding(accountID, delimitedRow, rejectedRows: &rejectedRows) else { return }
+                decodedRows.append(item)
+            case .allocSecurity:
+                guard let item = security(delimitedRow, rejectedRows: &rejectedRows, timestamp: timestamp) else { return }
+                decodedRows.append(item)
+            default:
+                //throw FINporterError.targetSchemaNotSupported(outputSchemas)
+                rejectedRows.append(delimitedRow)
+                return
+            }
+        }
     }
 }
