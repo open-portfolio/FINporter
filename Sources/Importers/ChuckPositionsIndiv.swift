@@ -83,8 +83,7 @@ class ChuckPositionsIndiv: FINporter {
             return [item]
         }
         
-        return try ChuckPositions.parseBlock(type,
-                                             block: str,
+        return try ChuckPositions.parseBlock(block: str,
                                              outputSchema: outputSchema_,
                                              rejectedRows: &rejectedRows,
                                              timestamp: timestamp,

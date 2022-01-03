@@ -95,8 +95,7 @@ class ChuckPositionsAll: FINporter {
         // one block per account expected
         while let range = str.range(of: ChuckPositionsAll.accountBlockRE,
                                     options: .regularExpression) {
-            let nuItems = try ChuckPositions.parseBlock(type,
-                                                        block: String(str[range]),
+            let nuItems = try ChuckPositions.parseBlock(block: String(str[range]),
                                                         outputSchema: outputSchema_,
                                                         
                                                         rejectedRows: &rejectedRows,

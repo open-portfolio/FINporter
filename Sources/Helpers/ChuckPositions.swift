@@ -108,13 +108,12 @@ struct ChuckPositions {
         return decodedRow
     }
     
-    static func parseBlock<T: AllocRowed>(_ type: T.Type,
-                                          block: String,
-                                          outputSchema: AllocSchema,
-                                          rejectedRows: inout [AllocRowed.RawRow],
-                                          timestamp: Date?,
-                                          accountTitleRE: String,
-                                          csvRE: String) throws -> [T.DecodedRow] {
+    static func parseBlock(block: String,
+                           outputSchema: AllocSchema,
+                           rejectedRows: inout [AllocRowed.RawRow],
+                           timestamp: Date?,
+                           accountTitleRE: String,
+                           csvRE: String) throws -> [AllocRowed.DecodedRow] {
         
         // first line has the account ID & title
         let tuple: (id: String, title: String)? = {
