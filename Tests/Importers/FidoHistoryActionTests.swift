@@ -165,7 +165,7 @@ final class FidoHistoryActionTests: XCTestCase {
         let rows: [(csvRow: String, expected: [AllocRowed.DecodedRow], rejectedRows: Int)] = [
             ("03/01/2021,CASH MGMT X0000000A, DEBIT CARD PURCHASE, , No Description,Cash,,,,,,-17.00,",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
-            ("[03/01/2021,CASH MGMT X0000000A, DIRECT DEBIT XCEL ENERGY 0000001111XCELENERGY (Cash), , No Description,Cash,,,,,,-17.00,",
+            ("03/01/2021,CASH MGMT X0000000A, DIRECT DEBIT XCEL ENERGY 0000001111XCELENERGY (Cash), , No Description,Cash,,,,,,-17.00,",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
             ("03/01/2021,CASH MGMT X0000000A, DIRECT DEPOSIT XCEL ENERGY 0000001111XCELENERGY (Cash), , No Description,Cash,,,,,,17.00,",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
