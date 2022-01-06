@@ -122,6 +122,14 @@ final class ChuckHistoryTests: XCTestCase {
 
         ]
         XCTAssertEqual(expected, actual)
+        
+        let rejected: [AllocRowed.RawRow] = [
+            ["Action": "", "Quantity": "", "Symbol": "", "Date": "Transactions Total", "Amount": "$524.82", "Price": "", "Fees & Comm": "", "Description": "", "": ""],
+            ["Description": "", "Action": "", "Fees & Comm": "", "Quantity": "", "Date": "Transactions Total", "Price": "", "Amount": "$524.82", "": "", "Symbol": ""]
+        ]
+        XCTAssertEqual(rejected, rr)
+        
+        XCTAssertEqual(2, rr.count)
     }
     
     func testParseAccountTitleID() throws {

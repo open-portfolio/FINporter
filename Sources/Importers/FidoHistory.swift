@@ -137,6 +137,10 @@ class FidoHistory: FINporter {
                 return .transfer
             case let str where str.starts(with: "DIVIDEND RECEIVED "):
                 return .income
+            case let str where str.starts(with: "LONG-TERM CAP GAIN "):
+                return .income
+            case let str where str.starts(with: "SHORT-TERM CAP GAIN "):
+                return .income
             case let str where str.starts(with: "INTEREST EARNED "):
                 return .income
             default:

@@ -154,4 +154,77 @@ final class FidoHistoryActionTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    
+    func testVarious() throws {
+        
+        let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021", timeZone: tzNewYork)!
+        let miscflow = AllocData.MTransaction.Action.miscflow
+        let income = AllocData.MTransaction.Action.income
+        let buysell = AllocData.MTransaction.Action.buysell
+        let transfer = AllocData.MTransaction.Action.transfer
+        let rows: [(csvRow: String, expected: [AllocRowed.DecodedRow], rejectedRows: Int)] = [
+            ("03/01/2021,CASH MGMT X0000000A, DEBIT CARD PURCHASE, , No Description,Cash,,,,,,-17.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
+            ("[03/01/2021,CASH MGMT X0000000A, DIRECT DEBIT XCEL ENERGY 0000001111XCELENERGY (Cash), , No Description,Cash,,,,,,-17.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
+            ("03/01/2021,CASH MGMT X0000000A, DIRECT DEPOSIT XCEL ENERGY 0000001111XCELENERGY (Cash), , No Description,Cash,,,,,,17.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
+            ("03/01/2021,PASSIVE X0000000A,  REDEMPTION FROM CORE ACCOUNT FIDELITY GOVERNMENT MONEY MARKET (SPAXX) MORNING TRADE (Cash), ,  FIDELITY GOVERNMENT MONEY MARKET,Cash,-17.00,1,,,,17.00,",
+             [], 1),  //TODO avoid rejection?
+            ("03/01/2021,PASSIVE X0000000A,  PURCHASE INTO CORE ACCOUNT FIDELITY GOVERNMENT MONEY MARKET (SPAXX) MORNING TRADE (Cash), SPAXX, FIDELITY GOVERNMENT MONEY MARKET,Cash,700.00,1,,,,-700.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 700.0, "txnAction": buysell, "txnAccountID": "X0000000A", "txnSecurityID": "SPAXX"]], 0),
+            ("03/01/2021,CASH MGMT X0000000A, TRANSFERRED FROM VS Z00-123456-1 (Cash),  , No Description,Cash,,,,,,17.0,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
+            ("03/01/2021,CASH MGMT X0000000A, TRANSFERRED FTOROM VS Z00-123456-1 (Cash),  , No Description,Cash,,,,,,-17.0,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
+            ("03/01/2021,CASH MGMT X0000000A, TRANSFER OF ASSETS ACAT DELIVER (Cash), , No Description,Cash,,,,,,17.0,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": transfer, "txnAccountID": "X0000000A", "txnSecurityID":""]], 0),
+            ("03/01/2021,BROKERAGE X0000000A, TRANSFER OF ASSETS ACAT RECEIVE, TLT, ISHARES TR 20 YR TR BD ETF,Cash,86,144.41,,0.07,,12418.76,08/02/2021",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 144.41, "txnShareCount": 86.0, "txnAction": transfer, "txnAccountID": "X0000000A", "txnSecurityID":"TLT"]], 0),
+            ("03/01/2021,BROKERAGE X0000000A, TRANSFER OF ASSETS ACAT DELIVER, TLT, ISHARES TR 20 YR TR BD ETF,Cash,-86,144.41,,0.07,,12418.76,08/02/2021",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 144.41, "txnShareCount": -86.0, "txnAction": transfer, "txnAccountID": "X0000000A", "txnSecurityID":"TLT"]], 0),
+            ("03/01/2021,PASSIVE X0000000A, DIVIDEND RECEIVED VANGUARD EMERGING MARKETS (VWO) (Cash), VWO,  VANGUARD EMERGING MARKETS,Cash,,,,,,17.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": income, "txnAccountID": "X0000000A", "txnSecurityID": "VWO"]], 0),
+            ("03/01/2021,PASSIVE X0000000A, LONG-TERM CAP GAIN VANGUARD CHARLOTTE TOTAL INTL BD INDEX (BNDX) (Cash), BNDX, VANGUARD CHARLOTTE TOTAL INTL BD INDEX,Cash,,,,,,17.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": income, "txnAccountID": "X0000000A", "txnSecurityID": "BNDX"]], 0),
+            ("03/01/2021,PASSIVE X0000000A, SHORT-TERM CAP GAIN VANGUARD CHARLOTTE TOTAL INTL BD INDEX (BNDX) (Cash), BNDX, VANGUARD CHARLOTTE TOTAL INTL BD INDEX,Cash,,,,,,17.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": income, "txnAccountID": "X0000000A", "txnSecurityID": "BNDX"]], 0),
+            ("03/01/2021,CASH MGMT X0000000A, INTEREST EARNED FDIC INSURED DEPOSIT AT JP MORGAN BK NO (QIMHQ) (Cash), QIMHQ, FDIC INSURED DEPOSIT AT JP MORGAN BK NO,Cash,,,,,,17.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": income, "txnAccountID": "X0000000A", "txnSecurityID": "QIMHQ"]], 0),
+            ("03/01/2021,PASSIVE X0000000A, REINVESTMENT FIDELITY GOVERNMENT MONEY MARKET (SPAXX) (Cash), SPAXX, FIDELITY GOVERNMENT MONEY MARKET,Cash,0.02,1,,,,-17.00,",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": miscflow, "txnAccountID": "X0000000A", "txnSecurityID": "SPAXX"]], 0),
+            ("03/01/2021,PASSIVE X0000000A, YOU SOLD VANGUARD IDX FUND (VTI) (Cash), VTI, VANGUARD IDX FUND,Cash,-7.0,100.0,,0.08,700.00,03/05/2021",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 100.0, "txnShareCount": -7.0, "txnAction": buysell, "txnAccountID": "X0000000A", "txnSecurityID": "VTI"]], 0),
+            ("03/01/2021,PASSIVE X0000000A, YOU BOUGHT VANGUARD INDEX FDS VANGUARD VALUE ETF F (VTV) (Cash), VTV, VANGUARD INDEX FDS VANGUARD VALUE ETF F,Cash,7.0,100.0,,,,-700.0,03/05/2021",
+             [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 100.0, "txnShareCount": 7.0, "txnAction": buysell, "txnAccountID": "X0000000A", "txnSecurityID": "VTV"]], 0),
+        ]
+        
+        let body = """
+        Brokerage
+
+        Run Date,Account,Action,Symbol,Security Description,Security Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
+        ##ROW##
+         
+        """
+        
+        for row in rows {
+            var rr = [AllocRowed.RawRow]()
+            let dataStr = body.replacingOccurrences(of: "##ROW##", with: row.csvRow).data(using: .utf8)!
+            let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, timeZone: tzNewYork)
+
+//            let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021", timeZone: tzNewYork)!
+//            let expected: [AllocRowed.DecodedRow] = [
+//                [
+//                    "txnAction": MTransaction.Action.miscflow,
+//                    "txnTransactedAt": YYYYMMDDts,
+//                    "txnAccountID": "X0000000A",
+//                    "txnShareCount": -17.0,
+//                    "txnSharePrice": 1.0,
+//                ],
+//            ]
+
+            XCTAssertEqual(row.expected, actual)
+            XCTAssertEqual(row.rejectedRows, rr.count)
+        }
+    }
 }
