@@ -133,6 +133,8 @@ class FidoHistory: FINporter {
                 return .buysell
             case let str where str.starts(with: "REDEMPTION FROM "):
                 return .buysell
+//            case let str where str.starts(with: "REINVEST SHARES "):
+//                return .buysell
             case let str where str.starts(with: "TRANSFER OF ASSETS "):
                 return .transfer
             case let str where str.starts(with: "DIVIDEND RECEIVED "):

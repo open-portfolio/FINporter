@@ -162,6 +162,7 @@ final class FidoHistoryActionTests: XCTestCase {
         let income = AllocData.MTransaction.Action.income
         let buysell = AllocData.MTransaction.Action.buysell
         let transfer = AllocData.MTransaction.Action.transfer
+        
         let rows: [(csvRow: String, expected: [AllocRowed.DecodedRow], rejectedRows: Int)] = [
             ("03/01/2021,CASH MGMT X0000000A, DEBIT CARD PURCHASE, , No Description,Cash,,,,,,-17.00,",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": miscflow, "txnAccountID": "X0000000A"]], 0),
@@ -191,6 +192,7 @@ final class FidoHistoryActionTests: XCTestCase {
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": income, "txnAccountID": "X0000000A", "txnSecurityID": "BNDX"]], 0),
             ("03/01/2021,CASH MGMT X0000000A, INTEREST EARNED FDIC INSURED DEPOSIT AT JP MORGAN BK NO (QIMHQ) (Cash), QIMHQ, FDIC INSURED DEPOSIT AT JP MORGAN BK NO,Cash,,,,,,17.00,",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": 17.0, "txnAction": income, "txnAccountID": "X0000000A", "txnSecurityID": "QIMHQ"]], 0),
+            //TODO how to handle reinvest
             ("03/01/2021,PASSIVE X0000000A, REINVESTMENT FIDELITY GOVERNMENT MONEY MARKET (SPAXX) (Cash), SPAXX, FIDELITY GOVERNMENT MONEY MARKET,Cash,0.02,1,,,,-17.00,",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": miscflow, "txnAccountID": "X0000000A", "txnSecurityID": "SPAXX"]], 0),
             ("03/01/2021,PASSIVE X0000000A, YOU SOLD VANGUARD IDX FUND (VTI) (Cash), VTI, VANGUARD IDX FUND,Cash,-7.0,100.0,,0.08,700.00,03/05/2021",
@@ -212,19 +214,8 @@ final class FidoHistoryActionTests: XCTestCase {
             let dataStr = body.replacingOccurrences(of: "##ROW##", with: row.csvRow).data(using: .utf8)!
             let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, timeZone: tzNewYork)
 
-//            let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021", timeZone: tzNewYork)!
-//            let expected: [AllocRowed.DecodedRow] = [
-//                [
-//                    "txnAction": MTransaction.Action.miscflow,
-//                    "txnTransactedAt": YYYYMMDDts,
-//                    "txnAccountID": "X0000000A",
-//                    "txnShareCount": -17.0,
-//                    "txnSharePrice": 1.0,
-//                ],
-//            ]
-
-            XCTAssertEqual(row.expected, actual)
-            XCTAssertEqual(row.rejectedRows, rr.count)
+            XCTAssertEqual(row.expected, actual, "ROW: \(row)")
+            XCTAssertEqual(row.rejectedRows, rr.count, "ROW: \(row)")
         }
     }
 }

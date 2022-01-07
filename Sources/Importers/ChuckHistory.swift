@@ -149,7 +149,7 @@ class ChuckHistory: FINporter {
         
         let netAction: MTransaction.Action = {
             switch rawAction {
-            case "Buy":
+            case "Buy", "Reinvest Shares":
                 return .buysell
             case "Sell":
                 isSale = true
