@@ -206,61 +206,73 @@ final class ChuckHistoryActionTests: XCTestCase {
         let accountID = "XXXX-5678"
         
         let rows: [(String, AllocRowed.DecodedRow)] = [
+
             (
             """
             "03/01/2021","MoneyLink Transfer","","My Bank","","","","-$17.00",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": miscflow, "txnShareCount": -17.0, "txnAccountID": accountID, "txnSharePrice": 1.0]),
+
             (
             """
             "03/01/2021","Sell","VOO","VANGUARD S&P 500","10","$17.00","$0.04","$170.12",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": buysell, "txnShareCount": -10.0, "txnAccountID": accountID, "txnSharePrice": 17.0, "txnSecurityID": "VOO"]),
+
             (
             """
             "03/01/2021","Buy","VOO","VANGUARD S&P 500","10","$17.0","","-$1370.12",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": buysell, "txnShareCount": 10.0, "txnAccountID": accountID, "txnSharePrice": 17.0, "txnSecurityID": "VOO"]),
-            ( //TODO what should reinvest be?
+
+            (
+            """
+            "03/01/2021","Reinvest Dividend","VOO","VANGUARD S&P 500","","","","$17.00",
+            """,
+            ["txnTransactedAt": YYYYMMDDts, "txnAction": income, "txnShareCount": 17.0, "txnAccountID": accountID, "txnSharePrice": 1.0]), //, "txnSecurityID": "VOO"
+
+            (
             """
             "03/01/2021","Reinvest Shares","VOO","VANGUARD S&P 500","0.10","$17.00","","-$3.71",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": buysell, "txnShareCount": 0.1, "txnAccountID": accountID, "txnSharePrice": 17.0, "txnSecurityID": "VOO"]),
-            ( //TODO what to do?
-            """
-            "03/01/2021","Reinvest Dividend","VOO","VANGUARD S&P 500","","","","$17.00",
-            """,
-            ["txnTransactedAt": YYYYMMDDts, "txnAction": miscflow, "txnShareCount": 17.0, "txnAccountID": accountID, "txnSharePrice": 1.0]), //, "txnSecurityID": "VOO"
+
             (
             """
             "03/01/2021","Cash Dividend","VOO","VANGUARD S&P 500","","","","$17.00",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": income, "txnShareCount": 17.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": "VOO"]),
+            
             ( //TODO broken
             """
             "03/01/2021","Security Transfer","VOO","VANGUARD S&P 500","-50","","","",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": -50.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": "VOO"]),
+            
             ( //TODO broken
             """
             "03/01/2021","Security Transfer","VOO","VANGUARD S&P 500","200","","","",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": 200.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": "VOO"]),
+
             (
             """
             "03/01/2021","Security Transfer","NO NUMBER","TOA ACAT 0123","","","","$200.00",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": 200.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": ""]),
+
             (
             """
             "03/01/2021","Security Transfer","NO NUMBER","TOA ACAT 0123","","","","-$200.00",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": -200.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": ""]),
+
             (
             """
             "03/01/2021","Promotional Award","","PROMOTIONAL AWARD","","","","$100.00",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": income, "txnShareCount": 100.0, "txnAccountID": accountID, "txnSharePrice": 1.0]),
+
             (
             """
             "03/01/2021 as of 09/26/2021","Bank Interest","","BANK INT 123456-789123 SCHWAB BANK","","","","$17.00",
