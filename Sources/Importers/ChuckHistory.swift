@@ -156,7 +156,7 @@ class ChuckHistory: FINporter {
                 return .buysell
             case "Security Transfer":
                 return .transfer
-            case "Cash Dividend", "Bank Interest", "Promotional Award":
+            case "Reinvest Dividend", "Cash Dividend", "Bank Interest", "Promotional Award":
                 return .income
             default:
                 return .miscflow
