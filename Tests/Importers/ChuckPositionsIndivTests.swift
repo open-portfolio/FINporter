@@ -107,6 +107,7 @@ final class ChuckPositionsIndivTests: XCTestCase {
         let exportedAt: Date? = actual[0]["exportedAt"] as? Date
         let expectedExportedAt = df.date(from: "2021-09-27T01:59:00+0000")!
         XCTAssertEqual(expectedExportedAt, exportedAt)
+        XCTAssertEqual(0, rr.count)
     }
     
     func testAccountOutput() throws {
@@ -118,6 +119,7 @@ final class ChuckPositionsIndivTests: XCTestCase {
             ["accountID": "XXXX-1234", "title": "Individual"],
         ]
         XCTAssertEqual(expected, actual)
+        XCTAssertEqual(0, rr.count)
     }
     
     func testHoldingOutput() throws {
@@ -130,6 +132,7 @@ final class ChuckPositionsIndivTests: XCTestCase {
             ["holdingAccountID": "XXXX-1234", "holdingSecurityID": "CORE", "shareBasis": 1.0, "shareCount": 42.82],
         ]
         XCTAssertEqual(expected, actual)
+        XCTAssertEqual(0, rr.count)
     }
     
     func testSecurityOutput() throws {
@@ -142,6 +145,7 @@ final class ChuckPositionsIndivTests: XCTestCase {
             ["securityID": "SCHB", "sharePrice": 117.42, "updatedAt": ts],
         ]
         XCTAssertEqual(expected, actual)
+        XCTAssertEqual(0, rr.count)
     }
             
     func testParseSourceMeta() throws {
@@ -153,12 +157,12 @@ final class ChuckPositionsIndivTests: XCTestCase {
         """
         
         let timestamp = Date()
-        var rejectedRows = [AllocRowed.RawRow]()
+        var rr = [AllocRowed.RawRow]()
         let dataStr = str.data(using: .utf8)!
         
         let actual: [MSourceMeta.DecodedRow] = try imp.decode(MSourceMeta.self,
                                                        dataStr,
-                                                       rejectedRows: &rejectedRows,
+                                                       rejectedRows: &rr,
                                                        outputSchema: .allocMetaSource,
                                                        url: URL(string: "http://blah.com"),
                                                        timestamp: timestamp)
@@ -170,6 +174,7 @@ final class ChuckPositionsIndivTests: XCTestCase {
         let exportedAt: Date? = actual[0]["exportedAt"] as? Date
         let expectedExportedAt = df.date(from: "2021-09-27T01:59:00+0000")!
         XCTAssertEqual(expectedExportedAt, exportedAt)
+        XCTAssertEqual(0, rr.count)
     }
     
     func testParseAccountTitleID() throws {

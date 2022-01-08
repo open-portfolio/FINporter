@@ -114,14 +114,22 @@ final class ChuckHistoryTests: XCTestCase {
                                                              timeZone: tzNewYork)
         
         let expected: [AllocRowed.DecodedRow] = [
-            ["txnAccountID": "XXXX-1234", "txnShareCount": 100.0, "txnSharePrice": 1.0, "txnTransactedAt": timestamp3, "txnAction": MTransaction.Action.income],
+            ["txnAccountID": "XXXX-1234", "txnShareCount": 100.0, "txnSharePrice": 1.0, "txnTransactedAt": timestamp3, "txnAction": MTransaction.Action.miscflow],
             ["txnAction": MTransaction.Action.buysell, "txnShareCount": 961.0, "txnSharePrice": 105.0736, "txnAccountID": "XXXX-1234", "txnTransactedAt": timestamp1, "txnSecurityID": "SCHB"],
-            ["txnTransactedAt": timestamp4, "txnSharePrice": 1.0, "txnSecurityID": "", "txnAccountID": "XXXX-1234", "txnAction": MTransaction.Action.transfer, "txnShareCount": 101000.0],
+            ["txnTransactedAt": timestamp4, "txnSharePrice": 1.0, "txnAccountID": "XXXX-1234", "txnAction": MTransaction.Action.transfer, "txnShareCount": 101000.0],
             ["txnTransactedAt": timestamp2, "txnAccountID": "XXXX-5678", "txnSecurityID": "VOO", "txnAction": MTransaction.Action.buysell, "txnShareCount": -10.0, "txnSharePrice": 137.1222],
             ["txnAccountID": "XXXX-5678", "txnShareCount": 0.55, "txnSharePrice": 1.0, "txnAction": MTransaction.Action.income, "txnTransactedAt": timestamp4],
 
         ]
         XCTAssertEqual(expected, actual)
+        
+        let rejected: [AllocRowed.RawRow] = [
+            ["Action": "", "Quantity": "", "Symbol": "", "Date": "Transactions Total", "Amount": "$524.82", "Price": "", "Fees & Comm": "", "Description": "", "": ""],
+            ["Description": "", "Action": "", "Fees & Comm": "", "Quantity": "", "Date": "Transactions Total", "Price": "", "Amount": "$524.82", "": "", "Symbol": ""]
+        ]
+        XCTAssertEqual(rejected, rr)
+        
+        XCTAssertEqual(2, rr.count)
     }
     
     func testParseAccountTitleID() throws {

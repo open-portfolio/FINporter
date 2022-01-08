@@ -95,7 +95,6 @@ class FidoHistory: FINporter {
                   let rawDate = delimitedRow["Run Date"],
                   let transactedAt = parseFidoMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, timeZone: timeZone),
                   let accountNameNumber = MTransaction.parseString(delimitedRow["Account"]),
-                  let amount = MTransaction.parseDouble(delimitedRow["Amount ($)"]),
                   let accountID = accountNameNumber.split(separator: " ").last,
                   accountID.count > 0
             else {
@@ -106,7 +105,6 @@ class FidoHistory: FINporter {
             guard let decodedRow = decodeRow(delimitedRow: delimitedRow,
                                              transactedAt: transactedAt,
                                              rawAction: rawAction,
-                                             amount: amount,
                                              accountID: String(accountID))
             else {
                 rejectedRows.append(delimitedRow)
@@ -120,7 +118,6 @@ class FidoHistory: FINporter {
     internal func decodeRow(delimitedRow: AllocRowed.RawRow,
                             transactedAt: Date,
                             rawAction: String,
-                            amount: Double,
                             accountID: String) -> AllocRowed.DecodedRow? {
         
         let netAction: MTransaction.Action = {
@@ -133,9 +130,15 @@ class FidoHistory: FINporter {
                 return .buysell
             case let str where str.starts(with: "REDEMPTION FROM "):
                 return .buysell
+            case let str where str.starts(with: "REINVESTMENT "):
+                return .buysell
             case let str where str.starts(with: "TRANSFER OF ASSETS "):
                 return .transfer
             case let str where str.starts(with: "DIVIDEND RECEIVED "):
+                return .income
+            case let str where str.starts(with: "LONG-TERM CAP GAIN "):
+                return .income
+            case let str where str.starts(with: "SHORT-TERM CAP GAIN "):
                 return .income
             case let str where str.starts(with: "INTEREST EARNED "):
                 return .income
@@ -150,11 +153,16 @@ class FidoHistory: FINporter {
             MTransaction.CodingKeys.accountID.rawValue: accountID,
         ]
 
+        let rawAmount = MTransaction.parseDouble(delimitedRow["Amount ($)"])
+        let rawSymbol = MTransaction.parseString(delimitedRow["Symbol"])
+        let rawShareCount = MTransaction.parseDouble(delimitedRow["Quantity"])
+        let rawSharePrice = MTransaction.parseDouble(delimitedRow["Price ($)"])
+        
         switch netAction {
         case .buysell:
-            guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
-                  let shareCount = MTransaction.parseDouble(delimitedRow["Quantity"]),
-                  let sharePrice = MTransaction.parseDouble(delimitedRow["Price ($)"])
+            guard let symbol = rawSymbol,
+                  let shareCount = rawShareCount,
+                  let sharePrice = rawSharePrice
             else {
                 return nil
             }
@@ -164,27 +172,33 @@ class FidoHistory: FINporter {
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
             
         case .transfer:
-            if let symbol = MTransaction.parseString(delimitedRow["Symbol"]) {
-                guard let quantity = MTransaction.parseDouble(delimitedRow["Quantity"]),
-                      let sharePrice = MTransaction.parseDouble(delimitedRow["Price ($)"])
+            if let symbol = rawSymbol {
+                guard let quantity = rawShareCount,
+                      let sharePrice = rawSharePrice
                 else {
                     return nil
                 }
+                
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = quantity
                 decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
                 decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
             } else {
-                // it's probably cash
+                // no symbol, so it's probably cash
+                guard let amount = rawAmount else { return nil }
+                
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
                 decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
-                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = ""
             }
 
         case .income, .miscflow:
-            let symbol = MTransaction.parseString(delimitedRow["Symbol"])
+            guard let amount = rawAmount else { return nil }
+            
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
-            decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
+            
+            if let symbol = rawSymbol {
+                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
+            }
         }
         
         return decodedRow

@@ -101,9 +101,9 @@ final class FidoHistoryTests: XCTestCase {
         XXX
         """
 
-        var rejectedRows = [AllocRowed.RawRow]()
+        var rr = [AllocRowed.RawRow]()
         let dataStr = str.data(using: .utf8)!
-        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, timeZone: tzNewYork)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, timeZone: tzNewYork)
 
         let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021", timeZone: tzNewYork)!
         let expected: AllocRowed.DecodedRow = [
@@ -116,7 +116,7 @@ final class FidoHistoryTests: XCTestCase {
         ]
 
         XCTAssertTrue(areEqual(expected, actual.first!))
-        XCTAssertEqual(0, rejectedRows.count)
+        XCTAssertEqual(0, rr.count)
     }
     
     func testMiscFlow() throws {
@@ -131,9 +131,9 @@ final class FidoHistoryTests: XCTestCase {
         XXX
         """
 
-        var rejectedRows = [AllocRowed.RawRow]()
+        var rr = [AllocRowed.RawRow]()
         let dataStr = str.data(using: .utf8)!
-        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rejectedRows, timeZone: tzNewYork)
+        let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, timeZone: tzNewYork)
 
         let YYYYMMDDts = parseFidoMMDDYYYY("03/01/2021", timeZone: tzNewYork)!
         let expected: [AllocRowed.DecodedRow] = [
@@ -161,6 +161,6 @@ final class FidoHistoryTests: XCTestCase {
         ]
 
         XCTAssertEqual(expected, actual)
-        XCTAssertEqual(0, rejectedRows.count)
+        XCTAssertEqual(0, rr.count)
     }
 }

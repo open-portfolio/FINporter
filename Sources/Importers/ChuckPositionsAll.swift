@@ -53,7 +53,7 @@ class ChuckPositionsAll: FINporter {
     """#
     
     internal static let accountTitleRE = #""(.+?)\s+([A-Z0-9-_]+)""# // lazy greedy non-space
-
+    
     override func detect(dataPrefix: Data) throws -> DetectResult {
         guard let str = FINporter.normalizeDecode(dataPrefix),
               str.range(of: ChuckPositionsAll.headerRE,
@@ -68,14 +68,14 @@ class ChuckPositionsAll: FINporter {
     }
     
     override open func decode<T: AllocRowed>(_ type: T.Type,
-                                            _ data: Data,
-                                            rejectedRows: inout [T.RawRow],
-                                            inputFormat _: AllocFormat? = nil,
-                                            outputSchema: AllocSchema? = nil,
-                                            url: URL? = nil,
-                                            defTimeOfDay _: String? = nil,
-                                            timeZone _: TimeZone = TimeZone.current,
-                                            timestamp: Date? = nil) throws -> [T.DecodedRow] {
+                                             _ data: Data,
+                                             rejectedRows: inout [T.RawRow],
+                                             inputFormat _: AllocFormat? = nil,
+                                             outputSchema: AllocSchema? = nil,
+                                             url: URL? = nil,
+                                             defTimeOfDay _: String? = nil,
+                                             timeZone _: TimeZone = TimeZone.current,
+                                             timestamp: Date? = nil) throws -> [T.DecodedRow] {
         guard var str = FINporter.normalizeDecode(data) else {
             throw FINporterError.decodingError("unable to parse data")
         }
@@ -95,35 +95,15 @@ class ChuckPositionsAll: FINporter {
         // one block per account expected
         while let range = str.range(of: ChuckPositionsAll.accountBlockRE,
                                     options: .regularExpression) {
-            let block = str[range]
+            let nuItems = try ChuckPositions.parseBlock(block: String(str[range]),
+                                                        outputSchema: outputSchema_,
+                                                        
+                                                        rejectedRows: &rejectedRows,
+                                                        timestamp: timestamp,
+                                                        accountTitleRE: ChuckPositionsAll.accountTitleRE,
+                                                        csvRE: ChuckPositionsAll.csvRE)
             
-            // first line has the account ID & title
-            let tuple: (id: String, title: String)? = {
-                let _range = block.lineRange(for: ..<block.startIndex)
-                let rawStr = block[_range].trimmingCharacters(in: .whitespacesAndNewlines)
-                return ChuckPositions.parseAccountTitleID(ChuckPositionsAll.accountTitleRE, rawStr)
-            }()
-            
-            if let (accountID, accountTitle) = tuple {
-                
-                if outputSchema_ == .allocAccount {
-                    items.append([
-                        MAccount.CodingKeys.accountID.rawValue: accountID,
-                        MAccount.CodingKeys.title.rawValue: accountTitle
-                    ])
-                    
-                } else if let csvRange = block.range(of: ChuckPositionsAll.csvRE,
-                                                     options: .regularExpression) {
-                    let csvStr = block[csvRange]
-                    let delimitedRows = try CSV(string: String(csvStr)).namedRows
-                    let nuItems = ChuckPositions.decodeDelimitedRows(delimitedRows: delimitedRows,
-                                                                     outputSchema_: outputSchema_,
-                                                                     accountID: accountID,
-                                                                     rejectedRows: &rejectedRows,
-                                                                     timestamp: timestamp)
-                    items.append(contentsOf: nuItems)
-                }
-            }
+            items.append(contentsOf: nuItems)
             
             str.removeSubrange(range) // discard blocks as they are consumed
         }
