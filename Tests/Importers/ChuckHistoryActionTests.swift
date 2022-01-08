@@ -207,12 +207,8 @@ final class ChuckHistoryActionTests: XCTestCase {
         
         let rows: [(csvRow: String, expected: AllocRowed.DecodedRow)] = [
 
-            (
-            """
-            "03/01/2021","MoneyLink Transfer","","My Bank","","","","-$17.00",
-            """,
-            ["txnTransactedAt": YYYYMMDDts, "txnAction": miscflow, "txnShareCount": -17.0, "txnAccountID": accountID, "txnSharePrice": 1.0]),
-
+            // buysell
+            
             (
             """
             "03/01/2021","Sell","VOO","VANGUARD S&P 500","10","$17.00","$0.04","$170.12",
@@ -231,6 +227,9 @@ final class ChuckHistoryActionTests: XCTestCase {
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": buysell, "txnShareCount": 0.1, "txnAccountID": accountID, "txnSharePrice": 17.0, "txnSecurityID": "VOO"]),
 
+
+            // transfer
+            
             // with OUTGOING transfer of securities, there's no indication of cash value
             (
             """
@@ -257,6 +256,8 @@ final class ChuckHistoryActionTests: XCTestCase {
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": -200.0, "txnAccountID": accountID, "txnSharePrice": 1.0]),
 
+            // income
+            
             (
             """
             "03/01/2021","Reinvest Dividend","VOO","VANGUARD S&P 500","","","","$17.00",
@@ -275,6 +276,14 @@ final class ChuckHistoryActionTests: XCTestCase {
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": income, "txnShareCount": 17.0, "txnAccountID": accountID, "txnSharePrice": 1.0]),
             
+            // miscflow
+            
+            (
+            """
+            "03/01/2021","MoneyLink Transfer","","My Bank","","","","-$17.00",
+            """,
+            ["txnTransactedAt": YYYYMMDDts, "txnAction": miscflow, "txnShareCount": -17.0, "txnAccountID": accountID, "txnSharePrice": 1.0]),
+
             (
             """
             "03/01/2021","Promotional Award","","PROMOTIONAL AWARD","","","","$100.00",

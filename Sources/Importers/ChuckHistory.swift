@@ -205,7 +205,10 @@ class ChuckHistory: FINporter {
             } else {
                 guard let quantity = rawQuantity else { return nil }
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = quantity
-                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = rawSymbol
+                
+                if let symbol = rawSymbol {
+                    decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
+                }
                 
                 // amount may be nil on "Security Transfer", in which case we'll omit sharePrice
                 if let amount = rawAmount {
