@@ -89,9 +89,7 @@ NOTE: output changed to the new MTransaction from the deprecated MHistory.
 Output schema: 
 * [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
 
-### Chuck (Schwab) Positions **BETA**
-
-_This is an early release, and probably has bugs._
+### Chuck (Schwab) Positions
 
 There are actually two importers to handle Schwab positions. One for 'All' accounts, and a second for 'Individual' accounts. The files are named differently:
 
@@ -119,9 +117,7 @@ Output schemas:
 * [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
 * [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
 
-### Chuck (Schwab) Transaction History **BETA**
-
-_This is an early release, and probably has bugs._
+### Chuck (Schwab) Transaction History
 
 To transform the "XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV" export, which contains a record of recent sales, purchases, and other transactions:
 
@@ -131,9 +127,11 @@ $ finport transform XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV
 
 The command above will produce comma-separated value data in the following schema.
 
-NOTE: Schwab's transaction export does not contain realized gains and losses of sales, and so they are not in the imported transaction.
-
 Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
+
+NOTE 1: Schwab's transaction export does not contain realized gains and losses of sales, and so they are not in the imported transaction.
+
+NOTE 2: Security transfers may only specify shares transferred, with no cash valuation specified.
 
 ### Chuck (Schwab) Transaction Sales **BETA**
 
