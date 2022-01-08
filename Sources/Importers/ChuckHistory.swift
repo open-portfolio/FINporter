@@ -118,8 +118,7 @@ class ChuckHistory: FINporter {
             
             guard let rawAction = MTransaction.parseString(delimitedRow["Action"]),
                   let rawDate = delimitedRow["Date"],
-                  let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, timeZone: timeZone),
-                  let amount = MTransaction.parseDouble(delimitedRow["Amount"])
+                  let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, timeZone: timeZone)
             else {
                 rejectedRows.append(delimitedRow)
                 return
@@ -128,7 +127,6 @@ class ChuckHistory: FINporter {
             guard let decodedRow = decodeRow(delimitedRow: delimitedRow,
                                              transactedAt: transactedAt,
                                              rawAction: rawAction,
-                                             amount: amount,
                                              accountID: accountID)
             else {
                 rejectedRows.append(delimitedRow)
@@ -142,7 +140,6 @@ class ChuckHistory: FINporter {
     internal func decodeRow(delimitedRow: AllocRowed.RawRow,
                             transactedAt: Date,
                             rawAction: String,
-                            amount: Double,
                             accountID: String) -> AllocRowed.DecodedRow? {
         
         var isSale = false
@@ -156,9 +153,10 @@ class ChuckHistory: FINporter {
                 return .buysell
             case "Security Transfer":
                 return .transfer
-            case "Reinvest Dividend", "Cash Dividend", "Bank Interest", "Promotional Award":
+            case "Reinvest Dividend", "Cash Dividend", "Bank Interest":
                 return .income
             default:
+                // includes "Promotional Award" and anything else not captured above
                 return .miscflow
             }
         }()
@@ -169,11 +167,17 @@ class ChuckHistory: FINporter {
             MTransaction.CodingKeys.accountID.rawValue: accountID,
         ]
         
+        // 'Amount' may be nil on "Security Transfer"
+        let rawAmount = MTransaction.parseDouble(delimitedRow["Amount"])
+        let rawSymbol = MTransaction.parseString(delimitedRow["Symbol"])
+        let rawQuantity = MTransaction.parseDouble(delimitedRow["Quantity"])
+        let rawSharePrice = MTransaction.parseDouble(delimitedRow["Price"])
+        
         switch netAction {
         case .buysell:
-            guard let symbol = MTransaction.parseString(delimitedRow["Symbol"]),
-                  let rawQuantity = MTransaction.parseDouble(delimitedRow["Quantity"]),
-                  let sharePrice = MTransaction.parseDouble(delimitedRow["Price"])
+            guard let symbol = rawSymbol,
+                  let sharePrice = rawSharePrice,
+                  let quantity = rawQuantity
             else {
                 return nil
             }
@@ -181,42 +185,47 @@ class ChuckHistory: FINporter {
             decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
             
-            /// AllocData uses sign on shareCount to determine whether sale or purchase
-            let shareCount: Double = rawQuantity * (isSale ? -1 : 1)
+            // AllocData uses sign on shareCount to determine whether sale or purchase
+            let shareCount: Double = quantity * (isSale ? -1 : 1)
 
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = shareCount
             
         case .transfer:
-            guard let rawSymbol = MTransaction.parseString(delimitedRow["Symbol"]),
-                  rawSymbol.count > 0
+            guard let symbol = rawSymbol,
+                  symbol.count > 0
             else {
                 return nil
             }
             
             if rawSymbol == "NO NUMBER" {
-                // it's probably cash
+                // assume that it's a cash transfer, where amount is required
+                guard let amount = rawAmount else { return nil }
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
                 decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
-                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = ""
             } else {
-                guard let quantity = MTransaction.parseDouble(delimitedRow["Quantity"]),
-                      quantity > 0
-                else {
-                    return nil
-                }
-                let sharePrice = amount / quantity
+                guard let quantity = rawQuantity else { return nil }
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = quantity
-                decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
                 decodedRow[MTransaction.CodingKeys.securityID.rawValue] = rawSymbol
+                
+                // amount may be nil on "Security Transfer", in which case we'll omit sharePrice
+                if let amount = rawAmount {
+                    let sharePrice = amount / quantity
+                    decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
+                }
             }
             
         case .income:
-            let symbol = MTransaction.parseString(delimitedRow["Symbol"])
+            guard let amount = rawAmount else { return nil }
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
-            decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
+            
+            // accept the income even if no symbol specified
+            if let symbol = rawSymbol {
+                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
+            }
 
         default:
+            guard let amount = rawAmount else { return nil }
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
         }

@@ -76,7 +76,7 @@ final class ChuckHistoryActionTests: XCTestCase {
                                                   accountID: "1",
                                                  timeZone: tzNewYork,
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnSecurityID": "", "txnShareCount": 101000.00, "txnAccountID": "1", "txnAction": MTransaction.Action.transfer, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 101000.00, "txnAccountID": "1", "txnAction": MTransaction.Action.transfer, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
 
@@ -160,7 +160,7 @@ final class ChuckHistoryActionTests: XCTestCase {
                                                   accountID: "1",
                                                  timeZone: tzNewYork,
                                                   rejectedRows: &rr)
-        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 100.00, "txnAccountID": "1", "txnAction": MTransaction.Action.income, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
+        let expected: [AllocRowed.DecodedRow] = [["txnShareCount": 100.00, "txnAccountID": "1", "txnAction": MTransaction.Action.miscflow, "txnTransactedAt": timestamp1, "txnSharePrice": 1.0]]
         XCTAssertEqual(expected, actual)
     }
 
@@ -205,7 +205,7 @@ final class ChuckHistoryActionTests: XCTestCase {
         let transfer = AllocData.MTransaction.Action.transfer
         let accountID = "XXXX-5678"
         
-        let rows: [(csvRow: String, expected: AllocRowed.DecodedRow?, rejectedRows: Int)] = [
+        let rows: [(csvRow: String, expected: AllocRowed.DecodedRow, rejectedRows: Int)] = [
 
             (
             """
@@ -235,36 +235,34 @@ final class ChuckHistoryActionTests: XCTestCase {
             ["txnTransactedAt": YYYYMMDDts, "txnAction": buysell, "txnShareCount": 0.1, "txnAccountID": accountID, "txnSharePrice": 17.0, "txnSecurityID": "VOO"],
             0),
 
-            // ignore OUTGOING transfer of securities, because there's no indication of cash value
+            // with OUTGOING transfer of securities, there's no indication of cash value
             (
             """
             "03/01/2021","Security Transfer","VOO","VANGUARD S&P 500","-50","","","",
             """,
-            nil,
-            //["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": -50.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": "VOO"]
-            1),
-            
-            // ignore INCOMING transfer of securities, because there's no indication of cash value
+            ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": -50.0, "txnAccountID": accountID, "txnSecurityID": "VOO"],
+            0),
+
+            // with INCOMING transfer of securities, there's no indication of cash value
             (
             """
             "03/01/2021","Security Transfer","VOO","VANGUARD S&P 500","200","","","",
             """,
-            nil,
-            //["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": 200.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": "VOO"],
-            1),
+            ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": 200.0, "txnAccountID": accountID, "txnSecurityID": "VOO"],
+            0),
 
             (
             """
             "03/01/2021","Security Transfer","NO NUMBER","TOA ACAT 0123","","","","$200.00",
             """,
-            ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": 200.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": ""],
+            ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": 200.0, "txnAccountID": accountID, "txnSharePrice": 1.0],
             0),
 
             (
             """
             "03/01/2021","Security Transfer","NO NUMBER","TOA ACAT 0123","","","","-$200.00",
             """,
-            ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": -200.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": ""],
+            ["txnTransactedAt": YYYYMMDDts, "txnAction": transfer, "txnShareCount": -200.0, "txnAccountID": accountID, "txnSharePrice": 1.0],
             0),
 
             (
@@ -280,19 +278,26 @@ final class ChuckHistoryActionTests: XCTestCase {
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": income, "txnShareCount": 17.0, "txnAccountID": accountID, "txnSharePrice": 1.0, "txnSecurityID": "VOO"],
             0),
-            
-            (
-            """
-            "03/01/2021","Promotional Award","","PROMOTIONAL AWARD","","","","$100.00",
-            """,
-            ["txnTransactedAt": YYYYMMDDts, "txnAction": income, "txnShareCount": 100.0, "txnAccountID": accountID, "txnSharePrice": 1.0],
-            0),
 
             (
             """
             "03/01/2021 as of 09/26/2021","Bank Interest","","BANK INT 123456-789123 SCHWAB BANK","","","","$17.00",
             """,
             ["txnTransactedAt": YYYYMMDDts, "txnAction": income, "txnShareCount": 17.0, "txnAccountID": accountID, "txnSharePrice": 1.0],
+            0),
+            
+            (
+            """
+            "03/01/2021","Promotional Award","","PROMOTIONAL AWARD","","","","$100.00",
+            """,
+            ["txnTransactedAt": YYYYMMDDts, "txnAction": miscflow, "txnShareCount": 100.0, "txnAccountID": accountID, "txnSharePrice": 1.0],
+            0),
+
+            (
+            """
+            "03/01/2021","Random thing that cannot be anticipated","","RANDOM THING","","","","$100.00",
+            """,
+            ["txnTransactedAt": YYYYMMDDts, "txnAction": miscflow, "txnShareCount": 100.0, "txnAccountID": accountID, "txnSharePrice": 1.0],
             0),
         ]
         
@@ -307,9 +312,7 @@ final class ChuckHistoryActionTests: XCTestCase {
             let dataStr = body.replacingOccurrences(of: "##ROW##", with: row.csvRow).data(using: .utf8)!
             let actual: [AllocRowed.DecodedRow] = try imp.decode(MTransaction.self, dataStr, rejectedRows: &rr, timeZone: tzNewYork)
 
-            let expected: [AllocRowed.DecodedRow] = row.expected != nil ? [row.expected!] : []
-            
-            XCTAssertEqual(expected, actual, "ROW: \(row.csvRow)")
+            XCTAssertEqual([row.expected], actual, "ROW: \(row.csvRow)")
             XCTAssertEqual(row.rejectedRows, rr.count, "ROW: \(row.csvRow)")
         }
     }
