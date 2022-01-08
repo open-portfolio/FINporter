@@ -105,7 +105,7 @@ struct ChuckPositions {
         return decodedRow
     }
     
-    /// obtain the ticker, ignoring row if blank/missing (or if "Account Total")
+    /// obtain the ticker, ignoring (but not rejecting) row if blank/missing (or if "Account Total")
     internal static func getRawSymbol(_ row: AllocRowed.RawRow) -> String? {
         guard let rawSymbol = MHolding.parseString(row["Symbol"], trimCharacters: trimFromTicker),
               rawSymbol.count > 0,
