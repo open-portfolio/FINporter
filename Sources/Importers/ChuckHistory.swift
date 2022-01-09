@@ -116,8 +116,11 @@ class ChuckHistory: FINporter {
         
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             
+            // ignore totals row
+            let rawDate = delimitedRow["Date"]
+            guard rawDate != "Transactions Total" else { return }
+            
             guard let rawAction = MTransaction.parseString(delimitedRow["Action"]),
-                  let rawDate = delimitedRow["Date"],
                   let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, timeZone: timeZone)
             else {
                 rejectedRows.append(delimitedRow)
