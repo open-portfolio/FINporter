@@ -201,7 +201,7 @@ class ChuckHistory: FINporter {
             }
             
             if rawSymbol == "NO NUMBER" {
-                // assume that it's a cash transfer, where amount is required
+                // assume that it's a cash transfer (where amount is required)
                 guard let amount = rawAmount else { return nil }
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
                 decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0

@@ -176,10 +176,10 @@ final class FidoHistoryActionTests: XCTestCase {
 
             ("03/01/2021,PASSIVE X0000000A, YOU BOUGHT VANGUARD INDEX FDS VANGUARD VALUE ETF F (VTV) (Cash), VTV, VANGUARD INDEX FDS VANGUARD VALUE ETF F,Cash,7.0,100.0,,,,-700.0,03/05/2021",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 100.0, "txnShareCount": 7.0, "txnAction": buysell, "txnAccountID": accountID, "txnSecurityID": "VTV"]]),
-            
+
             ("03/01/2021,PASSIVE X0000000A,  REDEMPTION FROM CORE ACCOUNT FIDELITY GOVERNMENT MONEY MARKET (SPAXX) MORNING TRADE (Cash), SPAXX, FIDELITY GOVERNMENT MONEY MARKET,Cash,-17.00,1,,,,17.00,",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": buysell, "txnAccountID": accountID, "txnSecurityID": "SPAXX"]]),
-            
+
             ("03/01/2021,PASSIVE X0000000A, REINVESTMENT FIDELITY GOVERNMENT MONEY MARKET (SPAXX) (Cash), SPAXX, FIDELITY GOVERNMENT MONEY MARKET,Cash,-17.00,1,,,,-17.00,",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 1.0, "txnShareCount": -17.0, "txnAction": buysell, "txnAccountID": accountID, "txnSecurityID": "SPAXX"]]),
 
@@ -193,6 +193,10 @@ final class FidoHistoryActionTests: XCTestCase {
 
             ("03/01/2021,BROKERAGE X0000000A, TRANSFER OF ASSETS ACAT DELIVER, TLT, ISHARES TR 20 YR TR BD ETF,Cash,-86,144.41,,0.07,,12418.76,08/02/2021",
              [["txnTransactedAt": YYYYMMDDts, "txnSharePrice": 144.41, "txnShareCount": -86.0, "txnAction": transfer, "txnAccountID": accountID, "txnSecurityID":"TLT"]]),
+            
+            // no share price on this stock transfer
+            ("03/01/2021,BROKERAGE X0000000A, TRANSFER OF ASSETS EST SETTLE 02-04-21 ALPHABET INC (ABCD) (Cash), ABCD, ALPHA INC,Cash,-200,,,,,,",
+             [["txnTransactedAt": YYYYMMDDts, "txnShareCount": -200.0, "txnAction": transfer, "txnAccountID": accountID, "txnSecurityID":"ABCD"]]),
 
             // income
             

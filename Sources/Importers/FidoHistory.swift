@@ -173,17 +173,17 @@ class FidoHistory: FINporter {
             
         case .transfer:
             if let symbol = rawSymbol {
-                guard let quantity = rawShareCount,
-                      let sharePrice = rawSharePrice
-                else {
-                    return nil
-                }
+                guard let quantity = rawShareCount else { return nil }
                 
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = quantity
-                decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
                 decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
+                
+                // if transfer of a stock/etf, there may be no share price
+                if let sharePrice = rawSharePrice {
+                    decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = sharePrice
+                }
             } else {
-                // no symbol, so it's probably cash
+                // no symbol, so it's probably cash (where amount is required)
                 guard let amount = rawAmount else { return nil }
                 
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
