@@ -116,8 +116,11 @@ class ChuckHistory: FINporter {
         
         delimitedRows.reduce(into: []) { decodedRows, delimitedRow in
             
+            // ignore totals row
+            let rawDate = delimitedRow["Date"]
+            guard rawDate != "Transactions Total" else { return }
+            
             guard let rawAction = MTransaction.parseString(delimitedRow["Action"]),
-                  let rawDate = delimitedRow["Date"],
                   let transactedAt = parseChuckMMDDYYYY(rawDate, defTimeOfDay: defTimeOfDay, timeZone: timeZone)
             else {
                 rejectedRows.append(delimitedRow)
@@ -176,6 +179,7 @@ class ChuckHistory: FINporter {
         switch netAction {
         case .buysell:
             guard let symbol = rawSymbol,
+                  symbol.count > 0,
                   let sharePrice = rawSharePrice,
                   let quantity = rawQuantity
             else {
@@ -198,7 +202,7 @@ class ChuckHistory: FINporter {
             }
             
             if rawSymbol == "NO NUMBER" {
-                // assume that it's a cash transfer, where amount is required
+                // assume that it's a cash transfer (where amount is required)
                 guard let amount = rawAmount else { return nil }
                 decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
                 decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
@@ -217,20 +221,15 @@ class ChuckHistory: FINporter {
                 }
             }
             
-        case .income:
-            guard let amount = rawAmount else { return nil }
-            decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
-            decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
-            
-            // accept the income even if no symbol specified
-            if let symbol = rawSymbol {
-                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
-            }
-
         default:
             guard let amount = rawAmount else { return nil }
             decodedRow[MTransaction.CodingKeys.shareCount.rawValue] = amount
             decodedRow[MTransaction.CodingKeys.sharePrice.rawValue] = 1.0
+            
+            // accept the income/miscflow even if no symbol specified
+            if let symbol = rawSymbol {
+                decodedRow[MTransaction.CodingKeys.securityID.rawValue] = symbol
+            }
         }
         
         return decodedRow
