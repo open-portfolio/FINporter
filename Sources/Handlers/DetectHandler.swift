@@ -21,10 +21,9 @@ import SwiftCSV
 
 import AllocData
 
-public func handleDetect(inputFilePath: String) throws -> [String] {
+public func handleDetect(_ prospector: FINprospector, inputFilePath: String) throws -> [String] {
     let fileURL = URL(fileURLWithPath: inputFilePath)
     let data = try Data(contentsOf: fileURL)
-    let prospector = FINprospector()
     let sourceFormats: [AllocFormat] = [.CSV]
     let prospectResult = try prospector.prospect(sourceFormats: sourceFormats, dataPrefix: data)
     return prospectResult.reduce(into: []) { array, entry in

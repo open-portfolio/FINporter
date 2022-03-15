@@ -26,21 +26,9 @@ public struct FINprospector {
     public var importers = [FINporter]()
     private var sourceMap = [AllocFormat: [FINporter]]()
 
-    public init() {
-        // specialized
-        importers.append(AllocSmart())
-        importers.append(FidoHistory())
-        importers.append(FidoPositions())
-        importers.append(FidoSales())
-        importers.append(ChuckPositionsAll())
-        importers.append(ChuckPositionsIndiv())
-        importers.append(ChuckHistory())
-        importers.append(ChuckSales())
-
-        // consolidated importer for delimited tables with recognized schema
-        importers.append(Tabular())
-
-        // others here
+    public init(_ finporters: [FINporter]) {
+        
+        importers.append(contentsOf: finporters)
 
         sourceMap = importers.reduce(into: [:]) { map, importer in
             importer.sourceFormats.forEach {

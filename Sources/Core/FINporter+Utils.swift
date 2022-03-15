@@ -19,7 +19,7 @@ import Foundation
 
 extension FINporter {
     /// Data decoder with line separator normalization.
-    internal static func normalizeDecode(_ data: Data,
+    public static func normalizeDecode(_ data: Data,
                                          encoding: String.Encoding = .utf8) -> String? {
         guard let str = String(data: data, encoding: encoding) else { return nil }
         return normalizeLines(str)

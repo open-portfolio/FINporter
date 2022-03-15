@@ -22,12 +22,10 @@ let package = Package(
     platforms: [.macOS(.v10_12)],
     products: [
         .library(name: "FINporter", targets: ["FINporter"]),
-        .executable(name: "finport", targets: ["FINporterCLI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/openalloc/AllocData.git", from: "1.1.0"),
         .package(url: "https://github.com/openalloc/SwiftCSV.git", from: "0.6.1"),
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "0.4.3"),
     ],
     targets: [
         .target(
@@ -37,14 +35,6 @@ let package = Package(
                 "SwiftCSV",
             ],
             path: "Sources"
-        ),
-        .executableTarget(
-            name: "FINporterCLI",
-            dependencies: [
-                "FINporter",
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-            ],
-            path: "CLI"
         ),
         .testTarget(
             name: "FINporterTests",

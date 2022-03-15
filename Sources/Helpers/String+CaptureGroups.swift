@@ -17,7 +17,7 @@
 
 import Foundation
 
-extension String {
+public extension String {
     
     // adapted from https://stackoverflow.com/a/53652037
     func captureGroups(for pattern: String,

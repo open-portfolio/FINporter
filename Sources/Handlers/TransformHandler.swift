@@ -22,7 +22,8 @@ import SwiftCSV
 import AllocData
 
 /// Used in CLI
-public func handleTransform(inputFilePath: String,
+public func handleTransform(_ prospector: FINprospector,
+                            inputFilePath: String,
                             rejectedRows: inout [AllocRowed.RawRow],
                             finPorterID: String? = nil,
                             outputSchema: AllocSchema? = nil,
@@ -31,7 +32,7 @@ public func handleTransform(inputFilePath: String,
     let fileURL = URL(fileURLWithPath: inputFilePath)
     let data = try Data(contentsOf: fileURL)
 
-    let pair = try getPair(data: data, finPorterID: finPorterID, outputSchema: outputSchema)
+    let pair = try getPair(prospector, data: data, finPorterID: finPorterID, outputSchema: outputSchema)
 
     switch pair.schema {
     case .allocAccount:
@@ -53,17 +54,16 @@ public func handleTransform(inputFilePath: String,
     }
 }
 
-internal func getPair(data: Data,
+internal func getPair(_ prospector: FINprospector,
+                      data: Data,
                       finPorterID: String? = nil,
                       outputSchema: AllocSchema? = nil) throws -> (finPorter: FINporter, schema: AllocSchema) {
-    let FINprospector = FINprospector()
-
     var importer: FINporter!
     var detectedSchemas = [AllocSchema]()
 
     // if user explicitly specified an importer
     if let fID = finPorterID {
-        importer = FINprospector.get(fID)
+        importer = prospector.get(fID)
 
         guard importer != nil else {
             throw FINporterError.importerNotRecognized(fID)
@@ -73,7 +73,7 @@ internal func getPair(data: Data,
 
     } else {
         // attempt to find an importer than can handle the input
-        let detected: FINprospector.ProspectResult = try FINprospector.prospect(dataPrefix: data)
+        let detected: FINprospector.ProspectResult = try prospector.prospect(dataPrefix: data)
         let importers = detected.map(\.key)
 
         switch importers.count {
