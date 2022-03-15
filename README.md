@@ -1,8 +1,6 @@
 # FINporter
 
-<img align="right" src="https://github.com/openalloc/FINporter/blob/main/Images/logo.png" width="100" height="100"/>A utility for transforming financial data.
-
-Available both as a `finport` command line executable and as an open source Swift library to be incorporated in other apps.
+<img align="right" src="https://github.com/openalloc/FINporter/blob/main/Images/logo.png" width="100" height="100"/>A framework for detecting and transforming investing data.
 
 _FINporter_ is part of the [OpenAlloc](https://github.com/openalloc) family of open source Swift software tools.
 
@@ -28,165 +26,15 @@ NOTE: support of a data format for a service is not an endorsement or recommenda
 
 Applications which have integrated _FINporter_ will typically support imports through a menu item or drag-and-drop. The examples below show how the command-line tool, `finport`, may be used to transform input files to delimited files of standardized schema.
 
-As support for services expands, more examples will be listed below.
-
-### Tabular
-
-To detect a supported schema of a delimited file:
-
-```bash
-$ finport detect mystery.txt
-=> openalloc/account: text/csv
-```
-
-### Fido (Fidelity) Positions
-
-To transform the "Portfolio_Positions_Mmm-dd-yyyy.csv" export requires four separate commands, as there are four outputs: accounts, account holdings, securities, and 'source meta':
-
-```bash
-$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/account
-$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/holding
-$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/security
-$ finport transform Portfolio_Positions_Jun-30-2021.csv --output-schema openalloc/meta/source
-```
-
-The 'source meta' can extract the export date from the content, if present, as well as other details.
-
-Each command above will produce comma-separated value data in the following schemas, respectively.
-
-Output schemas: 
-* [openalloc/account](https://github.com/openalloc/AllocData#maccount)
-* [openalloc/holding](https://github.com/openalloc/AllocData#mholding)
-* [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
-* [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
-
-### Fido (Fidelity) Transaction History
-
-To transform the "Accounts_History.csv" export, which contains a record of recent sales, purchases, and other transactions:
-
-```bash
-$ finport transform Accounts_History.csv
-```
-
-The command above will produce comma-separated value data in the following schema.
-
-NOTE: output changed to the new MTransaction from the deprecated MHistory.
-
-Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
-
-### Fido (Fidelity) Transaction Sales
-
-To transform the "Realized_Gain_Loss_Account_00000000.csv" export, available in the 'Closed Positions' view of taxable accounts:
-
-```bash
-$ finport transform Realized_Gain_Loss_Account_00000000.csv
-```
-
-The command above will produce comma-separated value data in the following schema.
-
-NOTE: output changed to the new MTransaction from the deprecated MHistory.
-
-Output schema: 
-* [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
-
-### Chuck (Schwab) Positions
-
-There are actually two importers to handle Schwab positions. One for 'All' accounts, and a second for 'Individual' accounts. The files are named differently:
-
-* All-Accounts-Positions-YYYY-MM-DD-000000.CSV
-* Individual-Positions-YYYY-MM-DD-000000.CSV
-
-To transform either export requires four separate commands, as there are four outputs: accounts, account holdings, securities, and 'source meta':
-
-```bash
-$ finport transform SOMETHING-Positions-2021-06-30-012345.CSV --output-schema openalloc/account
-$ finport transform SOMETHING-Positions-2021-06-30-012345.CSV --output-schema openalloc/holding
-$ finport transform SOMETHING-Positions-2021-06-30-012345.CSV --output-schema openalloc/security
-$ finport transform SOMETHING-Positions-2021-06-30-012345.CSV --output-schema openalloc/meta/source
-```
-
-Each command above will produce comma-separated value data in the following schemas, respectively.
-
-NOTE: "Cash & Cash Investments" holdings will be assigned a SecurityID of "CORE".
-
-The 'source meta' can extract the export date from the content, if present, as well as other details.
-
-Output schemas: 
-* [openalloc/account](https://github.com/openalloc/AllocData#maccount)
-* [openalloc/holding](https://github.com/openalloc/AllocData#mholding)
-* [openalloc/security](https://github.com/openalloc/AllocData#msecurity)
-* [openalloc/meta/source](https://github.com/openalloc/AllocData#msourcemeta)
-
-### Chuck (Schwab) Transaction History
-
-To transform the "XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV" export, which contains a record of recent sales, purchases, and other transactions:
-
-```bash
-$ finport transform XXXX1234_Transactions_YYYYMMDD-HHMMSS.CSV
-```
-
-The command above will produce comma-separated value data in the following schema.
-
-Output schema:  [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
-
-NOTE 1: Schwab's transaction export does not contain realized gains and losses of sales, and so they are not in the imported transaction.
-
-NOTE 2: Security transfers may only specify shares transferred, with no cash valuation specified.
-
-### Chuck (Schwab) Transaction Sales **BETA**
-
-To transform the "XXXX1234_GainLoss_Realized_YYYYMMDD-HHMMSS.CSV" export, available in the 'Closed Positions' view of taxable accounts:
-
-```bash
-$ finport transform XXXX1234_GainLoss_Realized_YYYYMMDD-HHMMSS.CSV
-```
-
-The command above will produce comma-separated value data in the following schema.
-
-Output schema: 
-* [openalloc/transaction](https://github.com/openalloc/AllocData#mtransaction)
-
-### AllocSmart (Allocate Smartly) Export
-
-To transform an export from this service:
-
-```bash
-$ finport transform "Allocate Smartly Model Portfolio.csv"
-```
-
-The command above will produce comma-separated value data in the following schema.
-
-Output schema: 
-* [openalloc/allocation](https://github.com/openalloc/AllocData#mallocation)
-
-## Command Line
-
-_FINporter_ features `finport`, a powerful command-line tool to detect and transform financial data, such as exports from your brokerage account.
-
-```bash
-$ swift build
-$ .build/debug/finport
-
-OVERVIEW: A utility for transforming financial data.
-
-USAGE: finport <subcommand>
-
-OPTIONS:
-  --version               Show the version.
-  -h, --help              Show help information.
-
-SUBCOMMANDS:
-  list                    List things available.
-  schema                  Describe schema details.
-  detect                  Detect schema of file.
-  transform               Transform data in file.
-
-  See 'finport help <subcommand>' for detailed help.
-```
-
-If your favorite product (e.g., _FlowAllocator_) hasn't yet incorporated the latest FINporter library supporting your service, you can still transform exports using `finport`. See examples above.
-
 ## See Also
+
+The rest of the _FINporter_ family of libraries/tools (by the same author):
+
+* [FINporterCLI](https://github.com/openalloc/FINporterCLI) - the command-line interface (CLI) incorporating supported importers
+* [FINporterChuck](https://github.com/openalloc/FINporterChuck) - importers for the Schwab brokerage
+* [FINporterFido](https://github.com/openalloc/FINporterFido) - importers for the Fidelity brokerage
+* [FINporterAllocSmart](https://github.com/openalloc/FINporterAllocSmart) - importer for the Allocate Smartly service
+* [FINporterTabular](https://github.com/openalloc/FINporterTabular) - importer for transforming the AllocData schema
 
 Swift open-source libraries (by the same author):
 
