@@ -3,7 +3,7 @@
 //
 //  A simple declarative encoder for use in environments lacking DateFormatters, Streams, etc.
 //
-// Copyright 2021 FlowAllocator LLC
+// Copyright 2021, 2022 OpenAlloc LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
