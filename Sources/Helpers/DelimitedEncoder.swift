@@ -42,7 +42,7 @@ public class DelimitedEncoder: Encoder {
         return data
     }
 
-    public func encode<T: Encodable>(rows: T) throws -> Data {
+    public func encode(rows: some Encodable) throws -> Data {
         try rows.encode(to: self)
         return data
     }
@@ -119,7 +119,7 @@ public class DelimitedEncoder: Encoder {
             }
         }
 
-        mutating func encode<T>(_ value: T, forKey _: K) throws where T: Encodable {
+        mutating func encode(_ value: some Encodable, forKey _: K) throws {
             if isFirstColumn {
                 isFirstColumn = false
             } else {
@@ -168,7 +168,7 @@ public class DelimitedEncoder: Encoder {
             self.encoder = encoder
         }
 
-        mutating func encode<T>(_ value: T) throws where T: Encodable {
+        mutating func encode(_ value: some Encodable) throws {
             try value.encode(to: encoder)
             encoder.write(encoder.lineSeparator)
             count += 1
