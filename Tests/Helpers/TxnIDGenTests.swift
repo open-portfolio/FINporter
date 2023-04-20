@@ -20,7 +20,7 @@ import XCTest
 
 final class TxnIDGenTests: XCTestCase {
     let df = ISO8601DateFormatter()
-    
+
     func testBasic() throws {
         let transactionDate = df.date(from: "2021-03-01T17:00:00Z")!
         let actual = generateTransactionID(prefix: "A", transactionDate: transactionDate, transactionNo: 325)

@@ -18,10 +18,10 @@
 import Foundation
 
 public extension String {
-    
     // adapted from https://stackoverflow.com/a/53652037
     func captureGroups(for pattern: String,
-                       options: NSRegularExpression.Options = []) -> [String]? {
+                       options: NSRegularExpression.Options = []) -> [String]?
+    {
         let text = self
         let baseRange = NSRange(text.startIndex..., in: text)
         guard let regex = try? NSRegularExpression(pattern: pattern, options: options),
@@ -29,7 +29,7 @@ public extension String {
               case let rangeCount = firstMatch.numberOfRanges,
               rangeCount > 0
         else { return nil }
-        return (1..<rangeCount).map {
+        return (1 ..< rangeCount).map {
             let bounds = firstMatch.range(at: $0)
             guard let range = Range(bounds, in: text) else { return "" }
             return String(text[range])

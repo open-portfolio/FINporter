@@ -27,7 +27,6 @@ public struct FINprospector {
     private var sourceMap = [AllocFormat: [FINporter]]()
 
     public init(_ finporters: [FINporter]) {
-        
         importers.append(contentsOf: finporters)
 
         sourceMap = importers.reduce(into: [:]) { map, importer in

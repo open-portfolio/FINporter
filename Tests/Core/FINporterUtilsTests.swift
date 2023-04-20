@@ -19,7 +19,6 @@
 import XCTest
 
 final class FINporterUtilsTests: XCTestCase {
-    
     func testDecodeWithNormalization() {
         let rawText = "\"Positions\"\r\n\r\n\"Individual                        XXXX-1234\"\r\n"
         let expected = "\"Positions\"\n\n\"Individual                        XXXX-1234\"\n"

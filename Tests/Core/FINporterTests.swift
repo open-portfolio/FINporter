@@ -21,7 +21,6 @@ import XCTest
 import AllocData
 
 final class FINporterTests: XCTestCase {
-    
     func testBaseDetectNotImplemented() {
         XCTAssertThrowsError(try FINporter().detect(dataPrefix: Data())) { error in
             XCTAssertEqual(error as! FINporterError, FINporterError.notImplementedError)

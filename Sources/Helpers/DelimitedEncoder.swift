@@ -28,7 +28,7 @@ public class DelimitedEncoder: Encoder {
     private var data = Data()
 
     private static let isoDateFormatter = ISO8601DateFormatter()
-    
+
     public init(delimiter: String = ",",
                 lineSeparator: String = "\n")
     {
@@ -119,7 +119,7 @@ public class DelimitedEncoder: Encoder {
             }
         }
 
-        mutating func encode<T>(_ value: T, forKey key: K) throws where T: Encodable {
+        mutating func encode<T>(_ value: T, forKey _: K) throws where T: Encodable {
             if isFirstColumn {
                 isFirstColumn = false
             } else {

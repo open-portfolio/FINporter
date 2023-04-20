@@ -1,6 +1,6 @@
 //
 //  MAsset+StandardID.swift
-//  
+//
 // Copyright 2021, 2022 OpenAlloc LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,8 +57,8 @@ public extension MAsset {
         case tech = "Tech"
         case tips = "TIPS"
         case total = "Total"
-        
-        //TODO not used yet. Need to be handled with locale
+
+        // TODO: not used yet. Need to be handled with locale
 //        public var description: String {
 //            switch self {
 //            case .bond:

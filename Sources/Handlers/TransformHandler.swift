@@ -28,7 +28,8 @@ public func handleTransform(_ prospector: FINprospector,
                             finPorterID: String? = nil,
                             outputSchema: AllocSchema? = nil,
                             defTimeOfDay: String? = nil,
-                            timeZone: TimeZone) throws -> String {
+                            timeZone: TimeZone) throws -> String
+{
     let fileURL = URL(fileURLWithPath: inputFilePath)
     let data = try Data(contentsOf: fileURL)
 
@@ -57,7 +58,8 @@ public func handleTransform(_ prospector: FINprospector,
 internal func getPair(_ prospector: FINprospector,
                       data: Data,
                       finPorterID: String? = nil,
-                      outputSchema: AllocSchema? = nil) throws -> (finPorter: FINporter, schema: AllocSchema) {
+                      outputSchema: AllocSchema? = nil) throws -> (finPorter: FINporter, schema: AllocSchema)
+{
     var importer: FINporter!
     var detectedSchemas = [AllocSchema]()
 
@@ -108,20 +110,21 @@ internal func getPair(_ prospector: FINprospector,
 }
 
 internal func decodeAndExport<T: AllocBase & AllocRowed & AllocAttributable & Codable>(_: T.Type,
-                                            _ finPorter: FINporter,
-                                            _ data: Data,
-                                            _ rejectedRows: inout [T.RawRow],
-                                            _ outputSchema: AllocSchema,
-                                            _ url: URL,
-                                            _ defTimeOfDay: String? = nil,
-                                            _ timeZone: TimeZone) throws -> String {
+                                                                                       _ finPorter: FINporter,
+                                                                                       _ data: Data,
+                                                                                       _ rejectedRows: inout [T.RawRow],
+                                                                                       _ outputSchema: AllocSchema,
+                                                                                       _ url: URL,
+                                                                                       _ defTimeOfDay: String? = nil,
+                                                                                       _ timeZone: TimeZone) throws -> String
+{
     let finRows: [T.DecodedRow] = try finPorter.decode(T.self,
-                                                data,
-                                                rejectedRows: &rejectedRows,
-                                                outputSchema: outputSchema,
-                                                url: url,
-                                                defTimeOfDay: defTimeOfDay,
-                                                timeZone: timeZone)
+                                                       data,
+                                                       rejectedRows: &rejectedRows,
+                                                       outputSchema: outputSchema,
+                                                       url: url,
+                                                       defTimeOfDay: defTimeOfDay,
+                                                       timeZone: timeZone)
     let items: [T] = try finRows.map { try T(from: $0) }
     let data = try finPorter.export(elements: items, format: .CSV)
     return FINporter.normalizeDecode(data) ?? ""

@@ -19,7 +19,6 @@
 import XCTest
 
 final class StringCaptureGroupTests: XCTestCase {
-
     func testBasic() throws {
         let pattern = #"^Price: ([€\$])(\d\d\.\d\d)$"#
         let str = "Price: €19.00"
@@ -35,21 +34,21 @@ final class StringCaptureGroupTests: XCTestCase {
         let expected = ["€19.00", "€", "19.00"]
         XCTAssertEqual(expected, actual)
     }
-    
+
     func testNoMatch() throws {
         let pattern = #"^Price: ([€\$])(\d\d\.\d\d)$"#
         let str = "Price: ฿19.00"
         let actual = str.captureGroups(for: pattern)
         XCTAssertNil(actual)
     }
-    
+
     func testEmptyPattern() throws {
         let pattern = #""#
         let str = "Price: €19.00"
         let actual = str.captureGroups(for: pattern)
         XCTAssertNil(actual)
     }
-    
+
     func testEmptySource() throws {
         let pattern = #"^Price: ([€\$])(\d\d\.\d\d)$"#
         let str = ""
