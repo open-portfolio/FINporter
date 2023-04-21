@@ -18,7 +18,7 @@ import PackageDescription
 
 let package = Package(
     name: "FINporter",
-    platforms: [.macOS(.v10_12)],
+    platforms: [.macOS(.v10_13)],
     products: [
         .library(name: "FINporter", targets: ["FINporter"]),
     ],
