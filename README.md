@@ -4,7 +4,7 @@
 
 _FINporter_ is part of the [OpenAlloc](https://github.com/openalloc) family of open source Swift software tools.
 
-Used by investing apps like [FlowAllocator](https://open-portfolio.github.io/allocator) and [FlowWorth](https://open-portfolio.github.io/worth).
+Used by investing apps like [Flow Allocator](https://open-portfolio.github.io/allocator) and [Flow Worth](https://open-portfolio.github.io/worth).
 
 ## Disclaimer
 
